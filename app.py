@@ -1,27 +1,48 @@
+import os
+import re
+from functools import wraps
+from datetime import datetime
+
+import psycopg
+from psycopg.rows import dict_row
+from dotenv import load_dotenv
+
+from flask import (
+    Flask,
+    render_template,
+    request,
+    redirect,
+    url_for,
+    flash,
+    session,
+    abort,
+    jsonify,
+)
+
+from werkzeug.security import (
+    generate_password_hash,
+    check_password_hash,
+)
+
+
+# =========================================================
+# CONFIGURATION
+# =========================================================
+
+load_dotenv()
+
+app = Flask(__name__)
+
+app.config["SECRET_KEY"] = os.getenv(
+    "SECRET_KEY",
+    "change-this-secret-key"
+)
+
+
 # =========================================================
 # DATABASE
 # =========================================================
 
-# Vercel + Neon:
-# Prefer DATABASE_URL if available.
-# Otherwise use the POSTGRES_URL created by the Neon integration.
-# Local development will continue using the local PostgreSQL database.
-
-DATABASE_URL = (
-    os.getenv("DATABASE_URL")
-    or os.getenv("POSTGRES_URL")
-    or os.getenv("POSTGRES_PRISMA_URL")
-    or os.getenv("POSTGRES_URL_NON_POOLING")
-    or "postgresql://postgres@localhost:5432/ricoz_social"
-)
-
-
-def get_db_connection():
-
-    return psycopg.connect(
-        DATABASE_URL,
-        row_factory=dict_row
-    )
 # Vercel + Neon:
 # Prefer DATABASE_URL if available.
 # Otherwise use the POSTGRES_URL created by the Neon integration.
@@ -166,6 +187,60 @@ def init_db():
             # CONTENT APPROVALS
             # =================================================
 
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS content_approvals (
+                    id SERIAL PRIMARY KEY,
+                    post_id INTEGER NOT NULL
+                        REFERENCES posts(id) ON DELETE CASCADE,
+                    submitted_by INTEGER
+                        REFERENCES users(id) ON DELETE SET NULL,
+                    reviewer_id INTEGER
+                        REFERENCES users(id) ON DELETE SET NULL,
+                    status VARCHAR(50) NOT NULL DEFAULT 'pending',
+                    comments TEXT,
+                    reviewed_at TIMESTAMP,
+                    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+
+            # Safe migration for existing databases
+            cur.execute("""
+                ALTER TABLE content_approvals
+                ADD COLUMN IF NOT EXISTS created_at
+                TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            """)
+
+            cur.execute("""
+                CREATE INDEX IF NOT EXISTS idx_content_approvals_status
+                ON content_approvals(status)
+            """)
+
+            cur.execute("""
+                CREATE INDEX IF NOT EXISTS idx_content_approvals_post
+                ON content_approvals(post_id)
+            """)
+
+            # =================================================
+            # COMMUNITY COMMENTS
+            # =================================================
+
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS community_comments (
+                    id SERIAL PRIMARY KEY,
+                    brand_id INTEGER NOT NULL
+                        REFERENCES brands(id) ON DELETE CASCADE,
+                    social_account_id INTEGER
+                        REFERENCES social_accounts(id) ON DELETE SET NULL,
+                    external_comment_id VARCHAR(255),
+                    author_name VARCHAR(150),
+                    author_username VARCHAR(150),
+                    content TEXT,
+                    status VARCHAR(50) NOT NULL DEFAULT 'unread',
+                    reply TEXT,
+                    replied_at TIMESTAMP,
+                    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
             cur.execute("""
                 CREATE TABLE IF NOT EXISTS content_approvals (
                     id SERIAL PRIMARY KEY,
