@@ -1,53 +1,27 @@
-import os
-import re
-from functools import wraps
-from datetime import datetime
-
-import psycopg
-from psycopg.rows import dict_row
-from dotenv import load_dotenv
-
-from flask import (
-    Flask,
-    render_template,
-    request,
-    redirect,
-    url_for,
-    flash,
-    session,
-    abort,
-    jsonify,
-)
-
-from werkzeug.security import (
-    generate_password_hash,
-    check_password_hash,
-)
-
-
-# =========================================================
-# CONFIGURATION
-# =========================================================
-
-load_dotenv()
-
-app = Flask(__name__)
-
-app.config["SECRET_KEY"] = os.getenv(
-    "SECRET_KEY",
-    "change-this-secret-key"
-)
-
-DATABASE_URL = os.getenv(
-    "DATABASE_URL",
-    "postgresql://postgres@localhost:5432/ricoz_social"
-)
-
-
 # =========================================================
 # DATABASE
 # =========================================================
 
+# Vercel + Neon:
+# Prefer DATABASE_URL if available.
+# Otherwise use the POSTGRES_URL created by the Neon integration.
+# Local development will continue using the local PostgreSQL database.
+
+DATABASE_URL = (
+    os.getenv("DATABASE_URL")
+    or os.getenv("POSTGRES_URL")
+    or os.getenv("POSTGRES_PRISMA_URL")
+    or os.getenv("POSTGRES_URL_NON_POOLING")
+    or "postgresql://postgres@localhost:5432/ricoz_social"
+)
+
+
+def get_db_connection():
+
+    return psycopg.connect(
+        DATABASE_URL,
+        row_factory=dict_row
+    )
 # Vercel + Neon:
 # Prefer DATABASE_URL if available.
 # Otherwise use the POSTGRES_URL created by the Neon integration.
