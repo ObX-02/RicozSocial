@@ -6513,3 +6513,14 @@ if __name__ == "__main__":
         port=5000,
         debug=True
     )
+    # =========================================================
+# DATABASE INITIALIZATION
+# =========================================================
+
+try:
+    init_db()
+except Exception as exc:
+    app.logger.exception(
+        "Database initialization failed: %s",
+        exc
+    )
