@@ -48,7 +48,22 @@ DATABASE_URL = os.getenv(
 # DATABASE
 # =========================================================
 
+# Vercel + Neon:
+# Prefer DATABASE_URL if available.
+# Otherwise use the POSTGRES_URL created by the Neon integration.
+# Local development will continue using the local PostgreSQL database.
+
+DATABASE_URL = (
+    os.getenv("DATABASE_URL")
+    or os.getenv("POSTGRES_URL")
+    or os.getenv("POSTGRES_PRISMA_URL")
+    or os.getenv("POSTGRES_URL_NON_POOLING")
+    or "postgresql://postgres@localhost:5432/ricoz_social"
+)
+
+
 def get_db_connection():
+
     return psycopg.connect(
         DATABASE_URL,
         row_factory=dict_row
