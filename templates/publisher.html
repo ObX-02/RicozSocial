@@ -1,0 +1,956 @@
+{% extends "base.html" %}
+
+{% block title %}
+Publisher | RicozSocial
+{% endblock %}
+
+{% block extra_css %}
+
+<link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/publisher.css') }}"
+>
+
+{% endblock %}
+
+
+{% block content %}
+
+<div class="publisher-page">
+
+    <!-- =====================================================
+         HEADER
+    ====================================================== -->
+
+    <div class="publisher-header">
+
+        <div class="publisher-heading">
+
+            <div class="publisher-eyebrow">
+                CONTENT MANAGEMENT
+            </div>
+
+            <h1>
+                Publisher
+            </h1>
+
+            <p>
+                Create, review, schedule and manage social media content.
+            </p>
+
+        </div>
+
+
+        <div class="publisher-actions">
+
+            <button
+                type="button"
+                class="publisher-primary-btn"
+                onclick="openCreatePostModal()"
+            >
+                <span>＋</span>
+                Create Post
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         STATS
+    ====================================================== -->
+
+    <div class="publisher-stats">
+
+        <div class="publisher-stat-card">
+
+            <div class="publisher-stat-icon">
+                ◉
+            </div>
+
+            <div>
+                <span class="publisher-stat-label">
+                    Total Posts
+                </span>
+
+                <strong>
+                    {{ stats.total or 0 }}
+                </strong>
+            </div>
+
+        </div>
+
+
+        <div class="publisher-stat-card">
+
+            <div class="publisher-stat-icon">
+                ◌
+            </div>
+
+            <div>
+                <span class="publisher-stat-label">
+                    Drafts
+                </span>
+
+                <strong>
+                    {{ stats.drafts or 0 }}
+                </strong>
+            </div>
+
+        </div>
+
+
+        <div class="publisher-stat-card">
+
+            <div class="publisher-stat-icon">
+                ⏳
+            </div>
+
+            <div>
+                <span class="publisher-stat-label">
+                    Awaiting Approval
+                </span>
+
+                <strong>
+                    {{ stats.pending_approval or 0 }}
+                </strong>
+            </div>
+
+        </div>
+
+
+        <div class="publisher-stat-card">
+
+            <div class="publisher-stat-icon">
+                ✓
+            </div>
+
+            <div>
+                <span class="publisher-stat-label">
+                    Approved
+                </span>
+
+                <strong>
+                    {{ stats.approved or 0 }}
+                </strong>
+            </div>
+
+        </div>
+
+
+        <div class="publisher-stat-card">
+
+            <div class="publisher-stat-icon">
+                ◷
+            </div>
+
+            <div>
+                <span class="publisher-stat-label">
+                    Scheduled
+                </span>
+
+                <strong>
+                    {{ stats.scheduled or 0 }}
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <div class="publisher-stat-card">
+
+            <div class="publisher-stat-icon">
+                ●
+            </div>
+
+            <div>
+                <span class="publisher-stat-label">
+                    Published
+                </span>
+
+                <strong>
+                    {{ stats.published or 0 }}
+                </strong>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         FILTERS
+    ====================================================== -->
+
+    <div class="publisher-filter-card">
+
+        <form
+            method="GET"
+            action="{{ url_for('publisher') }}"
+            class="publisher-filter-form"
+        >
+
+            <div class="publisher-filter-field">
+
+                <label>
+                    Search
+                </label>
+
+                <input
+                    type="text"
+                    name="search"
+                    value="{{ search }}"
+                    placeholder="Search posts..."
+                >
+
+            </div>
+
+
+            <div class="publisher-filter-field">
+
+                <label>
+                    Brand
+                </label>
+
+                <select name="brand_id">
+
+                    <option value="">
+                        All Brands
+                    </option>
+
+                    {% for brand in available_brands %}
+
+                        <option
+                            value="{{ brand.id }}"
+                            {% if selected_brand|string == brand.id|string %}
+                                selected
+                            {% endif %}
+                        >
+                            {{ brand.name }}
+                        </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <div class="publisher-filter-field">
+
+                <label>
+                    Status
+                </label>
+
+                <select name="status">
+
+                    <option value="">
+                        All Statuses
+                    </option>
+
+                    {% for status_value in post_statuses %}
+
+                        <option
+                            value="{{ status_value }}"
+                            {% if selected_status == status_value %}
+                                selected
+                            {% endif %}
+                        >
+                            {{ status_value|replace('_', ' ')|title }}
+                        </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <div class="publisher-filter-buttons">
+
+                <button
+                    type="submit"
+                    class="publisher-filter-btn"
+                >
+                    Apply
+                </button>
+
+                <a
+                    href="{{ url_for('publisher') }}"
+                    class="publisher-reset-btn"
+                >
+                    Reset
+                </a>
+
+            </div>
+
+        </form>
+
+    </div>
+
+
+    <!-- =====================================================
+         POSTS TABLE
+    ====================================================== -->
+
+    <div class="publisher-table-card">
+
+        <div class="publisher-table-header">
+
+            <div>
+
+                <span class="publisher-table-eyebrow">
+                    CONTENT LIBRARY
+                </span>
+
+                <h2>
+                    Posts
+                </h2>
+
+            </div>
+
+            <span class="publisher-result-count">
+                {{ posts|length }} result{% if posts|length != 1 %}s{% endif %}
+            </span>
+
+        </div>
+
+
+        {% if posts %}
+
+        <div class="publisher-table-wrapper">
+
+            <table class="publisher-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Content
+                        </th>
+
+                        <th>
+                            Brand
+                        </th>
+
+                        <th>
+                            Status
+                        </th>
+
+                        <th>
+                            Schedule
+                        </th>
+
+                        <th>
+                            Platforms
+                        </th>
+
+                        <th>
+                            Actions
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                {% for post in posts %}
+
+                    <tr>
+
+                        <td>
+
+                            <div class="publisher-content-cell">
+
+                                <div class="publisher-content-title">
+
+                                    {{ post.title or "Untitled Post" }}
+
+                                </div>
+
+                                <div class="publisher-content-preview">
+
+                                    {{ post.content|truncate(90) }}
+
+                                </div>
+
+                                <small>
+                                    By {{ post.creator_name or "Unknown User" }}
+                                </small>
+
+                            </div>
+
+                        </td>
+
+
+                        <td>
+
+                            <span class="publisher-brand-badge">
+
+                                {{ post.brand_name }}
+
+                            </span>
+
+                        </td>
+
+
+                        <td>
+
+                            <span
+                                class="
+                                    publisher-status
+                                    status-{{ post.status|lower|replace('_','-') }}
+                                "
+                            >
+
+                                {% if post.status == "pending_approval" %}
+                                    Awaiting Approval
+                                {% else %}
+                                    {{ post.status|replace('_', ' ')|title }}
+                                {% endif %}
+
+                            </span>
+
+                        </td>
+
+
+                        <td>
+
+                            {% if post.scheduled_at %}
+
+                                <div class="publisher-date">
+
+                                    {{ post.scheduled_at.strftime("%d %b %Y") }}
+
+                                    <span>
+                                        {{ post.scheduled_at.strftime("%I:%M %p") }}
+                                    </span>
+
+                                </div>
+
+                            {% elif post.published_at %}
+
+                                <div class="publisher-date">
+
+                                    Published
+
+                                    <span>
+                                        {{ post.published_at.strftime("%d %b %Y") }}
+                                    </span>
+
+                                </div>
+
+                            {% else %}
+
+                                <span class="publisher-muted">
+                                    Not scheduled
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <td>
+
+                            {% if post.platform_count %}
+
+                                <div class="publisher-platform-count">
+
+                                    {{ post.platform_count }}
+
+                                    platform{% if post.platform_count != 1 %}s{% endif %}
+
+                                </div>
+
+                                {% if post.published_platform_count %}
+
+                                    <small class="publisher-published-count">
+
+                                        {{ post.published_platform_count }}
+                                        published
+
+                                    </small>
+
+                                {% endif %}
+
+                            {% else %}
+
+                                <span class="publisher-muted">
+                                    No platform
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <td>
+
+                            <div class="publisher-row-actions">
+
+                                <button
+                                    type="button"
+                                    class="publisher-action-btn"
+                                    onclick="viewPostDetails({{ post.id }})"
+                                >
+                                    View
+                                </button>
+
+
+                                {% if post.status in ["draft", "rejected"] %}
+
+                                    <form
+                                        method="POST"
+                                        action="{{ url_for('submit_post_for_approval', post_id=post.id) }}"
+                                    >
+
+                                        <button
+                                            type="submit"
+                                            class="publisher-action-btn publisher-approval-btn"
+                                            onclick="return confirm('Submit this post for approval?')"
+                                        >
+                                            Submit
+                                        </button>
+
+                                    </form>
+
+                                {% endif %}
+
+
+                                {% if post.status == "approved" %}
+
+                                    <form
+                                        method="POST"
+                                        action="{{ url_for('update_post_status', post_id=post.id) }}"
+                                    >
+
+                                        <input
+                                            type="hidden"
+                                            name="status"
+                                            value="scheduled"
+                                        >
+
+                                        <button
+                                            type="submit"
+                                            class="publisher-action-btn publisher-schedule-btn"
+                                            onclick="return confirm('Schedule this approved post?')"
+                                        >
+                                            Schedule
+                                        </button>
+
+                                    </form>
+
+                                {% endif %}
+
+
+                                {% if post.status == "scheduled" %}
+
+                                    <form
+                                        method="POST"
+                                        action="{{ url_for('update_post_status', post_id=post.id) }}"
+                                    >
+
+                                        <input
+                                            type="hidden"
+                                            name="status"
+                                            value="published"
+                                        >
+
+                                        <button
+                                            type="submit"
+                                            class="publisher-action-btn publisher-publish-btn"
+                                            onclick="return confirm('Mark this post as published?')"
+                                        >
+                                            Publish
+                                        </button>
+
+                                    </form>
+
+                                {% endif %}
+
+
+                                <form
+                                    method="POST"
+                                    action="{{ url_for('delete_post', post_id=post.id) }}"
+                                >
+
+                                    <button
+                                        type="submit"
+                                        class="publisher-action-btn publisher-delete-btn"
+                                        onclick="return confirm('Delete this post permanently?')"
+                                    >
+                                        Delete
+                                    </button>
+
+                                </form>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        {% else %}
+
+            <div class="publisher-empty-state">
+
+                <div class="publisher-empty-icon">
+                    ✦
+                </div>
+
+                <h3>
+                    No posts found
+                </h3>
+
+                <p>
+                    Create your first post or change the filters.
+                </p>
+
+                <button
+                    type="button"
+                    class="publisher-primary-btn"
+                    onclick="openCreatePostModal()"
+                >
+                    Create Post
+                </button>
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     CREATE POST MODAL
+========================================================== -->
+
+<div
+    id="createPostModal"
+    class="publisher-modal"
+>
+
+    <div class="publisher-modal-overlay"
+         onclick="closeCreatePostModal()">
+    </div>
+
+
+    <div class="publisher-modal-box">
+
+        <div class="publisher-modal-header">
+
+            <div>
+
+                <span>
+                    NEW CONTENT
+                </span>
+
+                <h2>
+                    Create Post
+                </h2>
+
+            </div>
+
+            <button
+                type="button"
+                class="publisher-modal-close"
+                onclick="closeCreatePostModal()"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <form
+            method="POST"
+            action="{{ url_for('create_post') }}"
+            class="publisher-create-form"
+        >
+
+            <div class="publisher-form-grid">
+
+                <div class="publisher-form-field">
+
+                    <label>
+                        Brand
+                    </label>
+
+                    <select
+                        name="brand_id"
+                        required
+                        id="createBrand"
+                    >
+
+                        <option value="">
+                            Select Brand
+                        </option>
+
+                        {% for brand in available_brands %}
+
+                            {% if brand.is_active %}
+
+                                <option value="{{ brand.id }}">
+                                    {{ brand.name }}
+                                </option>
+
+                            {% endif %}
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+                <div class="publisher-form-field">
+
+                    <label>
+                        Title
+                    </label>
+
+                    <input
+                        type="text"
+                        name="title"
+                        maxlength="255"
+                        placeholder="Post title"
+                    >
+
+                </div>
+
+            </div>
+
+
+            <div class="publisher-form-field">
+
+                <label>
+                    Content
+                </label>
+
+                <textarea
+                    name="content"
+                    rows="7"
+                    required
+                    placeholder="Write your social media content..."
+                ></textarea>
+
+            </div>
+
+
+            <div class="publisher-form-field">
+
+                <label>
+                    Media URL
+                </label>
+
+                <input
+                    type="url"
+                    name="media_url"
+                    placeholder="https://example.com/image.jpg"
+                >
+
+            </div>
+
+
+            <div class="publisher-form-grid">
+
+                <div class="publisher-form-field">
+
+                    <label>
+                        Status
+                    </label>
+
+                    <select
+                        name="status"
+                        id="createStatus"
+                    >
+
+                        <option value="draft">
+                            Draft
+                        </option>
+
+                        <option value="pending_approval">
+                            Pending Approval
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="publisher-form-field">
+
+                    <label>
+                        Schedule
+                    </label>
+
+                    <input
+                        type="datetime-local"
+                        name="scheduled_at"
+                    >
+
+                </div>
+
+            </div>
+
+
+            <div class="publisher-form-field">
+
+                <label>
+                    Social Accounts
+                </label>
+
+                <div class="publisher-account-grid">
+
+                    {% if connected_accounts %}
+
+                        {% for account in connected_accounts %}
+
+                            <label class="publisher-account-option">
+
+                                <input
+                                    type="checkbox"
+                                    name="social_account_ids"
+                                    value="{{ account.id }}"
+                                >
+
+                                <span>
+
+                                    <strong>
+                                        {{ account.platform }}
+                                    </strong>
+
+                                    <small>
+                                        {{ account.account_name }}
+                                        ·
+                                        {{ account.brand_name }}
+                                    </small>
+
+                                </span>
+
+                            </label>
+
+                        {% endfor %}
+
+                    {% else %}
+
+                        <div class="publisher-no-accounts">
+
+                            No connected social accounts available.
+
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+
+            <div class="publisher-modal-footer">
+
+                <button
+                    type="button"
+                    class="publisher-reset-btn"
+                    onclick="closeCreatePostModal()"
+                >
+                    Cancel
+                </button>
+
+                <button
+                    type="submit"
+                    class="publisher-primary-btn"
+                >
+                    Save Post
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     DETAILS MODAL
+========================================================== -->
+
+<div
+    id="postDetailsModal"
+    class="publisher-modal"
+>
+
+    <div
+        class="publisher-modal-overlay"
+        onclick="closePostDetails()"
+    ></div>
+
+
+    <div class="publisher-modal-box publisher-details-box">
+
+        <div class="publisher-modal-header">
+
+            <div>
+
+                <span>
+                    CONTENT DETAILS
+                </span>
+
+                <h2 id="detailsTitle">
+                    Post
+                </h2>
+
+            </div>
+
+            <button
+                type="button"
+                class="publisher-modal-close"
+                onclick="closePostDetails()"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <div
+            id="postDetailsContent"
+            class="publisher-details-content"
+        >
+
+            Loading...
+
+        </div>
+
+    </div>
+
+</div>
+
+
+{% endblock %}
+
+
+{% block extra_js %}
+
+<script src="{{ url_for('static', filename='js/publisher.js') }}"></script>
+
+{% endblock %}

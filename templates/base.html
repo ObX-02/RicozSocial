@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="description"
+        content="RicozSocial — Professional social media management platform."
+    >
+
+    <title>
+        {% block title %}RicozSocial{% endblock %}
+    </title>
+
+    {% if current_user %}
+        <link
+            rel="stylesheet"
+            href="{{ url_for('static', filename='css/base.css') }}"
+        >
+    {% else %}
+        <link
+            rel="stylesheet"
+            href="{{ url_for('static', filename='css/auth.css') }}"
+        >
+    {% endif %}
+
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+
+{% if current_user %}
+
+    <!-- =====================================================
+         APP LAYOUT
+    ====================================================== -->
+
+    <div class="app-shell">
+
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+
+            <div class="sidebar-brand">
+
+                <a
+                    href="{{ url_for('dashboard') }}"
+                    class="brand-logo"
+                >
+
+                    <span class="brand-mark">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </span>
+
+                    <span class="brand-name">
+                        Ricoz<span>Social</span>
+                    </span>
+
+                </a>
+
+            </div>
+
+
+            <div class="workspace-label">
+                WORKSPACE
+            </div>
+
+
+            <nav class="sidebar-nav">
+
+                <a
+                    href="{{ url_for('dashboard') }}"
+                    class="nav-item"
+                >
+                    <span class="nav-icon">⌂</span>
+                    <span>Overview</span>
+                </a>
+
+                <a
+                    href="{{ url_for('brands') }}"
+                    class="nav-item"
+                >
+                    <span class="nav-icon">◈</span>
+                    <span>Brands</span>
+                </a>
+
+                <a
+                    href="{{ url_for('social_accounts') }}"
+                    class="nav-item"
+                >
+                    <span class="nav-icon">◎</span>
+                    <span>Accounts</span>
+                </a>
+
+                <a
+                    href="{{ url_for('publisher') }}"
+                    class="nav-item"
+                >
+                    <span class="nav-icon">✎</span>
+                    <span>Publisher</span>
+                </a>
+
+                <a
+                    href="{{ url_for('calendar') }}"
+                    class="nav-item"
+                >
+                    <span class="nav-icon">□</span>
+                    <span>Calendar</span>
+                </a>
+
+                <a
+                    href="{{ url_for('approvals') }}"
+                    class="nav-item"
+                >
+                    <span class="nav-icon">✓</span>
+                    <span>Approvals</span>
+
+                    {% if pending_approvals %}
+                        <span class="nav-badge">
+                            {{ pending_approvals }}
+                        </span>
+                    {% endif %}
+                </a>
+
+
+                <div class="nav-section">
+                    ENGAGEMENT
+                </div>
+
+
+                <a
+                    href="{{ url_for('community') }}"
+                    class="nav-item"
+                >
+                    <span class="nav-icon">◌</span>
+                    <span>Community</span>
+                </a>
+
+                <a
+                    href="{{ url_for('listening') }}"
+                    class="nav-item"
+                >
+                    <span class="nav-icon">⌕</span>
+                    <span>Listening</span>
+                </a>
+
+
+                <div class="nav-section">
+                    INSIGHTS
+                </div>
+
+
+                <a
+                    href="{{ url_for('analytics') }}"
+                    class="nav-item"
+                >
+                    <span class="nav-icon">▥</span>
+                    <span>Analytics</span>
+                </a>
+
+                <a
+                    href="{{ url_for('reports') }}"
+                    class="nav-item"
+                >
+                    <span class="nav-icon">▤</span>
+                    <span>Reports</span>
+                </a>
+
+
+                <div class="nav-section">
+                    SYSTEM
+                </div>
+
+
+                <a
+                    href="{{ url_for('notifications') }}"
+                    class="nav-item"
+                >
+                    <span class="nav-icon">♢</span>
+                    <span>Notifications</span>
+
+                    {% if unread_notifications %}
+                        <span class="nav-badge">
+                            {{ unread_notifications }}
+                        </span>
+                    {% endif %}
+                </a>
+
+                <a
+                    href="{{ url_for('settings') }}"
+                    class="nav-item"
+                >
+                    <span class="nav-icon">⚙</span>
+                    <span>Settings</span>
+                </a>
+
+            </nav>
+
+
+            <!-- SIDEBAR FOOTER -->
+            <div class="sidebar-footer">
+
+                <div class="sidebar-user">
+
+                    <div class="user-avatar">
+                        {{ current_user.name[0]|upper }}
+                    </div>
+
+                    <div class="user-details">
+
+                        <strong>
+                            {{ current_user.name }}
+                        </strong>
+
+                        <small>
+                            {{ current_user.role|capitalize }}
+                        </small>
+
+                    </div>
+
+                </div>
+
+                <form
+                    method="POST"
+                    action="{{ url_for('logout') }}"
+                >
+                    <button
+                        type="submit"
+                        class="logout-button"
+                        title="Sign out"
+                    >
+                        ↪
+                    </button>
+                </form>
+
+            </div>
+
+        </aside>
+
+
+        <!-- MAIN -->
+        <main class="main-content">
+
+            <!-- TOPBAR -->
+            <header class="topbar">
+
+                <div class="mobile-brand">
+
+                    <span class="brand-mark small">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </span>
+
+                    <strong>
+                        Ricoz<span>Social</span>
+                    </strong>
+
+                </div>
+
+
+                <div class="topbar-search">
+
+                    <span>⌕</span>
+
+                    <input
+                        type="search"
+                        placeholder="Search anything..."
+                        aria-label="Search"
+                    >
+
+                    <kbd>⌘ K</kbd>
+
+                </div>
+
+
+                <div class="topbar-actions">
+
+                    <button
+                        class="topbar-icon"
+                        type="button"
+                        title="Notifications"
+                    >
+                        ♢
+                    </button>
+
+                    <div class="topbar-divider"></div>
+
+                    <div class="topbar-profile">
+
+                        <div class="user-avatar small">
+                            {{ current_user.name[0]|upper }}
+                        </div>
+
+                        <div class="topbar-profile-text">
+                            <strong>
+                                {{ current_user.name }}
+                            </strong>
+
+                            <span>
+                                {{ current_user.role|capitalize }}
+                            </span>
+                        </div>
+
+                        <span class="profile-arrow">
+                            ▾
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </header>
+
+
+            <!-- FLASH MESSAGES -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+
+                {% if messages %}
+
+                    <div class="flash-container">
+
+                        {% for category, message in messages %}
+
+                            <div class="flash-message {{ category }}">
+                                <span>{{ message }}</span>
+                            </div>
+
+                        {% endfor %}
+
+                    </div>
+
+                {% endif %}
+
+            {% endwith %}
+
+
+            <!-- PAGE CONTENT -->
+            <section class="page-content">
+
+                {% block content %}{% endblock %}
+
+            </section>
+
+        </main>
+
+    </div>
+
+{% else %}
+
+    <!-- =====================================================
+         AUTH LAYOUT
+    ====================================================== -->
+
+    <div class="auth-page">
+
+        <header class="auth-topbar">
+
+            <a
+                href="{{ url_for('login') }}"
+                class="auth-brand"
+            >
+
+                <span class="brand-mark">
+
+                    <span></span>
+                    <span></span>
+                    <span></span>
+
+                </span>
+
+                <span class="brand-name">
+                    Ricoz<span>Social</span>
+                </span>
+
+            </a>
+
+            <div class="auth-topbar-right">
+                <span>Social media management, simplified.</span>
+            </div>
+
+        </header>
+
+
+        <!-- FLASH MESSAGES -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+
+            {% if messages %}
+
+                <div class="auth-flash-container">
+
+                    {% for category, message in messages %}
+
+                        <div class="flash-message {{ category }}">
+                            {{ message }}
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+            {% endif %}
+
+        {% endwith %}
+
+
+        {% block auth_content %}{% endblock %}
+
+    </div>
+
+{% endif %}
+
+
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+
+{% block extra_js %}{% endblock %}
+
+</body>
+</html>

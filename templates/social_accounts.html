@@ -1,0 +1,773 @@
+{% extends "base.html" %}
+
+{% block title %}
+Social Accounts | RicozSocial
+{% endblock %}
+
+{% block extra_css %}
+<link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/social_accounts.css') }}"
+>
+{% endblock %}
+
+{% block content %}
+
+<div class="social-page">
+
+    <!-- =====================================================
+         PAGE HEADER
+    ====================================================== -->
+
+    <section class="social-header">
+
+        <div class="social-header-copy">
+
+            <div class="eyebrow">
+                CHANNEL MANAGEMENT
+            </div>
+
+            <h1>Social Accounts</h1>
+
+            <p>
+                Connect and manage the social channels attached
+                to your RicozSocial brands.
+            </p>
+
+        </div>
+
+        <button
+            type="button"
+            class="primary-button"
+            id="openAccountModal"
+        >
+            <span class="button-icon">+</span>
+            Add Social Account
+        </button>
+
+    </section>
+
+
+    <!-- =====================================================
+         STATISTICS
+    ====================================================== -->
+
+    <section class="social-stats">
+
+        <div class="stat-card">
+
+            <div class="stat-icon">
+                ◉
+            </div>
+
+            <div class="stat-content">
+
+                <span class="stat-label">
+                    TOTAL ACCOUNTS
+                </span>
+
+                <strong class="stat-value">
+                    {{ total_count }}
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <div class="stat-icon connected-icon">
+                ✓
+            </div>
+
+            <div class="stat-content">
+
+                <span class="stat-label">
+                    CONNECTED
+                </span>
+
+                <strong class="stat-value">
+                    {{ connected_count }}
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <div class="stat-icon disconnected-icon">
+                ○
+            </div>
+
+            <div class="stat-content">
+
+                <span class="stat-label">
+                    DISCONNECTED
+                </span>
+
+                <strong class="stat-value">
+                    {{ disconnected_count }}
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <div class="stat-icon platform-icon">
+                #
+            </div>
+
+            <div class="stat-content">
+
+                <span class="stat-label">
+                    PLATFORMS
+                </span>
+
+                <strong class="stat-value">
+                    {{ platform_count }}
+                </strong>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         FILTER PANEL
+    ====================================================== -->
+
+    <section class="filter-panel">
+
+        <form
+            method="GET"
+            action="{{ url_for('social_accounts') }}"
+            class="filter-form"
+        >
+
+            <div class="search-field">
+
+                <span class="search-symbol">
+                    ⌕
+                </span>
+
+                <input
+                    type="text"
+                    name="search"
+                    value="{{ search }}"
+                    placeholder="Search account, username or brand..."
+                    autocomplete="off"
+                >
+
+            </div>
+
+
+            <div class="filter-field">
+
+                <label for="platform">
+                    Platform
+                </label>
+
+                <select
+                    name="platform"
+                    id="platform"
+                >
+
+                    <option value="">
+                        All platforms
+                    </option>
+
+                    {% for platform_name in platforms %}
+
+                    <option
+                        value="{{ platform_name }}"
+                        {% if selected_platform == platform_name %}
+                            selected
+                        {% endif %}
+                    >
+                        {{ platform_name }}
+                    </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <div class="filter-field">
+
+                <label for="brand_id">
+                    Brand
+                </label>
+
+                <select
+                    name="brand_id"
+                    id="brand_id"
+                >
+
+                    <option value="">
+                        All brands
+                    </option>
+
+                    {% for brand in available_brands %}
+
+                    <option
+                        value="{{ brand.id }}"
+                        {% if selected_brand == brand.id|string %}
+                            selected
+                        {% endif %}
+                    >
+                        {{ brand.name }}
+                    </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <div class="filter-field">
+
+                <label for="status">
+                    Status
+                </label>
+
+                <select
+                    name="status"
+                    id="status"
+                >
+
+                    <option
+                        value=""
+                        {% if not status %}
+                            selected
+                        {% endif %}
+                    >
+                        All status
+                    </option>
+
+                    <option
+                        value="connected"
+                        {% if status == "connected" %}
+                            selected
+                        {% endif %}
+                    >
+                        Connected
+                    </option>
+
+                    <option
+                        value="disconnected"
+                        {% if status == "disconnected" %}
+                            selected
+                        {% endif %}
+                    >
+                        Disconnected
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <button
+                type="submit"
+                class="filter-button"
+            >
+                Apply
+            </button>
+
+
+            <a
+                href="{{ url_for('social_accounts') }}"
+                class="clear-button"
+            >
+                Clear
+            </a>
+
+        </form>
+
+    </section>
+
+
+    <!-- =====================================================
+         ACCOUNT GRID
+    ====================================================== -->
+
+    <section class="accounts-section">
+
+        <div class="section-heading">
+
+            <div>
+
+                <span class="section-eyebrow">
+                    YOUR CHANNELS
+                </span>
+
+                <h2>
+                    Connected social accounts
+                </h2>
+
+            </div>
+
+            <span class="result-count">
+                {{ social_accounts|length }}
+                {% if social_accounts|length == 1 %}
+                    account
+                {% else %}
+                    accounts
+                {% endif %}
+            </span>
+
+        </div>
+
+
+        {% if social_accounts %}
+
+        <div class="accounts-grid">
+
+            {% for account in social_accounts %}
+
+            <article class="account-card">
+
+                <!-- TOP -->
+
+                <div class="account-card-top">
+
+                    <div class="platform-mark platform-{{ account.platform|lower|replace(' ', '-') }}">
+                        {{ account.platform[0] }}
+                    </div>
+
+                    <div class="account-status">
+
+                        {% if account.is_connected %}
+
+                        <span class="status-dot connected"></span>
+                        <span>Connected</span>
+
+                        {% else %}
+
+                        <span class="status-dot disconnected"></span>
+                        <span>Disconnected</span>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+
+                <!-- ACCOUNT INFO -->
+
+                <div class="account-main">
+
+                    <span class="platform-name">
+                        {{ account.platform }}
+                    </span>
+
+                    <h3>
+                        {{ account.account_name }}
+                    </h3>
+
+                    {% if account.username %}
+
+                    <p class="account-username">
+                        @{{ account.username }}
+                    </p>
+
+                    {% endif %}
+
+                </div>
+
+
+                <!-- BRAND -->
+
+                <div class="account-brand">
+
+                    <span class="brand-label">
+                        BRAND
+                    </span>
+
+                    <span class="brand-name">
+                        {{ account.brand_name }}
+                    </span>
+
+                </div>
+
+
+                <!-- DETAILS -->
+
+                <div class="account-details">
+
+                    {% if account.account_id %}
+
+                    <div class="detail-row">
+
+                        <span>
+                            Account ID
+                        </span>
+
+                        <strong>
+                            {{ account.account_id }}
+                        </strong>
+
+                    </div>
+
+                    {% endif %}
+
+                    {% if account.profile_url %}
+
+                    <div class="detail-row">
+
+                        <span>
+                            Profile
+                        </span>
+
+                        <a
+                            href="{{ account.profile_url }}"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            Open profile
+                            ↗
+                        </a>
+
+                    </div>
+
+                    {% endif %}
+
+                </div>
+
+
+                <!-- ACTIONS -->
+
+                <div class="account-actions">
+
+                    <a
+                        href="{{ url_for('edit_social_account', account_id=account.id) }}"
+                        class="secondary-button"
+                    >
+                        Edit
+                    </a>
+
+
+                    <form
+                        method="POST"
+                        action="{{ url_for('toggle_social_account', account_id=account.id) }}"
+                    >
+
+                        <button
+                            type="submit"
+                            class="toggle-button {% if account.is_connected %}disconnect{% endif %}"
+                        >
+
+                            {% if account.is_connected %}
+                                Disconnect
+                            {% else %}
+                                Connect
+                            {% endif %}
+
+                        </button>
+
+                    </form>
+
+
+                    <form
+                        method="POST"
+                        action="{{ url_for('delete_social_account', account_id=account.id) }}"
+                        onsubmit="return confirm('Are you sure you want to delete this social account?');"
+                    >
+
+                        <button
+                            type="submit"
+                            class="delete-button"
+                            aria-label="Delete account"
+                        >
+                            ×
+                        </button>
+
+                    </form>
+
+                </div>
+
+            </article>
+
+            {% endfor %}
+
+        </div>
+
+
+        {% else %}
+
+        <!-- EMPTY STATE -->
+
+        <div class="empty-state">
+
+            <div class="empty-icon">
+                +
+            </div>
+
+            <h3>
+                No social accounts found
+            </h3>
+
+            <p>
+                Add your first social account to start managing
+                channels from RicozSocial.
+            </p>
+
+            <button
+                type="button"
+                class="primary-button"
+                id="openAccountModalEmpty"
+            >
+                Add Social Account
+            </button>
+
+        </div>
+
+        {% endif %}
+
+    </section>
+
+</div>
+
+
+<!-- =========================================================
+     ADD ACCOUNT MODAL
+========================================================= -->
+
+<div
+    class="modal-overlay"
+    id="accountModal"
+    aria-hidden="true"
+>
+
+    <div
+        class="account-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="accountModalTitle"
+    >
+
+        <div class="modal-header">
+
+            <div>
+
+                <span class="modal-eyebrow">
+                    CHANNEL SETUP
+                </span>
+
+                <h2 id="accountModalTitle">
+                    Add social account
+                </h2>
+
+                <p>
+                    Add the account details used by your brand.
+                </p>
+
+            </div>
+
+            <button
+                type="button"
+                class="modal-close"
+                id="closeAccountModal"
+                aria-label="Close"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <form
+            method="POST"
+            action="{{ url_for('create_social_account') }}"
+            class="account-form"
+        >
+
+            <!-- BRAND -->
+
+            <div class="form-group">
+
+                <label for="accountBrand">
+                    Brand
+                    <span>*</span>
+                </label>
+
+                <select
+                    id="accountBrand"
+                    name="brand_id"
+                    required
+                >
+
+                    <option value="">
+                        Select a brand
+                    </option>
+
+                    {% for brand in available_brands %}
+
+                    <option value="{{ brand.id }}">
+                        {{ brand.name }}
+                    </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <!-- PLATFORM -->
+
+            <div class="form-group">
+
+                <label for="accountPlatform">
+                    Platform
+                    <span>*</span>
+                </label>
+
+                <select
+                    id="accountPlatform"
+                    name="platform"
+                    required
+                >
+
+                    <option value="">
+                        Select a platform
+                    </option>
+
+                    {% for platform_name in platforms %}
+
+                    <option value="{{ platform_name }}">
+                        {{ platform_name }}
+                    </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <!-- ACCOUNT NAME -->
+
+            <div class="form-group">
+
+                <label for="accountName">
+                    Account name
+                    <span>*</span>
+                </label>
+
+                <input
+                    type="text"
+                    id="accountName"
+                    name="account_name"
+                    maxlength="150"
+                    placeholder="e.g. Ricoz Official"
+                    required
+                >
+
+            </div>
+
+
+            <!-- USERNAME -->
+
+            <div class="form-group">
+
+                <label for="accountUsername">
+                    Username
+                </label>
+
+                <input
+                    type="text"
+                    id="accountUsername"
+                    name="username"
+                    maxlength="150"
+                    placeholder="e.g. ricozofficial"
+                >
+
+            </div>
+
+
+            <!-- ACCOUNT ID -->
+
+            <div class="form-group">
+
+                <label for="accountId">
+                    Account ID
+                </label>
+
+                <input
+                    type="text"
+                    id="accountId"
+                    name="account_id"
+                    maxlength="255"
+                    placeholder="Platform account ID"
+                >
+
+            </div>
+
+
+            <!-- PROFILE URL -->
+
+            <div class="form-group">
+
+                <label for="profileUrl">
+                    Profile URL
+                </label>
+
+                <input
+                    type="url"
+                    id="profileUrl"
+                    name="profile_url"
+                    maxlength="500"
+                    placeholder="https://..."
+                >
+
+            </div>
+
+
+            <!-- FOOTER -->
+
+            <div class="modal-footer">
+
+                <button
+                    type="button"
+                    class="cancel-button"
+                    id="cancelAccountModal"
+                >
+                    Cancel
+                </button>
+
+                <button
+                    type="submit"
+                    class="primary-button"
+                >
+                    Add Account
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+
+{% block extra_js %}
+
+<script src="{{ url_for('static', filename='js/social_accounts.js') }}"></script>
+
+{% endblock %}

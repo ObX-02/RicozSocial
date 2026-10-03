@@ -1,0 +1,745 @@
+/* =========================================================
+   RICOZSOCIAL
+   SETTINGS
+   ENTERPRISE RED + WHITE UI
+========================================================= */
+
+
+/* =========================================================
+   PAGE
+========================================================= */
+
+.settings-page {
+
+    width: 100%;
+
+    max-width: 1500px;
+
+    margin: 0 auto;
+
+    padding: 10px 0 50px;
+
+}
+
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.settings-header {
+
+    margin-bottom: 25px;
+
+}
+
+.settings-eyebrow {
+
+    margin-bottom: 7px;
+
+    font-size: 10px;
+    font-weight: 800;
+
+    letter-spacing: 1.7px;
+
+    color: #c8171d;
+
+}
+
+.settings-title {
+
+    margin: 0;
+
+    font-size: 34px;
+    line-height: 1.1;
+
+    font-weight: 800;
+
+    color: #191919;
+
+}
+
+.settings-subtitle {
+
+    max-width: 720px;
+
+    margin: 9px 0 0;
+
+    font-size: 13px;
+    line-height: 1.7;
+
+    color: #777777;
+
+}
+
+
+/* =========================================================
+   LAYOUT
+========================================================= */
+
+.settings-layout {
+
+    display: grid;
+
+    grid-template-columns: 225px minmax(0, 1fr);
+
+    gap: 20px;
+
+    align-items: start;
+
+}
+
+
+/* =========================================================
+   SIDEBAR
+========================================================= */
+
+.settings-sidebar {
+
+    position: sticky;
+
+    top: 20px;
+
+    padding: 13px;
+
+    border: 1px solid #ececec;
+
+    border-radius: 15px;
+
+    background: #ffffff;
+
+    box-shadow:
+        0 5px 18px rgba(0, 0, 0, 0.035);
+
+}
+
+.settings-sidebar-title {
+
+    padding: 7px 10px 10px;
+
+    font-size: 9px;
+    font-weight: 800;
+
+    letter-spacing: 1.4px;
+
+    color: #999999;
+
+}
+
+.settings-nav-item {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    min-height: 42px;
+
+    margin-bottom: 4px;
+
+    padding: 0 10px;
+
+    border-radius: 9px;
+
+    color: #666666;
+
+    font-size: 11px;
+    font-weight: 700;
+
+    text-decoration: none;
+
+    transition:
+        background 0.15s ease,
+        color 0.15s ease;
+
+}
+
+.settings-nav-item:hover {
+
+    background: #fff5f5;
+
+    color: #c8171d;
+
+}
+
+.settings-nav-item.active {
+
+    background: #c8171d;
+
+    color: #ffffff;
+
+}
+
+.settings-nav-icon {
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    width: 25px;
+    height: 25px;
+
+    border-radius: 6px;
+
+    background: #fff1f2;
+
+    color: #c8171d;
+
+    font-size: 9px;
+    font-weight: 800;
+
+}
+
+.settings-nav-item.active .settings-nav-icon {
+
+    background: rgba(255, 255, 255, 0.18);
+
+    color: #ffffff;
+
+}
+
+
+/* =========================================================
+   CONTENT
+========================================================= */
+
+.settings-content {
+
+    min-width: 0;
+
+}
+
+.settings-card {
+
+    margin-bottom: 18px;
+
+    overflow: hidden;
+
+    border: 1px solid #ececec;
+
+    border-radius: 16px;
+
+    background: #ffffff;
+
+    box-shadow:
+        0 5px 18px rgba(0, 0, 0, 0.035);
+
+}
+
+.settings-card-header {
+
+    display: flex;
+
+    align-items: flex-start;
+    justify-content: space-between;
+
+    gap: 20px;
+
+    padding: 23px;
+
+    border-bottom: 1px solid #eeeeee;
+
+}
+
+.settings-card-eyebrow {
+
+    display: block;
+
+    margin-bottom: 5px;
+
+    font-size: 9px;
+    font-weight: 800;
+
+    letter-spacing: 1.4px;
+
+    color: #c8171d;
+
+}
+
+.settings-card-header h2 {
+
+    margin: 0;
+
+    font-size: 18px;
+    font-weight: 800;
+
+    color: #222222;
+
+}
+
+.settings-card-header p {
+
+    margin: 6px 0 0;
+
+    font-size: 11px;
+    line-height: 1.6;
+
+    color: #888888;
+
+}
+
+.settings-card-icon {
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    width: 42px;
+    height: 42px;
+
+    flex-shrink: 0;
+
+    border-radius: 11px;
+
+    background: #fff1f2;
+
+    color: #c8171d;
+
+    font-size: 12px;
+    font-weight: 800;
+
+}
+
+
+/* =========================================================
+   FORMS
+========================================================= */
+
+.settings-form {
+
+    padding: 23px;
+
+}
+
+.settings-form-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap: 16px;
+
+}
+
+.settings-field-full {
+
+    grid-column: 1 / -1;
+
+}
+
+.settings-field label {
+
+    display: block;
+
+    margin-bottom: 7px;
+
+    font-size: 11px;
+    font-weight: 700;
+
+    color: #555555;
+
+}
+
+.settings-field input {
+
+    width: 100%;
+
+    height: 43px;
+
+    box-sizing: border-box;
+
+    padding: 0 12px;
+
+    border: 1px solid #dddddd;
+
+    border-radius: 9px;
+
+    background: #ffffff;
+
+    color: #292929;
+
+    font-family: inherit;
+
+    font-size: 12px;
+
+    outline: none;
+
+    transition:
+        border-color 0.18s ease,
+        box-shadow 0.18s ease;
+
+}
+
+.settings-field input:focus {
+
+    border-color: #c8171d;
+
+    box-shadow:
+        0 0 0 3px rgba(200, 23, 29, 0.08);
+
+}
+
+.settings-readonly {
+
+    display: flex;
+
+    align-items: center;
+
+    width: 100%;
+
+    min-height: 43px;
+
+    box-sizing: border-box;
+
+    padding: 0 12px;
+
+    border: 1px solid #eeeeee;
+
+    border-radius: 9px;
+
+    background: #f8f8f8;
+
+    color: #666666;
+
+    font-size: 12px;
+
+}
+
+.settings-readonly.status-active {
+
+    color: #1f9d55;
+
+    background: #f2fff6;
+
+    border-color: #d8f2e1;
+
+    font-weight: 700;
+
+}
+
+.settings-help {
+
+    display: block;
+
+    margin-top: 6px;
+
+    font-size: 9px;
+
+    color: #999999;
+
+}
+
+.settings-form-footer {
+
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 15px;
+
+    margin-top: 20px;
+
+    padding-top: 17px;
+
+    border-top: 1px solid #eeeeee;
+
+}
+
+.settings-form-footer > span {
+
+    font-size: 9px;
+
+    color: #999999;
+
+}
+
+.settings-save-btn {
+
+    height: 39px;
+
+    padding: 0 16px;
+
+    border: 1px solid #c8171d;
+
+    border-radius: 8px;
+
+    background: #c8171d;
+
+    color: #ffffff;
+
+    font-family: inherit;
+
+    font-size: 10px;
+    font-weight: 800;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.15s ease,
+        box-shadow 0.15s ease;
+
+}
+
+.settings-save-btn:hover {
+
+    transform: translateY(-1px);
+
+    box-shadow:
+        0 7px 16px rgba(200, 23, 29, 0.16);
+
+}
+
+
+/* =========================================================
+   PREFERENCES
+========================================================= */
+
+.settings-preference-list {
+
+    padding: 4px 23px;
+
+}
+
+.settings-preference-row {
+
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 20px;
+
+    padding: 17px 0;
+
+    border-bottom: 1px solid #eeeeee;
+
+}
+
+.settings-preference-row:last-child {
+
+    border-bottom: none;
+
+}
+
+.settings-preference-row strong {
+
+    display: block;
+
+    margin-bottom: 4px;
+
+    font-size: 12px;
+
+    color: #292929;
+
+}
+
+.settings-preference-row span:not(.settings-preference-status) {
+
+    display: block;
+
+    font-size: 10px;
+
+    line-height: 1.5;
+
+    color: #888888;
+
+}
+
+.settings-preference-status {
+
+    flex-shrink: 0;
+
+    padding: 6px 9px;
+
+    border-radius: 6px;
+
+    background: #f0fff5;
+
+    color: #1f9d55;
+
+    font-size: 9px;
+    font-weight: 800;
+
+}
+
+
+/* =========================================================
+   ACCOUNT
+========================================================= */
+
+.settings-account-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap: 1px;
+
+    background: #eeeeee;
+
+}
+
+.settings-account-item {
+
+    min-height: 83px;
+
+    padding: 17px 20px;
+
+    background: #ffffff;
+
+}
+
+.settings-account-item span {
+
+    display: block;
+
+    margin-bottom: 7px;
+
+    font-size: 9px;
+    font-weight: 700;
+
+    color: #999999;
+
+}
+
+.settings-account-item strong {
+
+    display: block;
+
+    font-size: 13px;
+
+    color: #292929;
+
+}
+
+
+/* =========================================================
+   FOOTER
+========================================================= */
+
+.settings-footer {
+
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 15px;
+
+    padding: 8px 2px;
+
+    font-size: 9px;
+
+    color: #999999;
+
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 950px) {
+
+    .settings-layout {
+
+        grid-template-columns: 1fr;
+
+    }
+
+    .settings-sidebar {
+
+        position: static;
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 5px;
+
+        overflow-x: auto;
+
+        padding: 9px;
+
+    }
+
+    .settings-sidebar-title {
+
+        display: none;
+
+    }
+
+    .settings-nav-item {
+
+        flex-shrink: 0;
+
+        margin: 0;
+
+    }
+
+}
+
+
+@media (max-width: 700px) {
+
+    .settings-page {
+
+        padding-left: 10px;
+        padding-right: 10px;
+
+    }
+
+    .settings-form-grid {
+
+        grid-template-columns: 1fr;
+
+    }
+
+    .settings-field-full {
+
+        grid-column: auto;
+
+    }
+
+    .settings-form-footer {
+
+        align-items: flex-start;
+
+        flex-direction: column;
+
+    }
+
+    .settings-save-btn {
+
+        width: 100%;
+
+    }
+
+    .settings-preference-row {
+
+        align-items: flex-start;
+
+        flex-direction: column;
+
+    }
+
+    .settings-account-grid {
+
+        grid-template-columns: 1fr;
+
+    }
+
+    .settings-footer {
+
+        align-items: flex-start;
+
+        flex-direction: column;
+
+    }
+
+}

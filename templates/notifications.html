@@ -1,0 +1,628 @@
+{% extends "base.html" %}
+
+{% block title %}
+Notifications | RicozSocial
+{% endblock %}
+
+
+{% block extra_css %}
+
+<link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/notifications.css') }}"
+>
+
+{% endblock %}
+
+
+{% block content %}
+
+<div class="notifications-page">
+
+    <!-- =====================================================
+         HEADER
+    ====================================================== -->
+
+    <div class="notifications-header">
+
+        <div>
+
+            <div class="notifications-eyebrow">
+                NOTIFICATION CENTER
+            </div>
+
+            <h1 class="notifications-title">
+                Notifications
+            </h1>
+
+            <p class="notifications-subtitle">
+                Stay updated with approvals, publishing activity,
+                community activity and system events.
+            </p>
+
+        </div>
+
+
+        <div class="notifications-header-actions">
+
+            <form
+                method="POST"
+                action="{{ url_for('mark_all_notifications_read') }}"
+            >
+
+                <button
+                    type="submit"
+                    class="notifications-header-btn"
+                >
+                    ✓ Mark All Read
+                </button>
+
+            </form>
+
+            <form
+                method="POST"
+                action="{{ url_for('delete_read_notifications') }}"
+                onsubmit="return confirmDeleteRead()"
+            >
+
+                <button
+                    type="submit"
+                    class="notifications-header-btn secondary"
+                >
+                    Clear Read
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         STATS
+    ====================================================== -->
+
+    <section class="notifications-stats">
+
+        <div class="notifications-stat-card">
+
+            <div class="notifications-stat-icon">
+                #
+            </div>
+
+            <div>
+
+                <span class="notifications-stat-label">
+                    Total
+                </span>
+
+                <strong class="notifications-stat-value">
+                    {{ total_notifications }}
+                </strong>
+
+                <span class="notifications-stat-meta">
+                    All notifications
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="notifications-stat-card unread-card">
+
+            <div class="notifications-stat-icon">
+                !
+            </div>
+
+            <div>
+
+                <span class="notifications-stat-label">
+                    Unread
+                </span>
+
+                <strong class="notifications-stat-value">
+                    {{ unread_notifications }}
+                </strong>
+
+                <span class="notifications-stat-meta green-text">
+                    Needs attention
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="notifications-stat-card">
+
+            <div class="notifications-stat-icon">
+                ✓
+            </div>
+
+            <div>
+
+                <span class="notifications-stat-label">
+                    Read
+                </span>
+
+                <strong class="notifications-stat-value">
+                    {{ read_notifications }}
+                </strong>
+
+                <span class="notifications-stat-meta">
+                    Already reviewed
+                </span>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         FILTERS
+    ====================================================== -->
+
+    <section class="notifications-filter-card">
+
+        <div class="notifications-section-heading">
+
+            <div>
+
+                <span class="notifications-section-eyebrow">
+                    NOTIFICATION ACTIVITY
+                </span>
+
+                <h2>
+                    Find Notifications
+                </h2>
+
+            </div>
+
+        </div>
+
+
+        <form
+            method="GET"
+            action="{{ url_for('notifications') }}"
+            class="notifications-filter-form"
+        >
+
+            <div class="notifications-field">
+
+                <label for="notification-search">
+                    Search
+                </label>
+
+                <input
+                    type="text"
+                    id="notification-search"
+                    name="search"
+                    value="{{ search }}"
+                    placeholder="Search notifications..."
+                >
+
+            </div>
+
+
+            <div class="notifications-field">
+
+                <label for="notification-status">
+                    Status
+                </label>
+
+                <select
+                    id="notification-status"
+                    name="status"
+                >
+
+                    <option value="">
+                        All
+                    </option>
+
+                    <option
+                        value="unread"
+                        {% if selected_status == "unread" %}
+                        selected
+                        {% endif %}
+                    >
+                        Unread
+                    </option>
+
+                    <option
+                        value="read"
+                        {% if selected_status == "read" %}
+                        selected
+                        {% endif %}
+                    >
+                        Read
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="notifications-field">
+
+                <label for="notification-type">
+                    Type
+                </label>
+
+                <select
+                    id="notification-type"
+                    name="type"
+                >
+
+                    <option value="">
+                        All Types
+                    </option>
+
+                    {% for type in notification_types %}
+
+                    <option
+                        value="{{ type }}"
+                        {% if selected_type == type %}
+                        selected
+                        {% endif %}
+                    >
+                        {{ type|replace("_", " ")|title }}
+                    </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <div class="notifications-filter-actions">
+
+                <button
+                    type="submit"
+                    class="notifications-apply-btn"
+                >
+                    Apply
+                </button>
+
+                <a
+                    href="{{ url_for('notifications') }}"
+                    class="notifications-reset-btn"
+                >
+                    Reset
+                </a>
+
+            </div>
+
+        </form>
+
+    </section>
+
+
+    <!-- =====================================================
+         TYPE SUMMARY
+    ====================================================== -->
+
+    {% if notification_type_counts %}
+
+    <section class="notifications-type-strip">
+
+        {% for item in notification_type_counts %}
+
+        <div class="notifications-type-item">
+
+            <span>
+                {{ item.notification_type
+                    |replace("_", " ")
+                    |title
+                }}
+            </span>
+
+            <strong>
+                {{ item.count }}
+            </strong>
+
+        </div>
+
+        {% endfor %}
+
+    </section>
+
+    {% endif %}
+
+
+    <!-- =====================================================
+         NOTIFICATION LIST
+    ====================================================== -->
+
+    <section class="notifications-list-card">
+
+        <div class="notifications-list-header">
+
+            <div>
+
+                <span class="notifications-section-eyebrow">
+                    INBOX
+                </span>
+
+                <h2>
+                    Recent Notifications
+                </h2>
+
+            </div>
+
+            <span class="notifications-count-badge">
+                {{ notification_rows|length }}
+            </span>
+
+        </div>
+
+
+        {% if notification_rows %}
+
+        <div class="notifications-list">
+
+            {% for notification in notification_rows %}
+
+            <article
+                class="
+                    notification-item
+                    {% if not notification.is_read %}
+                    notification-unread
+                    {% endif %}
+                "
+            >
+
+                <div class="notification-icon
+                    {% if notification.notification_type == 'approval' %}
+                    notification-icon-approval
+                    {% elif notification.notification_type == 'publisher' %}
+                    notification-icon-publisher
+                    {% elif notification.notification_type == 'community' %}
+                    notification-icon-community
+                    {% elif notification.notification_type == 'listening' %}
+                    notification-icon-listening
+                    {% elif notification.notification_type == 'analytics' %}
+                    notification-icon-analytics
+                    {% elif notification.notification_type == 'system' %}
+                    notification-icon-system
+                    {% else %}
+                    notification-icon-general
+                    {% endif %}
+                ">
+
+                    {% if notification.notification_type == "approval" %}
+                        A
+                    {% elif notification.notification_type == "publisher" %}
+                        P
+                    {% elif notification.notification_type == "community" %}
+                        C
+                    {% elif notification.notification_type == "listening" %}
+                        L
+                    {% elif notification.notification_type == "analytics" %}
+                        I
+                    {% elif notification.notification_type == "system" %}
+                        S
+                    {% else %}
+                        N
+                    {% endif %}
+
+                </div>
+
+
+                <div class="notification-content">
+
+                    <div class="notification-top">
+
+                        <div>
+
+                            <h3>
+                                {{ notification.title }}
+                            </h3>
+
+                            {% if not notification.is_read %}
+
+                            <span class="notification-new-badge">
+                                NEW
+                            </span>
+
+                            {% endif %}
+
+                        </div>
+
+                        <span class="notification-time">
+
+                            {% if notification.created_at %}
+
+                                {{ notification.created_at.strftime(
+                                    "%b %d, %Y · %I:%M %p"
+                                ) }}
+
+                            {% else %}
+
+                                —
+
+                            {% endif %}
+
+                        </span>
+
+                    </div>
+
+
+                    <p class="notification-message">
+                        {{ notification.message }}
+                    </p>
+
+
+                    <div class="notification-bottom">
+
+                        <span class="notification-type">
+
+                            {{ notification.notification_type
+                                |replace("_", " ")
+                                |title
+                            }}
+
+                        </span>
+
+
+                        <div class="notification-actions">
+
+                            {% if notification.is_read %}
+
+                            <form
+                                method="POST"
+                                action="{{
+                                    url_for(
+                                        'mark_notification_unread',
+                                        notification_id=notification.id
+                                    )
+                                }}"
+                            >
+
+                                <button
+                                    type="submit"
+                                    class="notification-action-btn"
+                                >
+                                    Mark Unread
+                                </button>
+
+                            </form>
+
+                            {% else %}
+
+                            <form
+                                method="POST"
+                                action="{{
+                                    url_for(
+                                        'mark_notification_read',
+                                        notification_id=notification.id
+                                    )
+                                }}"
+                            >
+
+                                <button
+                                    type="submit"
+                                    class="notification-action-btn primary"
+                                >
+                                    Mark Read
+                                </button>
+
+                            </form>
+
+                            {% endif %}
+
+
+                            <form
+                                method="POST"
+                                action="{{
+                                    url_for(
+                                        'delete_notification',
+                                        notification_id=notification.id
+                                    )
+                                }}"
+                                onsubmit="return confirmDeleteNotification()"
+                            >
+
+                                <button
+                                    type="submit"
+                                    class="notification-action-btn delete"
+                                >
+                                    Delete
+                                </button>
+
+                            </form>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </article>
+
+            {% endfor %}
+
+        </div>
+
+        {% else %}
+
+        <div class="notifications-empty">
+
+            <div class="notifications-empty-icon">
+                ✓
+            </div>
+
+            <h3>
+                No notifications found
+            </h3>
+
+            <p>
+                You're all caught up. New activity will appear here
+                when something needs your attention.
+            </p>
+
+            {% if search or selected_status or selected_type %}
+
+            <a
+                href="{{ url_for('notifications') }}"
+                class="notifications-empty-btn"
+            >
+                Clear Filters
+            </a>
+
+            {% endif %}
+
+        </div>
+
+        {% endif %}
+
+    </section>
+
+
+    <!-- =====================================================
+         FOOTER
+    ====================================================== -->
+
+    <div class="notifications-footer">
+
+        <span>
+            RicozSocial Notifications
+        </span>
+
+        <span>
+            Stay informed about important workspace activity.
+        </span>
+
+    </div>
+
+</div>
+
+
+<script>
+
+function confirmDeleteNotification() {
+
+    return window.confirm(
+        "Delete this notification?\n\n" +
+        "This action cannot be undone."
+    );
+
+}
+
+
+function confirmDeleteRead() {
+
+    return window.confirm(
+        "Delete all read notifications?\n\n" +
+        "Unread notifications will not be affected."
+    );
+
+}
+
+</script>
+
+{% endblock %}

@@ -1,0 +1,649 @@
+{% extends "base.html" %}
+
+{% block title %}
+Settings | RicozSocial
+{% endblock %}
+
+{% block extra_css %}
+
+<link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/settings.css') }}"
+>
+
+{% endblock %}
+
+
+{% block content %}
+
+<div class="settings-page">
+
+    <!-- =====================================================
+         HEADER
+    ====================================================== -->
+
+    <div class="settings-header">
+
+        <div>
+
+            <div class="settings-eyebrow">
+                WORKSPACE CONFIGURATION
+            </div>
+
+            <h1 class="settings-title">
+                Settings
+            </h1>
+
+            <p class="settings-subtitle">
+                Manage your RicozSocial account, security and
+                workspace preferences.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         SETTINGS LAYOUT
+    ====================================================== -->
+
+    <div class="settings-layout">
+
+
+        <!-- =================================================
+             SETTINGS NAVIGATION
+        ================================================== -->
+
+        <aside class="settings-sidebar">
+
+            <div class="settings-sidebar-title">
+                ACCOUNT
+            </div>
+
+            <a
+                href="#profile"
+                class="settings-nav-item active"
+            >
+                <span class="settings-nav-icon">
+                    P
+                </span>
+
+                <span>
+                    Profile
+                </span>
+            </a>
+
+
+            <a
+                href="#security"
+                class="settings-nav-item"
+            >
+                <span class="settings-nav-icon">
+                    S
+                </span>
+
+                <span>
+                    Security
+                </span>
+            </a>
+
+
+            <a
+                href="#preferences"
+                class="settings-nav-item"
+            >
+                <span class="settings-nav-icon">
+                    N
+                </span>
+
+                <span>
+                    Notifications
+                </span>
+            </a>
+
+
+            <a
+                href="#account"
+                class="settings-nav-item"
+            >
+                <span class="settings-nav-icon">
+                    A
+                </span>
+
+                <span>
+                    Account
+                </span>
+            </a>
+
+        </aside>
+
+
+        <!-- =================================================
+             SETTINGS CONTENT
+        ================================================== -->
+
+        <main class="settings-content">
+
+
+            <!-- =============================================
+                 PROFILE
+            ============================================== -->
+
+            <section
+                id="profile"
+                class="settings-card"
+            >
+
+                <div class="settings-card-header">
+
+                    <div>
+
+                        <span class="settings-card-eyebrow">
+                            PERSONAL INFORMATION
+                        </span>
+
+                        <h2>
+                            Profile
+                        </h2>
+
+                        <p>
+                            Update the information associated with
+                            your RicozSocial account.
+                        </p>
+
+                    </div>
+
+                    <div class="settings-card-icon">
+                        P
+                    </div>
+
+                </div>
+
+
+                <form
+                    method="POST"
+                    action="{{ url_for('settings') }}"
+                    class="settings-form"
+                >
+
+                    <div class="settings-form-grid">
+
+                        <div class="settings-field">
+
+                            <label for="name">
+                                Full Name
+                            </label>
+
+                            <input
+                                type="text"
+                                id="name"
+                                name="name"
+                                value="{{ profile.name or '' }}"
+                                maxlength="100"
+                                required
+                            >
+
+                        </div>
+
+
+                        <div class="settings-field">
+
+                            <label for="email">
+                                Email Address
+                            </label>
+
+                            <input
+                                type="email"
+                                id="email"
+                                name="email"
+                                value="{{ profile.email or '' }}"
+                                required
+                            >
+
+                        </div>
+
+
+                        <div class="settings-field">
+
+                            <label>
+                                Role
+                            </label>
+
+                            <div class="settings-readonly">
+                                {{ profile.role|replace("_", " ")|title }}
+                            </div>
+
+                        </div>
+
+
+                        <div class="settings-field">
+
+                            <label>
+                                Account Status
+                            </label>
+
+                            <div class="settings-readonly status-active">
+
+                                {% if profile.is_active %}
+                                    Active
+                                {% else %}
+                                    Inactive
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="settings-form-footer">
+
+                        <span>
+                            Changes are saved to your account immediately.
+                        </span>
+
+                        <button
+                            type="submit"
+                            class="settings-save-btn"
+                        >
+                            Save Profile
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </section>
+
+
+            <!-- =============================================
+                 SECURITY
+            ============================================== -->
+
+            <section
+                id="security"
+                class="settings-card"
+            >
+
+                <div class="settings-card-header">
+
+                    <div>
+
+                        <span class="settings-card-eyebrow">
+                            ACCOUNT SECURITY
+                        </span>
+
+                        <h2>
+                            Password
+                        </h2>
+
+                        <p>
+                            Keep your account secure by using a
+                            strong password.
+                        </p>
+
+                    </div>
+
+                    <div class="settings-card-icon">
+                        S
+                    </div>
+
+                </div>
+
+
+                <form
+                    method="POST"
+                    action="{{ url_for('change_password') }}"
+                    class="settings-form"
+                >
+
+                    <div class="settings-form-grid password-grid">
+
+                        <div class="settings-field settings-field-full">
+
+                            <label for="current_password">
+                                Current Password
+                            </label>
+
+                            <input
+                                type="password"
+                                id="current_password"
+                                name="current_password"
+                                autocomplete="current-password"
+                                required
+                            >
+
+                        </div>
+
+
+                        <div class="settings-field">
+
+                            <label for="new_password">
+                                New Password
+                            </label>
+
+                            <input
+                                type="password"
+                                id="new_password"
+                                name="new_password"
+                                minlength="8"
+                                autocomplete="new-password"
+                                required
+                            >
+
+                            <span class="settings-help">
+                                Minimum 8 characters.
+                            </span>
+
+                        </div>
+
+
+                        <div class="settings-field">
+
+                            <label for="confirm_password">
+                                Confirm Password
+                            </label>
+
+                            <input
+                                type="password"
+                                id="confirm_password"
+                                name="confirm_password"
+                                minlength="8"
+                                autocomplete="new-password"
+                                required
+                            >
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="settings-form-footer">
+
+                        <span>
+                            Your password is securely hashed before storage.
+                        </span>
+
+                        <button
+                            type="submit"
+                            class="settings-save-btn"
+                        >
+                            Update Password
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </section>
+
+
+            <!-- =============================================
+                 NOTIFICATION PREFERENCES
+            ============================================== -->
+
+            <section
+                id="preferences"
+                class="settings-card"
+            >
+
+                <div class="settings-card-header">
+
+                    <div>
+
+                        <span class="settings-card-eyebrow">
+                            NOTIFICATION PREFERENCES
+                        </span>
+
+                        <h2>
+                            Notifications
+                        </h2>
+
+                        <p>
+                            Notification preferences for your workspace.
+                        </p>
+
+                    </div>
+
+                    <div class="settings-card-icon">
+                        N
+                    </div>
+
+                </div>
+
+
+                <div class="settings-preference-list">
+
+                    <div class="settings-preference-row">
+
+                        <div>
+
+                            <strong>
+                                Approval activity
+                            </strong>
+
+                            <span>
+                                Receive updates when content approval
+                                status changes.
+                            </span>
+
+                        </div>
+
+                        <span class="settings-preference-status">
+                            Enabled
+                        </span>
+
+                    </div>
+
+
+                    <div class="settings-preference-row">
+
+                        <div>
+
+                            <strong>
+                                Publishing activity
+                            </strong>
+
+                            <span>
+                                Receive updates about scheduled and
+                                published content.
+                            </span>
+
+                        </div>
+
+                        <span class="settings-preference-status">
+                            Enabled
+                        </span>
+
+                    </div>
+
+
+                    <div class="settings-preference-row">
+
+                        <div>
+
+                            <strong>
+                                Community activity
+                            </strong>
+
+                            <span>
+                                Receive updates for community
+                                interactions and replies.
+                            </span>
+
+                        </div>
+
+                        <span class="settings-preference-status">
+                            Enabled
+                        </span>
+
+                    </div>
+
+
+                    <div class="settings-preference-row">
+
+                        <div>
+
+                            <strong>
+                                Listening activity
+                            </strong>
+
+                            <span>
+                                Receive updates related to monitored
+                                mentions and keywords.
+                            </span>
+
+                        </div>
+
+                        <span class="settings-preference-status">
+                            Enabled
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =============================================
+                 ACCOUNT
+            ============================================== -->
+
+            <section
+                id="account"
+                class="settings-card"
+            >
+
+                <div class="settings-card-header">
+
+                    <div>
+
+                        <span class="settings-card-eyebrow">
+                            ACCOUNT INFORMATION
+                        </span>
+
+                        <h2>
+                            Account
+                        </h2>
+
+                        <p>
+                            Review your RicozSocial account information.
+                        </p>
+
+                    </div>
+
+                    <div class="settings-card-icon">
+                        A
+                    </div>
+
+                </div>
+
+
+                <div class="settings-account-grid">
+
+                    <div class="settings-account-item">
+
+                        <span>
+                            Account ID
+                        </span>
+
+                        <strong>
+                            #{{ profile.id }}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="settings-account-item">
+
+                        <span>
+                            Account Role
+                        </span>
+
+                        <strong>
+                            {{ profile.role|replace("_", " ")|title }}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="settings-account-item">
+
+                        <span>
+                            Created
+                        </span>
+
+                        <strong>
+
+                            {% if profile.created_at %}
+
+                                {{ profile.created_at.strftime(
+                                    "%b %d, %Y"
+                                ) }}
+
+                            {% else %}
+
+                                —
+
+                            {% endif %}
+
+                        </strong>
+
+                    </div>
+
+
+                    <div class="settings-account-item">
+
+                        <span>
+                            Last Updated
+                        </span>
+
+                        <strong>
+
+                            {% if profile.updated_at %}
+
+                                {{ profile.updated_at.strftime(
+                                    "%b %d, %Y"
+                                ) }}
+
+                            {% else %}
+
+                                —
+
+                            {% endif %}
+
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =============================================
+                 FOOTER
+            ============================================== -->
+
+            <div class="settings-footer">
+
+                <span>
+                    RicozSocial Account Settings
+                </span>
+
+                <span>
+                    Secure workspace configuration.
+                </span>
+
+            </div>
+
+        </main>
+
+    </div>
+
+</div>
+
+{% endblock %}

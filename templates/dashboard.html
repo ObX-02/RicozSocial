@@ -1,0 +1,832 @@
+{% extends "base.html" %}
+
+{% block title %}
+Dashboard | RicozSocial
+{% endblock %}
+
+{% block extra_css %}
+<link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/dashboard.css') }}"
+>
+{% endblock %}
+
+{% block content %}
+
+<div class="dashboard-page">
+
+    <!-- HERO -->
+    <section class="dashboard-hero">
+
+        <div class="hero-glow hero-glow-one"></div>
+        <div class="hero-glow hero-glow-two"></div>
+
+        <div class="dashboard-hero-content">
+
+            <div class="dashboard-hero-copy">
+
+                <div class="eyebrow">
+                    RICOZ WORKSPACE
+                </div>
+
+                <h1>
+                    Good to see you,
+                    <span>{{ current_user.name.split(' ')[0] }}</span>.
+                </h1>
+
+                <p>
+                    Manage your brands, social channels, content,
+                    approvals, and publishing workflow from one place.
+                </p>
+
+                <div class="hero-actions">
+
+                    <a
+                        href="{{ url_for('publisher') }}"
+                        class="hero-primary-btn"
+                    >
+                        <span class="btn-icon">+</span>
+                        Create Post
+                    </a>
+
+                    <a
+                        href="{{ url_for('calendar') }}"
+                        class="hero-secondary-btn"
+                    >
+                        View Calendar
+                        <span>→</span>
+                    </a>
+
+                </div>
+
+            </div>
+
+            <div class="hero-orbit">
+
+                <div class="orbit-ring orbit-ring-one"></div>
+                <div class="orbit-ring orbit-ring-two"></div>
+
+                <div class="hero-logo-card">
+
+                    <div class="hero-logo-mark">
+                        R
+                    </div>
+
+                    <div>
+                        <strong>RicozSocial</strong>
+                        <span>Social workspace</span>
+                    </div>
+
+                </div>
+
+                <div class="floating-mini-card mini-one">
+                    <span class="mini-dot"></span>
+                    Social channels
+                </div>
+
+                <div class="floating-mini-card mini-two">
+                    <span class="mini-icon">✓</span>
+                    Workflow active
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- KPI -->
+    <section class="kpi-grid">
+
+        <article class="kpi-card">
+
+            <div class="kpi-card-background"></div>
+
+            <div class="kpi-top">
+
+                <div class="kpi-icon kpi-icon-red">
+                    <span>▦</span>
+                </div>
+
+                <span class="kpi-label">
+                    Active Brands
+                </span>
+
+            </div>
+
+            <div class="kpi-value">
+                {{ total_brands }}
+            </div>
+
+            <div class="kpi-footer">
+                <span>Brand workspaces</span>
+
+                <a href="{{ url_for('brands') }}">
+                    Manage →
+                </a>
+            </div>
+
+        </article>
+
+
+        <article class="kpi-card">
+
+            <div class="kpi-card-background"></div>
+
+            <div class="kpi-top">
+
+                <div class="kpi-icon kpi-icon-dark">
+                    <span>◎</span>
+                </div>
+
+                <span class="kpi-label">
+                    Connected Accounts
+                </span>
+
+            </div>
+
+            <div class="kpi-value">
+                {{ connected_accounts }}
+            </div>
+
+            <div class="kpi-footer">
+                <span>Social channels</span>
+
+                <a href="{{ url_for('social_accounts') }}">
+                    View →
+                </a>
+            </div>
+
+        </article>
+
+
+        <article class="kpi-card">
+
+            <div class="kpi-card-background"></div>
+
+            <div class="kpi-top">
+
+                <div class="kpi-icon kpi-icon-soft">
+                    <span>◷</span>
+                </div>
+
+                <span class="kpi-label">
+                    Scheduled Posts
+                </span>
+
+            </div>
+
+            <div class="kpi-value">
+                {{ scheduled_posts }}
+            </div>
+
+            <div class="kpi-footer">
+                <span>Upcoming content</span>
+
+                <a href="{{ url_for('calendar') }}">
+                    Calendar →
+                </a>
+            </div>
+
+        </article>
+
+
+        <article class="kpi-card">
+
+            <div class="kpi-card-background"></div>
+
+            <div class="kpi-top">
+
+                <div class="kpi-icon kpi-icon-alert">
+                    <span>✓</span>
+                </div>
+
+                <span class="kpi-label">
+                    Pending Approvals
+                </span>
+
+            </div>
+
+            <div class="kpi-value">
+                {{ pending_approvals }}
+            </div>
+
+            <div class="kpi-footer">
+                <span>Needs attention</span>
+
+                <a href="{{ url_for('approvals') }}">
+                    Review →
+                </a>
+            </div>
+
+        </article>
+
+    </section>
+
+
+    <!-- ANALYTICS + ACCOUNTS -->
+    <section class="dashboard-main-grid">
+
+        <article class="dashboard-card analytics-card">
+
+            <div class="card-header">
+
+                <div>
+                    <span class="card-eyebrow">
+                        PERFORMANCE
+                    </span>
+
+                    <h2>
+                        Social activity
+                    </h2>
+
+                    <p>
+                        Your publishing activity at a glance.
+                    </p>
+                </div>
+
+                <a
+                    href="{{ url_for('analytics') }}"
+                    class="card-action"
+                >
+                    Analytics →
+                </a>
+
+            </div>
+
+            <div class="analytics-summary">
+
+                <div class="analytics-summary-item">
+                    <span>Total posts</span>
+                    <strong>{{ total_posts }}</strong>
+                </div>
+
+                <div class="analytics-summary-item">
+                    <span>Published</span>
+                    <strong>{{ published_posts }}</strong>
+                </div>
+
+                <div class="analytics-summary-item">
+                    <span>Scheduled</span>
+                    <strong>{{ scheduled_posts }}</strong>
+                </div>
+
+            </div>
+
+            <div class="chart-wrapper">
+
+                <canvas id="dashboardAnalyticsChart"></canvas>
+
+                {% if not analytics %}
+
+                <div class="chart-empty">
+
+                    <div class="chart-empty-icon">
+                        ↗
+                    </div>
+
+                    <strong>
+                        Analytics will appear here
+                    </strong>
+
+                    <span>
+                        Publish content to start building your performance history.
+                    </span>
+
+                </div>
+
+                {% endif %}
+
+            </div>
+
+        </article>
+
+
+        <article class="dashboard-card accounts-card">
+
+            <div class="card-header">
+
+                <div>
+                    <span class="card-eyebrow">
+                        CHANNELS
+                    </span>
+
+                    <h2>
+                        Connected accounts
+                    </h2>
+
+                    <p>
+                        Your active social channels.
+                    </p>
+                </div>
+
+                <a
+                    href="{{ url_for('social_accounts') }}"
+                    class="card-action"
+                >
+                    Manage →
+                </a>
+
+            </div>
+
+
+            {% if social_accounts %}
+
+            <div class="account-list">
+
+                {% for account in social_accounts %}
+
+                <div class="account-row">
+
+                    <div
+                        class="platform-avatar platform-{{ account.platform|lower }}"
+                    >
+                        {{ account.platform[:1]|upper }}
+                    </div>
+
+                    <div class="account-details">
+
+                        <strong>
+                            {{ account.account_name or account.username or 'Social Account' }}
+                        </strong>
+
+                        <span>
+                            {{ account.platform|capitalize }}
+
+                            {% if account.brand_name %}
+                            · {{ account.brand_name }}
+                            {% endif %}
+                        </span>
+
+                    </div>
+
+                    <span class="connected-status">
+                        <i></i>
+                        Connected
+                    </span>
+
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+            {% else %}
+
+            <div class="empty-state compact">
+
+                <div class="empty-state-icon">
+                    ◎
+                </div>
+
+                <strong>
+                    No connected accounts
+                </strong>
+
+                <span>
+                    Connect your social channels to manage them from RicozSocial.
+                </span>
+
+                <a
+                    href="{{ url_for('social_accounts') }}"
+                    class="button button-secondary"
+                >
+                    Connect Account
+                </a>
+
+            </div>
+
+            {% endif %}
+
+        </article>
+
+    </section>
+
+
+    <!-- RECENT + UPCOMING -->
+    <section class="dashboard-two-column">
+
+        <article class="dashboard-card">
+
+            <div class="card-header">
+
+                <div>
+                    <span class="card-eyebrow">
+                        CONTENT
+                    </span>
+
+                    <h2>
+                        Recent posts
+                    </h2>
+
+                    <p>
+                        Latest content activity.
+                    </p>
+                </div>
+
+                <a
+                    href="{{ url_for('publisher') }}"
+                    class="card-action"
+                >
+                    Publisher →
+                </a>
+
+            </div>
+
+
+            {% if recent_posts %}
+
+            <div class="post-list">
+
+                {% for post in recent_posts %}
+
+                <div class="post-row">
+
+                    <div class="post-status-dot status-{{ post.status|lower }}"></div>
+
+                    <div class="post-row-content">
+
+                        <div class="post-row-title">
+                            {{ post.title or 'Untitled post' }}
+                        </div>
+
+                        <div class="post-row-meta">
+
+                            <span>
+                                {{ post.brand_name }}
+                            </span>
+
+                            <span class="meta-separator">
+                                •
+                            </span>
+
+                            <span>
+                                {{ post.status|replace('_', ' ')|capitalize }}
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                    <div class="post-row-date">
+
+                        {% if post.created_at %}
+                            {{ post.created_at.strftime('%d %b') }}
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+            {% else %}
+
+            <div class="empty-state">
+
+                <div class="empty-state-icon">
+                    ✎
+                </div>
+
+                <strong>
+                    No posts yet
+                </strong>
+
+                <span>
+                    Create your first social post to start your content workflow.
+                </span>
+
+                <a
+                    href="{{ url_for('publisher') }}"
+                    class="button button-primary"
+                >
+                    Create First Post
+                </a>
+
+            </div>
+
+            {% endif %}
+
+        </article>
+
+
+        <article class="dashboard-card">
+
+            <div class="card-header">
+
+                <div>
+                    <span class="card-eyebrow">
+                        SCHEDULE
+                    </span>
+
+                    <h2>
+                        Upcoming posts
+                    </h2>
+
+                    <p>
+                        What's coming next.
+                    </p>
+                </div>
+
+                <a
+                    href="{{ url_for('calendar') }}"
+                    class="card-action"
+                >
+                    Calendar →
+                </a>
+
+            </div>
+
+
+            {% if upcoming_posts %}
+
+            <div class="schedule-list">
+
+                {% for post in upcoming_posts %}
+
+                <div class="schedule-row">
+
+                    <div class="schedule-date">
+
+                        <strong>
+                            {{ post.scheduled_at.strftime('%d') }}
+                        </strong>
+
+                        <span>
+                            {{ post.scheduled_at.strftime('%b') }}
+                        </span>
+
+                    </div>
+
+                    <div class="schedule-details">
+
+                        <strong>
+                            {{ post.title or 'Untitled post' }}
+                        </strong>
+
+                        <span>
+                            {{ post.brand_name }}
+                        </span>
+
+                    </div>
+
+                    <div class="schedule-time">
+                        {{ post.scheduled_at.strftime('%I:%M %p') }}
+                    </div>
+
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+            {% else %}
+
+            <div class="empty-state compact">
+
+                <div class="empty-state-icon">
+                    ◷
+                </div>
+
+                <strong>
+                    Nothing scheduled
+                </strong>
+
+                <span>
+                    Upcoming scheduled content will appear here.
+                </span>
+
+            </div>
+
+            {% endif %}
+
+        </article>
+
+    </section>
+
+
+    <!-- APPROVALS + BRANDS -->
+    <section class="dashboard-two-column">
+
+        <article class="dashboard-card">
+
+            <div class="card-header">
+
+                <div>
+                    <span class="card-eyebrow">
+                        WORKFLOW
+                    </span>
+
+                    <h2>
+                        Approval queue
+                    </h2>
+
+                    <p>
+                        Content waiting for review.
+                    </p>
+                </div>
+
+                <a
+                    href="{{ url_for('approvals') }}"
+                    class="card-action"
+                >
+                    Review all →
+                </a>
+
+            </div>
+
+
+            {% if approval_queue %}
+
+            <div class="approval-list">
+
+                {% for approval in approval_queue %}
+
+                <div class="approval-row">
+
+                    <div class="approval-avatar">
+                        {{ (approval.submitted_by_name or 'U')[:1]|upper }}
+                    </div>
+
+                    <div class="approval-details">
+
+                        <strong>
+                            {{ approval.title or 'Untitled post' }}
+                        </strong>
+
+                        <span>
+                            {{ approval.brand_name }}
+
+                            {% if approval.submitted_by_name %}
+                            · {{ approval.submitted_by_name }}
+                            {% endif %}
+                        </span>
+
+                    </div>
+
+                    <span class="approval-pending">
+                        Pending
+                    </span>
+
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+            {% else %}
+
+            <div class="empty-state compact">
+
+                <div class="empty-state-icon success">
+                    ✓
+                </div>
+
+                <strong>
+                    Approval queue is clear
+                </strong>
+
+                <span>
+                    Content waiting for review will appear here.
+                </span>
+
+            </div>
+
+            {% endif %}
+
+        </article>
+
+
+        <article class="dashboard-card">
+
+            <div class="card-header">
+
+                <div>
+                    <span class="card-eyebrow">
+                        WORKSPACE
+                    </span>
+
+                    <h2>
+                        Your brands
+                    </h2>
+
+                    <p>
+                        Brand workspaces connected to your account.
+                    </p>
+
+                </div>
+
+                <a
+                    href="{{ url_for('brands') }}"
+                    class="card-action"
+                >
+                    Manage →
+                </a>
+
+            </div>
+
+
+            {% if brands %}
+
+            <div class="brand-list">
+
+                {% for brand in brands %}
+
+                <a
+                    href="{{ url_for('brand_detail', brand_id=brand.id) }}"
+                    class="brand-row"
+                >
+
+                    <div class="brand-row-logo">
+
+                        {% if brand.logo_url %}
+
+                        <img
+                            src="{{ brand.logo_url }}"
+                            alt="{{ brand.name }}"
+                        >
+
+                        {% else %}
+
+                        {{ brand.name[:1]|upper }}
+
+                        {% endif %}
+
+                    </div>
+
+                    <div class="brand-row-details">
+
+                        <strong>
+                            {{ brand.name }}
+                        </strong>
+
+                        <span>
+                            {{ brand.description or 'Brand workspace' }}
+                        </span>
+
+                    </div>
+
+                    <span class="brand-row-arrow">
+                        →
+                    </span>
+
+                </a>
+
+                {% endfor %}
+
+            </div>
+
+            {% else %}
+
+            <div class="empty-state compact">
+
+                <div class="empty-state-icon">
+                    ▦
+                </div>
+
+                <strong>
+                    No brands yet
+                </strong>
+
+                <span>
+                    Create a brand workspace to organize your social content.
+                </span>
+
+                <a
+                    href="{{ url_for('brands') }}"
+                    class="button button-secondary"
+                >
+                    Create Brand
+                </a>
+
+            </div>
+
+            {% endif %}
+
+        </article>
+
+    </section>
+
+</div>
+
+{% endblock %}
+
+
+{% block extra_js %}
+
+<script>
+    window.dashboardAnalytics = {{ analytics | default([], true) | tojson }};
+</script>
+
+<script
+    src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"
+></script>
+
+<script
+    src="{{ url_for('static', filename='js/dashboard.js') }}"
+></script>
+
+{% endblock %}

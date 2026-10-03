@@ -1,0 +1,891 @@
+{% extends "base.html" %}
+
+{% block title %}
+Insights | RicozSocial
+{% endblock %}
+
+{% block extra_css %}
+
+<link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/analytics.css') }}"
+>
+
+{% endblock %}
+
+
+{% block content %}
+
+<div class="analytics-page">
+
+    <!-- =====================================================
+         HEADER
+    ====================================================== -->
+
+    <div class="analytics-header">
+
+        <div class="analytics-header-content">
+
+            <div class="analytics-eyebrow">
+                PERFORMANCE INTELLIGENCE
+            </div>
+
+            <h1 class="analytics-title">
+                Insights
+            </h1>
+
+            <p class="analytics-subtitle">
+                Understand your social performance, audience growth
+                and content engagement from one central view.
+            </p>
+
+        </div>
+
+        <div class="analytics-header-meta">
+
+            <div class="analytics-live-indicator">
+                <span class="analytics-live-dot"></span>
+                Analytics Active
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         FILTERS
+    ====================================================== -->
+
+    <section class="analytics-filter-card">
+
+        <div class="analytics-section-heading">
+
+            <div>
+                <span class="analytics-section-eyebrow">
+                    REPORTING CONTROLS
+                </span>
+
+                <h2>
+                    Performance Filters
+                </h2>
+            </div>
+
+        </div>
+
+        <form
+            method="GET"
+            action="{{ url_for('analytics') }}"
+            class="analytics-filter-form"
+        >
+
+            <div class="analytics-field">
+
+                <label for="brand_id">
+                    Brand
+                </label>
+
+                <select
+                    id="brand_id"
+                    name="brand_id"
+                >
+
+                    <option value="">
+                        All Brands
+                    </option>
+
+                    {% for brand in available_brands %}
+
+                    <option
+                        value="{{ brand.id }}"
+                        {% if selected_brand == brand.id|string %}selected{% endif %}
+                    >
+                        {{ brand.name }}
+                    </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <div class="analytics-field">
+
+                <label for="platform">
+                    Platform
+                </label>
+
+                <select
+                    id="platform"
+                    name="platform"
+                >
+
+                    <option value="">
+                        All Platforms
+                    </option>
+
+                    <option value="Facebook" {% if selected_platform == "Facebook" %}selected{% endif %}>
+                        Facebook
+                    </option>
+
+                    <option value="Instagram" {% if selected_platform == "Instagram" %}selected{% endif %}>
+                        Instagram
+                    </option>
+
+                    <option value="LinkedIn" {% if selected_platform == "LinkedIn" %}selected{% endif %}>
+                        LinkedIn
+                    </option>
+
+                    <option value="X" {% if selected_platform == "X" %}selected{% endif %}>
+                        X
+                    </option>
+
+                    <option value="YouTube" {% if selected_platform == "YouTube" %}selected{% endif %}>
+                        YouTube
+                    </option>
+
+                    <option value="TikTok" {% if selected_platform == "TikTok" %}selected{% endif %}>
+                        TikTok
+                    </option>
+
+                    <option value="Pinterest" {% if selected_platform == "Pinterest" %}selected{% endif %}>
+                        Pinterest
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="analytics-field">
+
+                <label for="date_from">
+                    From
+                </label>
+
+                <input
+                    type="date"
+                    id="date_from"
+                    name="date_from"
+                    value="{{ date_from }}"
+                >
+
+            </div>
+
+
+            <div class="analytics-field">
+
+                <label for="date_to">
+                    To
+                </label>
+
+                <input
+                    type="date"
+                    id="date_to"
+                    name="date_to"
+                    value="{{ date_to }}"
+                >
+
+            </div>
+
+
+            <div class="analytics-filter-actions">
+
+                <button
+                    type="submit"
+                    class="analytics-apply-btn"
+                >
+                    Apply Filters
+                </button>
+
+                <a
+                    href="{{ url_for('analytics') }}"
+                    class="analytics-reset-btn"
+                >
+                    Reset
+                </a>
+
+            </div>
+
+        </form>
+
+    </section>
+
+
+    <!-- =====================================================
+         KPI CARDS
+    ====================================================== -->
+
+    <section class="analytics-kpis">
+
+        <div class="analytics-kpi-card">
+
+            <div class="analytics-kpi-icon">
+                👁
+            </div>
+
+            <div class="analytics-kpi-content">
+
+                <span class="analytics-kpi-label">
+                    Impressions
+                </span>
+
+                <strong class="analytics-kpi-value">
+                    {{ "{:,}".format(impressions) }}
+                </strong>
+
+                <span class="analytics-kpi-meta">
+                    Total content views
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="analytics-kpi-card">
+
+            <div class="analytics-kpi-icon">
+                ◉
+            </div>
+
+            <div class="analytics-kpi-content">
+
+                <span class="analytics-kpi-label">
+                    Reach
+                </span>
+
+                <strong class="analytics-kpi-value">
+                    {{ "{:,}".format(reach) }}
+                </strong>
+
+                <span class="analytics-kpi-meta">
+                    Accounts reached
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="analytics-kpi-card">
+
+            <div class="analytics-kpi-icon">
+                ♥
+            </div>
+
+            <div class="analytics-kpi-content">
+
+                <span class="analytics-kpi-label">
+                    Engagement
+                </span>
+
+                <strong class="analytics-kpi-value">
+                    {{ "{:,}".format(engagement) }}
+                </strong>
+
+                <span class="analytics-kpi-meta green-text">
+                    {{ engagement_rate }}% engagement rate
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="analytics-kpi-card">
+
+            <div class="analytics-kpi-icon">
+                ↗
+            </div>
+
+            <div class="analytics-kpi-content">
+
+                <span class="analytics-kpi-label">
+                    Clicks
+                </span>
+
+                <strong class="analytics-kpi-value">
+                    {{ "{:,}".format(clicks) }}
+                </strong>
+
+                <span class="analytics-kpi-meta green-text">
+                    {{ click_rate }}% click rate
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="analytics-kpi-card">
+
+            <div class="analytics-kpi-icon">
+                ◎
+            </div>
+
+            <div class="analytics-kpi-content">
+
+                <span class="analytics-kpi-label">
+                    Followers
+                </span>
+
+                <strong class="analytics-kpi-value">
+                    {{ "{:,}".format(followers) }}
+                </strong>
+
+                <span class="analytics-kpi-meta green-text">
+                    Latest recorded total
+                </span>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         PERFORMANCE TREND
+    ====================================================== -->
+
+    <section class="analytics-chart-card analytics-chart-large">
+
+        <div class="analytics-card-header">
+
+            <div>
+
+                <span class="analytics-card-eyebrow">
+                    PERFORMANCE TREND
+                </span>
+
+                <h2>
+                    Social Performance
+                </h2>
+
+                <p>
+                    Daily impressions, reach, engagement and clicks.
+                </p>
+
+            </div>
+
+            <div class="analytics-card-badge">
+                {{ trend_data|length if trend_data is defined else 0 }} Days
+            </div>
+
+        </div>
+
+        <div class="analytics-chart-wrapper">
+
+            <canvas id="performanceChart"></canvas>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         TWO COLUMN CHARTS
+    ====================================================== -->
+
+    <div class="analytics-chart-grid">
+
+
+        <!-- PLATFORM -->
+
+        <section class="analytics-chart-card">
+
+            <div class="analytics-card-header">
+
+                <div>
+
+                    <span class="analytics-card-eyebrow">
+                        CHANNEL PERFORMANCE
+                    </span>
+
+                    <h2>
+                        Platform Reach
+                    </h2>
+
+                </div>
+
+            </div>
+
+            <div class="analytics-chart-wrapper analytics-chart-medium">
+
+                <canvas id="platformChart"></canvas>
+
+            </div>
+
+        </section>
+
+
+        <!-- FOLLOWERS -->
+
+        <section class="analytics-chart-card">
+
+            <div class="analytics-card-header">
+
+                <div>
+
+                    <span class="analytics-card-eyebrow">
+                        AUDIENCE
+                    </span>
+
+                    <h2>
+                        Follower Growth
+                    </h2>
+
+                </div>
+
+            </div>
+
+            <div class="analytics-chart-wrapper analytics-chart-medium">
+
+                <canvas id="followerChart"></canvas>
+
+            </div>
+
+        </section>
+
+    </div>
+
+
+    <!-- =====================================================
+         PLATFORM PERFORMANCE TABLE
+    ====================================================== -->
+
+    <section class="analytics-table-card">
+
+        <div class="analytics-card-header">
+
+            <div>
+
+                <span class="analytics-card-eyebrow">
+                    CHANNEL BREAKDOWN
+                </span>
+
+                <h2>
+                    Platform Performance
+                </h2>
+
+            </div>
+
+            <span class="analytics-count-badge">
+                {{ platform_data|length }}
+            </span>
+
+        </div>
+
+
+        {% if platform_data %}
+
+        <div class="analytics-table-wrapper">
+
+            <table class="analytics-table">
+
+                <thead>
+
+                    <tr>
+                        <th>Platform</th>
+                        <th>Impressions</th>
+                        <th>Reach</th>
+                        <th>Likes</th>
+                        <th>Comments</th>
+                        <th>Shares</th>
+                        <th>Clicks</th>
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    {% for row in platform_data %}
+
+                    <tr>
+
+                        <td>
+
+                            <div class="analytics-platform-name">
+
+                                <span class="analytics-platform-icon">
+                                    {{ row.platform[:1] }}
+                                </span>
+
+                                <strong>
+                                    {{ row.platform }}
+                                </strong>
+
+                            </div>
+
+                        </td>
+
+                        <td>
+                            {{ "{:,}".format(row.impressions or 0) }}
+                        </td>
+
+                        <td>
+                            {{ "{:,}".format(row.reach or 0) }}
+                        </td>
+
+                        <td>
+                            {{ "{:,}".format(row.likes or 0) }}
+                        </td>
+
+                        <td>
+                            {{ "{:,}".format(row.comments or 0) }}
+                        </td>
+
+                        <td>
+                            {{ "{:,}".format(row.shares or 0) }}
+                        </td>
+
+                        <td class="green-text">
+                            {{ "{:,}".format(row.clicks or 0) }}
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        {% else %}
+
+        <div class="analytics-empty">
+            <div class="analytics-empty-icon">◎</div>
+            <h3>No platform analytics yet</h3>
+            <p>
+                Analytics will appear here once social performance
+                data is available.
+            </p>
+        </div>
+
+        {% endif %}
+
+    </section>
+
+
+    <!-- =====================================================
+         TOP CONTENT
+    ====================================================== -->
+
+    <section class="analytics-table-card">
+
+        <div class="analytics-card-header">
+
+            <div>
+
+                <span class="analytics-card-eyebrow">
+                    CONTENT INTELLIGENCE
+                </span>
+
+                <h2>
+                    Top Performing Content
+                </h2>
+
+                <p>
+                    Content with the highest combined engagement.
+                </p>
+
+            </div>
+
+            <span class="analytics-count-badge">
+                {{ top_posts|length }}
+            </span>
+
+        </div>
+
+
+        {% if top_posts %}
+
+        <div class="analytics-table-wrapper">
+
+            <table class="analytics-table">
+
+                <thead>
+
+                    <tr>
+                        <th>Content</th>
+                        <th>Brand</th>
+                        <th>Impressions</th>
+                        <th>Reach</th>
+                        <th>Likes</th>
+                        <th>Comments</th>
+                        <th>Shares</th>
+                        <th>Clicks</th>
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    {% for post in top_posts %}
+
+                    <tr>
+
+                        <td>
+
+                            <div class="analytics-content-cell">
+
+                                <strong>
+                                    {{ post.title }}
+                                </strong>
+
+                                {% if post.content %}
+
+                                <span>
+                                    {{ post.content[:100] }}
+                                    {% if post.content|length > 100 %}...{% endif %}
+                                </span>
+
+                                {% endif %}
+
+                            </div>
+
+                        </td>
+
+                        <td>
+                            {{ post.brand_name }}
+                        </td>
+
+                        <td>
+                            {{ "{:,}".format(post.impressions or 0) }}
+                        </td>
+
+                        <td>
+                            {{ "{:,}".format(post.reach or 0) }}
+                        </td>
+
+                        <td>
+                            {{ "{:,}".format(post.likes or 0) }}
+                        </td>
+
+                        <td>
+                            {{ "{:,}".format(post.comments or 0) }}
+                        </td>
+
+                        <td>
+                            {{ "{:,}".format(post.shares or 0) }}
+                        </td>
+
+                        <td class="green-text">
+                            {{ "{:,}".format(post.clicks or 0) }}
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        {% else %}
+
+        <div class="analytics-empty">
+
+            <div class="analytics-empty-icon">
+                ◇
+            </div>
+
+            <h3>
+                No content performance yet
+            </h3>
+
+            <p>
+                Published content analytics will appear here.
+            </p>
+
+        </div>
+
+        {% endif %}
+
+    </section>
+
+
+    <!-- =====================================================
+         DETAILED ANALYTICS
+    ====================================================== -->
+
+    <section class="analytics-table-card">
+
+        <div class="analytics-card-header">
+
+            <div>
+
+                <span class="analytics-card-eyebrow">
+                    DATA EXPLORER
+                </span>
+
+                <h2>
+                    Detailed Analytics
+                </h2>
+
+                <p>
+                    Daily performance records for the selected period.
+                </p>
+
+            </div>
+
+            <span class="analytics-count-badge">
+                {{ analytics_rows|length }}
+            </span>
+
+        </div>
+
+
+        {% if analytics_rows %}
+
+        <div class="analytics-table-wrapper">
+
+            <table class="analytics-table analytics-detail-table">
+
+                <thead>
+
+                    <tr>
+                        <th>Date</th>
+                        <th>Brand</th>
+                        <th>Platform</th>
+                        <th>Impressions</th>
+                        <th>Reach</th>
+                        <th>Likes</th>
+                        <th>Comments</th>
+                        <th>Shares</th>
+                        <th>Clicks</th>
+                        <th>Followers</th>
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    {% for row in analytics_rows %}
+
+                    <tr>
+
+                        <td>
+                            {{ row.metric_date }}
+                        </td>
+
+                        <td>
+                            {{ row.brand_name }}
+                        </td>
+
+                        <td>
+                            <span class="analytics-platform-pill">
+                                {{ row.platform }}
+                            </span>
+                        </td>
+
+                        <td>
+                            {{ "{:,}".format(row.impressions or 0) }}
+                        </td>
+
+                        <td>
+                            {{ "{:,}".format(row.reach or 0) }}
+                        </td>
+
+                        <td>
+                            {{ "{:,}".format(row.likes or 0) }}
+                        </td>
+
+                        <td>
+                            {{ "{:,}".format(row.comments or 0) }}
+                        </td>
+
+                        <td>
+                            {{ "{:,}".format(row.shares or 0) }}
+                        </td>
+
+                        <td class="green-text">
+                            {{ "{:,}".format(row.clicks or 0) }}
+                        </td>
+
+                        <td>
+                            {{ "{:,}".format(row.followers or 0) }}
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        {% else %}
+
+        <div class="analytics-empty">
+
+            <div class="analytics-empty-icon">
+                ◌
+            </div>
+
+            <h3>
+                No analytics records found
+            </h3>
+
+            <p>
+                Try changing the brand, platform or date range.
+            </p>
+
+        </div>
+
+        {% endif %}
+
+    </section>
+
+
+    <!-- =====================================================
+         FOOTER
+    ====================================================== -->
+
+    <div class="analytics-footer">
+
+        <span>
+            RicozSocial Insights
+        </span>
+
+        <span>
+            Performance data is based on available platform analytics.
+        </span>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     CHART DATA
+========================================================= -->
+
+<script>
+    window.RICOZ_ANALYTICS = {
+        dates: {{ chart_dates | tojson | safe }},
+        impressions: {{ chart_impressions | tojson | safe }},
+        reach: {{ chart_reach | tojson | safe }},
+        engagement: {{ chart_engagement | tojson | safe }},
+        clicks: {{ chart_clicks | tojson | safe }},
+        platformLabels: {{ platform_labels | tojson | safe }},
+        platformImpressions: {{ platform_impressions | tojson | safe }},
+        platformReach: {{ platform_reach | tojson | safe }},
+        followerDates: {{ follower_dates | tojson | safe }},
+        followerValues: {{ follower_values | tojson | safe }}
+    };
+</script>
+
+<script
+    src="{{ url_for('static', filename='js/analytics.js') }}"
+></script>
+
+{% endblock %}

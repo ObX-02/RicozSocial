@@ -1,0 +1,788 @@
+
+{% extends "base.html" %}
+
+{% block title %}Content Calendar | RicozSocial{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/calendar.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<div class="calendar-page">
+
+    <!-- =====================================================
+         HERO
+    ====================================================== -->
+
+    <section class="calendar-hero">
+
+        <div class="calendar-hero-glow glow-one"></div>
+        <div class="calendar-hero-glow glow-two"></div>
+
+        <div class="calendar-hero-content">
+
+            <div class="calendar-eyebrow">
+                <span class="eyebrow-dot"></span>
+                PUBLISHING WORKSPACE
+            </div>
+
+            <h1>
+                Your content,
+                <span>beautifully organized.</span>
+            </h1>
+
+            <p>
+                Plan, schedule and manage every social post from one
+                intelligent content calendar.
+            </p>
+
+        </div>
+
+        <div class="calendar-hero-actions">
+
+            <a
+                href="{{ url_for('publisher') }}"
+                class="calendar-btn calendar-btn-secondary"
+            >
+                <span class="btn-icon">↗</span>
+                Publisher
+            </a>
+
+            <a
+                href="{{ url_for('publisher') }}"
+                class="calendar-btn calendar-btn-primary"
+            >
+                <span class="btn-plus">+</span>
+                Create Post
+            </a>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         STATS
+    ====================================================== -->
+
+    <section class="calendar-stats">
+
+        <article class="calendar-stat-card stat-purple">
+
+            <div class="stat-decoration"></div>
+
+            <div class="stat-icon">
+                <span>▦</span>
+            </div>
+
+            <div class="stat-content">
+                <span>Total Content</span>
+                <strong>{{ stats.total_posts or 0 }}</strong>
+                <small>Across your workspace</small>
+            </div>
+
+            <div class="stat-mini-chart">
+                <i></i>
+                <i></i>
+                <i></i>
+                <i></i>
+                <i></i>
+            </div>
+
+        </article>
+
+
+        <article class="calendar-stat-card stat-amber">
+
+            <div class="stat-decoration"></div>
+
+            <div class="stat-icon">
+                <span>○</span>
+            </div>
+
+            <div class="stat-content">
+                <span>Drafts</span>
+                <strong>{{ stats.draft_posts or 0 }}</strong>
+                <small>Content in progress</small>
+            </div>
+
+            <div class="stat-orbit">
+                <span></span>
+            </div>
+
+        </article>
+
+
+        <article class="calendar-stat-card stat-blue">
+
+            <div class="stat-decoration"></div>
+
+            <div class="stat-icon">
+                <span>◷</span>
+            </div>
+
+            <div class="stat-content">
+                <span>Scheduled</span>
+                <strong>{{ stats.scheduled_posts or 0 }}</strong>
+                <small>Ready to publish</small>
+            </div>
+
+            <div class="stat-ring">
+                <span>→</span>
+            </div>
+
+        </article>
+
+
+        <article class="calendar-stat-card stat-green">
+
+            <div class="stat-decoration"></div>
+
+            <div class="stat-icon">
+                <span>✓</span>
+            </div>
+
+            <div class="stat-content">
+                <span>Published</span>
+                <strong>{{ stats.published_posts or 0 }}</strong>
+                <small>Successfully published</small>
+            </div>
+
+            <div class="stat-check">
+                ✓
+            </div>
+
+        </article>
+
+    </section>
+
+
+    <!-- =====================================================
+         CALENDAR WORKSPACE
+    ====================================================== -->
+
+    <section class="calendar-workspace">
+
+        <div class="calendar-workspace-header">
+
+            <div class="calendar-toolbar-left">
+
+                <div class="calendar-navigation">
+
+                    <button
+                        type="button"
+                        class="calendar-nav-btn"
+                        id="previousMonth"
+                        aria-label="Previous month"
+                    >
+                        ‹
+                    </button>
+
+                    <button
+                        type="button"
+                        class="calendar-today-btn"
+                        id="todayButton"
+                    >
+                        Today
+                    </button>
+
+                    <button
+                        type="button"
+                        class="calendar-nav-btn"
+                        id="nextMonth"
+                        aria-label="Next month"
+                    >
+                        ›
+                    </button>
+
+                </div>
+
+                <div class="calendar-month-title">
+                    <span class="month-small-label">CONTENT SCHEDULE</span>
+                    <h2 id="calendarMonthLabel">Calendar</h2>
+                </div>
+
+            </div>
+
+
+            <div class="calendar-toolbar-right">
+
+                <form
+                    method="GET"
+                    action="{{ url_for('calendar') }}"
+                    class="calendar-filters"
+                >
+
+                    <div class="filter-control">
+
+                        <span class="filter-icon">◆</span>
+
+                        <select
+                            name="brand_id"
+                            class="calendar-select"
+                            onchange="this.form.submit()"
+                        >
+
+                            <option value="">
+                                All brands
+                            </option>
+
+                            {% for brand in brands %}
+
+                            <option
+                                value="{{ brand.id }}"
+                                {% if selected_brand|string == brand.id|string %}
+                                    selected
+                                {% endif %}
+                            >
+                                {{ brand.name }}
+                            </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="filter-control">
+
+                        <span class="filter-icon">●</span>
+
+                        <select
+                            name="status"
+                            class="calendar-select"
+                            onchange="this.form.submit()"
+                        >
+
+                            <option value="">
+                                All statuses
+                            </option>
+
+                            <option
+                                value="draft"
+                                {% if selected_status == "draft" %}
+                                    selected
+                                {% endif %}
+                            >
+                                Draft
+                            </option>
+
+                            <option
+                                value="scheduled"
+                                {% if selected_status == "scheduled" %}
+                                    selected
+                                {% endif %}
+                            >
+                                Scheduled
+                            </option>
+
+                            <option
+                                value="published"
+                                {% if selected_status == "published" %}
+                                    selected
+                                {% endif %}
+                            >
+                                Published
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                </form>
+
+
+                <div class="calendar-view-switcher">
+
+                    <button
+                        type="button"
+                        class="view-switch active"
+                        data-view="month"
+                    >
+                        <span>▦</span>
+                        Month
+                    </button>
+
+                    <button
+                        type="button"
+                        class="view-switch"
+                        data-view="list"
+                    >
+                        <span>☷</span>
+                        List
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             MONTH VIEW
+        ================================================== -->
+
+        <div
+            class="calendar-month-view"
+            id="monthView"
+        >
+
+            <div class="calendar-weekdays">
+
+                <div>Sunday</div>
+                <div>Monday</div>
+                <div>Tuesday</div>
+                <div>Wednesday</div>
+                <div>Thursday</div>
+                <div>Friday</div>
+                <div>Saturday</div>
+
+            </div>
+
+
+            <div
+                class="calendar-grid"
+                id="calendarGrid"
+            ></div>
+
+        </div>
+
+
+        <!-- =================================================
+             LIST VIEW
+        ================================================== -->
+
+        <div
+            class="calendar-list-view"
+            id="listView"
+            hidden
+        >
+
+            {% if posts %}
+
+                <div class="calendar-list">
+
+                    {% for post in posts %}
+
+                    {% set event_date =
+                        post.scheduled_at
+                        or post.published_at
+                        or post.created_at
+                    %}
+
+                    <article class="calendar-list-item">
+
+                        <div class="list-date-block">
+
+                            {% if event_date %}
+
+                            <strong>
+                                {{ event_date.strftime('%d') }}
+                            </strong>
+
+                            <span>
+                                {{ event_date.strftime('%b') }}
+                            </span>
+
+                            {% endif %}
+
+                        </div>
+
+
+                        <div class="list-avatar">
+
+                            {{ (post.brand_name or "R")[:1]|upper }}
+
+                        </div>
+
+
+                        <div class="calendar-list-content">
+
+                            <div class="calendar-list-top">
+
+                                <span class="calendar-brand">
+                                    {{ post.brand_name or "Ricoz" }}
+                                </span>
+
+                                <span class="calendar-status status-{{ post.status|lower }}">
+                                    {{ post.status|capitalize }}
+                                </span>
+
+                            </div>
+
+                            <h3>
+                                {{ post.title or "Untitled post" }}
+                            </h3>
+
+                            <p>
+                                {{ post.content|truncate(180) }}
+                            </p>
+
+                            <div class="calendar-list-meta">
+
+                                {% if post.platforms %}
+
+                                <span>
+                                    ◉ {{ post.platforms }}
+                                </span>
+
+                                {% endif %}
+
+                                {% if event_date %}
+
+                                <span>
+                                    ◷ {{ event_date.strftime('%d %b %Y, %I:%M %p') }}
+                                </span>
+
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+
+                        <button
+                            type="button"
+                            class="list-open-btn"
+                            data-event-id="{{ post.id }}"
+                        >
+                            View
+                            <span>→</span>
+                        </button>
+
+                    </article>
+
+                    {% endfor %}
+
+                </div>
+
+            {% else %}
+
+                <div class="calendar-empty">
+
+                    <div class="empty-visual">
+
+                        <div class="empty-circle circle-one"></div>
+                        <div class="empty-circle circle-two"></div>
+
+                        <span>▦</span>
+
+                    </div>
+
+                    <h3>
+                        Your calendar is waiting
+                    </h3>
+
+                    <p>
+                        Create your first social post and start building
+                        your publishing schedule.
+                    </p>
+
+                    <a
+                        href="{{ url_for('publisher') }}"
+                        class="calendar-btn calendar-btn-primary"
+                    >
+                        Create your first post
+                        <span>→</span>
+                    </a>
+
+                </div>
+
+            {% endif %}
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         UPCOMING
+    ====================================================== -->
+
+    <section class="upcoming-section">
+
+        <div class="section-heading">
+
+            <div>
+
+                <span class="section-eyebrow">
+                    NEXT UP
+                </span>
+
+                <h2>
+                    Upcoming scheduled posts
+                </h2>
+
+                <p>
+                    Keep an eye on what is coming next.
+                </p>
+
+            </div>
+
+            <a
+                href="{{ url_for('publisher') }}"
+                class="section-link"
+            >
+                Manage posts
+                <span>→</span>
+            </a>
+
+        </div>
+
+
+        {% if upcoming_posts %}
+
+        <div class="upcoming-grid">
+
+            {% for post in upcoming_posts %}
+
+            <article class="upcoming-card">
+
+                <div class="upcoming-card-decoration"></div>
+
+                <div class="upcoming-card-top">
+
+                    <div class="upcoming-avatar">
+                        {{ (post.brand_name or "R")[:1]|upper }}
+                    </div>
+
+                    <div class="upcoming-brand">
+
+                        <strong>
+                            {{ post.brand_name or "Ricoz" }}
+                        </strong>
+
+                        <span>
+                            Social campaign
+                        </span>
+
+                    </div>
+
+                    <span class="calendar-status status-scheduled">
+                        Scheduled
+                    </span>
+
+                </div>
+
+
+                <h3>
+                    {{ post.title or "Untitled post" }}
+                </h3>
+
+                <p>
+                    {{ post.content|truncate(130) }}
+                </p>
+
+
+                <div class="upcoming-card-footer">
+
+                    <span class="upcoming-time">
+
+                        <span class="footer-icon">◷</span>
+
+                        {% if post.scheduled_at %}
+                            {{ post.scheduled_at.strftime('%d %b, %I:%M %p') }}
+                        {% else %}
+                            No date
+                        {% endif %}
+
+                    </span>
+
+
+                    {% if post.platforms %}
+
+                    <span class="upcoming-platforms">
+                        {{ post.platforms }}
+                    </span>
+
+                    {% endif %}
+
+                </div>
+
+            </article>
+
+            {% endfor %}
+
+        </div>
+
+        {% else %}
+
+        <div class="upcoming-empty">
+
+            <div class="upcoming-empty-icon">
+                ◷
+            </div>
+
+            <div>
+
+                <strong>
+                    Nothing scheduled yet
+                </strong>
+
+                <span>
+                    Your next scheduled posts will appear here.
+                </span>
+
+            </div>
+
+            <a href="{{ url_for('publisher') }}">
+                Schedule content →
+            </a>
+
+        </div>
+
+        {% endif %}
+
+    </section>
+
+</div>
+
+
+<!-- =========================================================
+     EVENT DATA
+========================================================= -->
+
+<script type="application/json" id="calendarData">
+[
+{% for post in posts %}
+{
+    "id": {{ post.id|tojson }},
+    "title": {{ (post.title or "Untitled post")|tojson }},
+    "content": {{ (post.content or "")|tojson }},
+    "brand": {{ (post.brand_name or "")|tojson }},
+    "status": {{ (post.status or "")|tojson }},
+    "platforms": {{ (post.platforms or "")|tojson }},
+    "scheduled_at":
+        {% if post.scheduled_at %}
+            {{ post.scheduled_at.isoformat()|tojson }}
+        {% else %}
+            null
+        {% endif %},
+    "published_at":
+        {% if post.published_at %}
+            {{ post.published_at.isoformat()|tojson }}
+        {% else %}
+            null
+        {% endif %},
+    "created_at":
+        {% if post.created_at %}
+            {{ post.created_at.isoformat()|tojson }}
+        {% else %}
+            null
+        {% endif %}
+}
+{% if not loop.last %},{% endif %}
+{% endfor %}
+]
+</script>
+
+
+<!-- =========================================================
+     EVENT MODAL
+========================================================= -->
+
+<div
+    class="calendar-modal"
+    id="calendarEventModal"
+    aria-hidden="true"
+>
+
+    <div class="calendar-modal-backdrop"></div>
+
+    <div class="calendar-modal-card">
+
+        <button
+            type="button"
+            class="calendar-modal-close"
+            id="closeCalendarModal"
+            aria-label="Close"
+        >
+            ×
+        </button>
+
+        <div class="modal-top-line"></div>
+
+        <div class="modal-event-avatar" id="modalEventAvatar">
+            R
+        </div>
+
+        <span
+            class="calendar-status"
+            id="modalEventStatus"
+        >
+            Status
+        </span>
+
+        <h2 id="modalEventTitle">
+            Post title
+        </h2>
+
+        <div class="modal-event-brand" id="modalEventBrand">
+            Ricoz
+        </div>
+
+        <div class="modal-event-info">
+
+            <div class="modal-info-item">
+                <span>◷</span>
+                <div>
+                    <small>Date & time</small>
+                    <strong id="modalEventDate">—</strong>
+                </div>
+            </div>
+
+            <div class="modal-info-item">
+                <span>◉</span>
+                <div>
+                    <small>Platforms</small>
+                    <strong id="modalEventPlatforms">—</strong>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="modal-event-content">
+
+            <small>CONTENT</small>
+
+            <p id="modalEventContent">
+                —
+            </p>
+
+        </div>
+
+        <div class="modal-actions">
+
+            <button
+                type="button"
+                class="modal-secondary-btn"
+                id="closeCalendarModalBottom"
+            >
+                Close
+            </button>
+
+            <a
+                href="{{ url_for('publisher') }}"
+                class="modal-primary-btn"
+            >
+                Open Publisher
+                <span>→</span>
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+
+{% block extra_js %}
+
+<script src="{{ url_for('static', filename='js/calendar.js') }}"></script>
+
+{% endblock %}

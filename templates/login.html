@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Sign In | RicozSocial</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/login.css') }}"
+    >
+
+</head>
+
+
+<body>
+
+    <main class="login-page">
+
+
+        <!-- =====================================================
+             SOCIAL BACKGROUND
+        ====================================================== -->
+
+        <div class="social-background" aria-hidden="true">
+
+            <div class="social-grid"></div>
+
+            <div class="social-orb orb-one"></div>
+            <div class="social-orb orb-two"></div>
+            <div class="social-orb orb-three"></div>
+
+            <div class="network-line line-one"></div>
+            <div class="network-line line-two"></div>
+            <div class="network-line line-three"></div>
+            <div class="network-line line-four"></div>
+
+
+            <div class="social-node node-instagram">
+                <span>◎</span>
+            </div>
+
+            <div class="social-node node-facebook">
+                <span>f</span>
+            </div>
+
+            <div class="social-node node-linkedin">
+                <span>in</span>
+            </div>
+
+            <div class="social-node node-x">
+                <span>𝕏</span>
+            </div>
+
+            <div class="social-node node-youtube">
+                <span>▶</span>
+            </div>
+
+            <div class="social-node node-tiktok">
+                <span>♪</span>
+            </div>
+
+
+            <div class="social-mini-card mini-card-one">
+                <span class="mini-icon mini-red">♥</span>
+                <div>
+                    <strong>12.8K</strong>
+                    <small>Engagements</small>
+                </div>
+            </div>
+
+
+            <div class="social-mini-card mini-card-two">
+                <span class="mini-icon mini-green">↗</span>
+                <div>
+                    <strong>+24.6%</strong>
+                    <small>Growth</small>
+                </div>
+            </div>
+
+
+            <div class="social-mini-card mini-card-three">
+                <span class="mini-icon mini-red">●</span>
+                <div>
+                    <strong>8 Platforms</strong>
+                    <small>Connected</small>
+                </div>
+            </div>
+
+        </div>
+
+
+
+        <!-- =====================================================
+             TOP NAVIGATION
+        ====================================================== -->
+
+        <header class="login-nav">
+
+            <a
+                href="{{ url_for('login') }}"
+                class="brand"
+            >
+
+                <div class="brand-mark">
+
+                    <span class="brand-mark-ring"></span>
+
+                    <span class="brand-mark-dot"></span>
+
+                    <span class="brand-mark-letter">
+                        R
+                    </span>
+
+                </div>
+
+
+                <div class="brand-word">
+
+                    <span class="brand-ricoz">
+                        Ricoz
+                    </span>
+
+                    <span class="brand-social">
+                        Social
+                    </span>
+
+                </div>
+
+            </a>
+
+
+            <div class="nav-tagline">
+
+                <span class="nav-status-dot"></span>
+
+                Social media management,
+                simplified.
+
+            </div>
+
+        </header>
+
+
+
+        <!-- =====================================================
+             MAIN CONTENT
+        ====================================================== -->
+
+        <section class="login-content">
+
+
+            <!-- =================================================
+                 LEFT SIDE
+            ================================================== -->
+
+            <section class="intro-panel">
+
+
+                <div class="intro-badge">
+
+                    <span class="badge-dot"></span>
+
+                    ONE SOCIAL WORKSPACE
+
+                </div>
+
+
+                <h1>
+
+                    Your brands.
+                    <span>Your content.</span>
+                    <strong>One social workspace.</strong>
+
+                </h1>
+
+
+                <p class="intro-description">
+
+                    Plan, publish, collaborate, monitor conversations,
+                    manage approvals and understand performance —
+                    all from one professional workspace.
+
+                </p>
+
+
+                <!-- Platform pills -->
+
+                <div class="platform-row">
+
+                    <div class="platform-pill">
+
+                        <span class="platform-symbol instagram">
+                            ◎
+                        </span>
+
+                        Instagram
+
+                    </div>
+
+
+                    <div class="platform-pill">
+
+                        <span class="platform-symbol facebook">
+                            f
+                        </span>
+
+                        Facebook
+
+                    </div>
+
+
+                    <div class="platform-pill">
+
+                        <span class="platform-symbol linkedin">
+                            in
+                        </span>
+
+                        LinkedIn
+
+                    </div>
+
+
+                    <div class="platform-pill">
+
+                        <span class="platform-symbol x-platform">
+                            𝕏
+                        </span>
+
+                        X
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- =================================================
+                     FEATURE CARDS
+                ================================================== -->
+
+                <div class="feature-stack">
+
+
+                    <div class="feature-card">
+
+                        <div class="feature-icon red-icon">
+                            <span>✦</span>
+                        </div>
+
+                        <div class="feature-content">
+
+                            <strong>
+                                Plan &amp; publish
+                            </strong>
+
+                            <p>
+                                Create, schedule and manage content
+                                across your social channels.
+                            </p>
+
+                        </div>
+
+                        <span class="feature-arrow">
+                            →
+                        </span>
+
+                    </div>
+
+
+
+                    <div class="feature-card">
+
+                        <div class="feature-icon green-icon">
+                            <span>✓</span>
+                        </div>
+
+                        <div class="feature-content">
+
+                            <strong>
+                                Approvals &amp; collaboration
+                            </strong>
+
+                            <p>
+                                Keep content reviews organized
+                                before anything goes live.
+                            </p>
+
+                        </div>
+
+                        <span class="feature-arrow">
+                            →
+                        </span>
+
+                    </div>
+
+
+
+                    <div class="feature-card">
+
+                        <div class="feature-icon red-icon">
+                            <span>↗</span>
+                        </div>
+
+                        <div class="feature-content">
+
+                            <strong>
+                                Analytics &amp; insights
+                            </strong>
+
+                            <p>
+                                Understand reach, engagement,
+                                audience and content performance.
+                            </p>
+
+                        </div>
+
+                        <span class="feature-arrow">
+                            →
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- Bottom trust line -->
+
+                <div class="intro-footer">
+
+                    <div class="trust-item">
+
+                        <span class="trust-check">
+                            ✓
+                        </span>
+
+                        Multi-brand workspace
+
+                    </div>
+
+
+                    <div class="trust-item">
+
+                        <span class="trust-check">
+                            ✓
+                        </span>
+
+                        Team-ready workflows
+
+                    </div>
+
+
+                    <div class="trust-item">
+
+                        <span class="trust-check">
+                            ✓
+                        </span>
+
+                        Centralized insights
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- =================================================
+                 RIGHT LOGIN CARD
+            ================================================== -->
+
+            <section class="login-panel">
+
+
+                <div class="login-card">
+
+
+                    <!-- Card top -->
+
+                    <div class="login-card-top">
+
+                        <div class="login-card-badge">
+
+                            <span class="login-live-dot"></span>
+
+                            RICOZSOCIAL WORKSPACE
+
+                        </div>
+
+
+                        <div class="secure-indicator">
+
+                            <span>✓</span>
+
+                            Secure sign in
+
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- Heading -->
+
+                    <div class="login-heading">
+
+                        <h2>
+                            Welcome back.
+                        </h2>
+
+                        <p>
+                            Sign in to continue managing your
+                            social workspace.
+                        </p>
+
+                    </div>
+
+
+
+                    <!-- =================================================
+                         FLASH MESSAGES
+                    ================================================== -->
+
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+
+                        {% if messages %}
+
+                            <div class="flash-stack">
+
+                                {% for category, message in messages %}
+
+                                    <div
+                                        class="flash-message flash-{{ category }}"
+                                    >
+
+                                        <span class="flash-icon">
+
+                                            {% if category == "success" %}
+                                                ✓
+                                            {% elif category == "danger" %}
+                                                !
+                                            {% elif category == "warning" %}
+                                                !
+                                            {% else %}
+                                                i
+                                            {% endif %}
+
+                                        </span>
+
+
+                                        <span>
+                                            {{ message }}
+                                        </span>
+
+                                    </div>
+
+                                {% endfor %}
+
+                            </div>
+
+                        {% endif %}
+
+                    {% endwith %}
+
+
+
+                    <!-- =================================================
+                         LOGIN FORM
+                    ================================================== -->
+
+                    <form
+                        method="POST"
+                        action="{{ url_for('login') }}"
+                        class="login-form"
+                    >
+
+
+                        <!-- Email -->
+
+                        <div class="form-field">
+
+                            <label for="email">
+                                Email address
+                            </label>
+
+
+                            <div class="input-box">
+
+                                <span class="input-symbol">
+                                    @
+                                </span>
+
+
+                                <input
+                                    type="email"
+                                    id="email"
+                                    name="email"
+                                    placeholder="you@company.com"
+                                    autocomplete="email"
+                                    required
+                                >
+
+                            </div>
+
+                        </div>
+
+
+
+                        <!-- Password -->
+
+                        <div class="form-field">
+
+                            <div class="password-label">
+
+                                <label for="password">
+                                    Password
+                                </label>
+
+                                <span>
+                                    Required
+                                </span>
+
+                            </div>
+
+
+                            <div class="input-box">
+
+                                <span class="input-symbol">
+                                    ••
+                                </span>
+
+
+                                <input
+                                    type="password"
+                                    id="password"
+                                    name="password"
+                                    placeholder="Enter your password"
+                                    autocomplete="current-password"
+                                    required
+                                >
+
+
+                                <button
+                                    type="button"
+                                    class="password-toggle"
+                                    id="passwordToggle"
+                                    aria-label="Show password"
+                                >
+                                    Show
+                                </button>
+
+                            </div>
+
+                        </div>
+
+
+
+                        <!-- Remember -->
+
+                        <div class="login-options">
+
+                            <label class="remember-option">
+
+                                <input
+                                    type="checkbox"
+                                    name="remember"
+                                >
+
+                                <span class="remember-box"></span>
+
+                                <span>
+                                    Keep me signed in
+                                </span>
+
+                            </label>
+
+
+                            <span class="login-security">
+                                Protected workspace
+                            </span>
+
+                        </div>
+
+
+
+                        <!-- Button -->
+
+                        <button
+                            type="submit"
+                            class="login-button"
+                        >
+
+                            <span>
+                                Sign in to RicozSocial
+                            </span>
+
+                            <span class="button-arrow">
+                                →
+                            </span>
+
+                        </button>
+
+
+                    </form>
+
+
+
+                    <!-- Divider -->
+
+                    <div class="login-divider">
+
+                        <span></span>
+
+                        <small>
+                            New to RicozSocial?
+                        </small>
+
+                        <span></span>
+
+                    </div>
+
+
+
+                    <!-- Register -->
+
+                    <a
+                        href="{{ url_for('register') }}"
+                        class="register-button"
+                    >
+
+                        <span>
+                            Create your workspace account
+                        </span>
+
+                        <span>
+                            →
+                        </span>
+
+                    </a>
+
+
+
+                    <!-- Bottom note -->
+
+                    <div class="login-note">
+
+                        <span class="note-icon">
+                            ✓
+                        </span>
+
+                        <p>
+                            Your workspace keeps brands, publishing,
+                            approvals and insights organized in one place.
+                        </p>
+
+                    </div>
+
+
+                </div>
+
+
+                <!-- Login footer -->
+
+                <div class="login-panel-footer">
+
+                    <span>
+                        © {{ current_year }} RicozSocial
+                    </span>
+
+                    <span>
+                        Social workspace
+                    </span>
+
+                </div>
+
+
+            </section>
+
+
+        </section>
+
+
+
+        <!-- =====================================================
+             BOTTOM DECORATION
+        ====================================================== -->
+
+        <div class="bottom-brand-line">
+
+            <span></span>
+
+            <p>
+                PLAN <b>•</b>
+                PUBLISH <b>•</b>
+                ENGAGE <b>•</b>
+                ANALYZE
+            </p>
+
+            <span></span>
+
+        </div>
+
+
+    </main>
+
+
+
+    <!-- =========================================================
+         PASSWORD TOGGLE
+    ========================================================== -->
+
+    <script>
+
+        const passwordInput =
+            document.getElementById("password");
+
+        const passwordToggle =
+            document.getElementById("passwordToggle");
+
+
+        if (passwordInput && passwordToggle) {
+
+            passwordToggle.addEventListener(
+                "click",
+                function () {
+
+                    const isPassword =
+                        passwordInput.type === "password";
+
+
+                    passwordInput.type =
+                        isPassword
+                            ? "text"
+                            : "password";
+
+
+                    passwordToggle.textContent =
+                        isPassword
+                            ? "Hide"
+                            : "Show";
+
+
+                    passwordToggle.setAttribute(
+                        "aria-label",
+                        isPassword
+                            ? "Hide password"
+                            : "Show password"
+                    );
+
+                }
+            );
+
+        }
+
+    </script>
+
+
+</body>
+
+</html>

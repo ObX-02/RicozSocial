@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+
+{% block title %}
+Create Account | RicozSocial
+{% endblock %}
+
+
+{% block auth_content %}
+
+<div class="auth-content">
+
+    <!-- LEFT -->
+    <section class="auth-form-side">
+
+        <div class="auth-form-wrapper">
+
+            <div class="auth-eyebrow">
+                Get started
+            </div>
+
+            <h1>
+                Build your social workspace.
+            </h1>
+
+            <p class="auth-subtitle">
+                Create your RicozSocial account and bring your social
+                media workflow into one organized workspace.
+            </p>
+
+
+            <form
+                method="POST"
+                action="{{ url_for('register') }}"
+                class="auth-form"
+            >
+
+                <div class="form-group">
+
+                    <label for="name">
+                        Full name
+                    </label>
+
+                    <input
+                        type="text"
+                        id="name"
+                        name="name"
+                        placeholder="Your full name"
+                        autocomplete="name"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="email">
+                        Email address
+                    </label>
+
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        placeholder="you@company.com"
+                        autocomplete="email"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="password">
+                        Password
+                    </label>
+
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        placeholder="At least 8 characters"
+                        autocomplete="new-password"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="confirm_password">
+                        Confirm password
+                    </label>
+
+                    <input
+                        type="password"
+                        id="confirm_password"
+                        name="confirm_password"
+                        placeholder="Repeat your password"
+                        autocomplete="new-password"
+                        required
+                    >
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="auth-submit"
+                >
+                    Create RicozSocial account
+                </button>
+
+            </form>
+
+
+            <p class="auth-switch">
+
+                Already have an account?
+
+                <a href="{{ url_for('login') }}">
+                    Sign in
+                </a>
+
+            </p>
+
+        </div>
+
+    </section>
+
+
+    <!-- RIGHT -->
+    <section class="auth-visual-side">
+
+        <div class="visual-content">
+
+            <div class="visual-kicker">
+                Built for modern teams
+            </div>
+
+            <h2>
+                Turn social work into one workflow.
+            </h2>
+
+            <p class="visual-description">
+                Give marketing, operations, design and leadership
+                one shared place to plan, collaborate, publish and
+                measure social activity.
+            </p>
+
+
+            <div class="visual-cards">
+
+                <div class="visual-card">
+
+                    <div class="visual-card-icon">
+                        ◇
+                    </div>
+
+                    <div>
+                        <strong>
+                            Organize multiple brands
+                        </strong>
+
+                        <span>
+                            Keep accounts and content separated.
+                        </span>
+                    </div>
+
+                </div>
+
+
+                <div class="visual-card">
+
+                    <div class="visual-card-icon">
+                        ✓
+                    </div>
+
+                    <div>
+                        <strong>
+                            Collaborate with your team
+                        </strong>
+
+                        <span>
+                            Build approval workflows together.
+                        </span>
+                    </div>
+
+                </div>
+
+
+                <div class="visual-card">
+
+                    <div class="visual-card-icon">
+                        ◉
+                    </div>
+
+                    <div>
+                        <strong>
+                            Monitor what matters
+                        </strong>
+
+                        <span>
+                            Track conversations and performance.
+                        </span>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</div>
+
+{% endblock %}

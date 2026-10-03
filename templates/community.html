@@ -1,0 +1,547 @@
+{% extends "base.html" %}
+
+{% block title %}
+Engagement | RicozSocial
+{% endblock %}
+
+{% block extra_css %}
+<link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/community.css') }}"
+>
+{% endblock %}
+
+{% block content %}
+
+<div class="engagement-page">
+
+    <!-- =====================================================
+         PAGE HEADER
+    ====================================================== -->
+
+    <section class="engagement-header">
+
+        <div class="engagement-header-content">
+
+            <div class="engagement-eyebrow">
+                COMMUNITY MANAGEMENT
+            </div>
+
+            <h1>
+                Engagement Inbox
+            </h1>
+
+            <p>
+                Manage conversations, comments, replies and community
+                interactions across your connected social accounts.
+            </p>
+
+        </div>
+
+        <div class="engagement-header-actions">
+
+            <a
+                href="{{ url_for('community') }}"
+                class="engagement-refresh-button"
+            >
+                <span>↻</span>
+                Refresh
+            </a>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         STAT CARDS
+    ====================================================== -->
+
+    <section class="engagement-stats">
+
+        <div class="engagement-stat-card">
+
+            <div class="engagement-stat-icon">
+                💬
+            </div>
+
+            <div class="engagement-stat-content">
+
+                <span class="engagement-stat-label">
+                    Total Conversations
+                </span>
+
+                <strong class="engagement-stat-value">
+                    {{ total_count }}
+                </strong>
+
+                <span class="engagement-stat-note">
+                    All community activity
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="engagement-stat-card">
+
+            <div class="engagement-stat-icon">
+                🔔
+            </div>
+
+            <div class="engagement-stat-content">
+
+                <span class="engagement-stat-label">
+                    Needs Attention
+                </span>
+
+                <strong class="engagement-stat-value">
+                    {{ pending_count }}
+                </strong>
+
+                <span class="engagement-stat-note green-text">
+                    Pending or unread
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="engagement-stat-card">
+
+            <div class="engagement-stat-icon">
+                ✓
+            </div>
+
+            <div class="engagement-stat-content">
+
+                <span class="engagement-stat-label">
+                    Resolved
+                </span>
+
+                <strong class="engagement-stat-value">
+                    {{ resolved_count }}
+                </strong>
+
+                <span class="engagement-stat-note green-text">
+                    Conversations completed
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="engagement-stat-card">
+
+            <div class="engagement-stat-icon">
+                ↩
+            </div>
+
+            <div class="engagement-stat-content">
+
+                <span class="engagement-stat-label">
+                    Replied
+                </span>
+
+                <strong class="engagement-stat-value">
+                    {{ replied_count }}
+                </strong>
+
+                <span class="engagement-stat-note green-text">
+                    Responses sent
+                </span>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         FILTER BAR
+    ====================================================== -->
+
+    <section class="engagement-filter-card">
+
+        <form
+            method="GET"
+            action="{{ url_for('community') }}"
+            class="engagement-filter-form"
+        >
+
+            <div class="engagement-search-wrapper">
+
+                <label for="engagement-search">
+                    Search
+                </label>
+
+                <div class="engagement-search-box">
+
+                    <span class="engagement-search-icon">
+                        🔎
+                    </span>
+
+                    <input
+                        type="text"
+                        id="engagement-search"
+                        name="search"
+                        value="{{ search }}"
+                        placeholder="Search comments, people or brands..."
+                    >
+
+                </div>
+
+            </div>
+
+
+            <div class="engagement-filter-field">
+
+                <label for="brand-filter">
+                    Brand
+                </label>
+
+                <select
+                    id="brand-filter"
+                    name="brand_id"
+                >
+
+                    <option value="">
+                        All Brands
+                    </option>
+
+                    {% for brand in available_brands %}
+
+                    <option
+                        value="{{ brand.id }}"
+                        {% if selected_brand|string == brand.id|string %}
+                            selected
+                        {% endif %}
+                    >
+                        {{ brand.name }}
+                    </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <div class="engagement-filter-field">
+
+                <label for="platform-filter">
+                    Platform
+                </label>
+
+                <select
+                    id="platform-filter"
+                    name="platform"
+                >
+
+                    <option value="">
+                        All Platforms
+                    </option>
+
+                    {% for platform_name in available_platforms %}
+
+                    <option
+                        value="{{ platform_name }}"
+                        {% if selected_platform == platform_name %}
+                            selected
+                        {% endif %}
+                    >
+                        {{ platform_name }}
+                    </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <div class="engagement-filter-field">
+
+                <label for="status-filter">
+                    Status
+                </label>
+
+                <select
+                    id="status-filter"
+                    name="status"
+                >
+
+                    <option value="">
+                        All Statuses
+                    </option>
+
+                    <option
+                        value="pending"
+                        {% if selected_status == "pending" %}
+                            selected
+                        {% endif %}
+                    >
+                        Pending
+                    </option>
+
+                    <option
+                        value="unread"
+                        {% if selected_status == "unread" %}
+                            selected
+                        {% endif %}
+                    >
+                        Unread
+                    </option>
+
+                    <option
+                        value="replied"
+                        {% if selected_status == "replied" %}
+                            selected
+                        {% endif %}
+                    >
+                        Replied
+                    </option>
+
+                    <option
+                        value="resolved"
+                        {% if selected_status == "resolved" %}
+                            selected
+                        {% endif %}
+                    >
+                        Resolved
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="engagement-filter-actions">
+
+                <button
+                    type="submit"
+                    class="engagement-apply-button"
+                >
+                    Apply Filters
+                </button>
+
+                <a
+                    href="{{ url_for('community') }}"
+                    class="engagement-clear-button"
+                >
+                    Clear
+                </a>
+
+            </div>
+
+        </form>
+
+    </section>
+
+
+    <!-- =====================================================
+         MAIN ENGAGEMENT WORKSPACE
+    ====================================================== -->
+
+    <section class="engagement-workspace">
+
+
+        <!-- =================================================
+             INBOX
+        ================================================== -->
+
+        <div class="engagement-inbox-panel">
+
+            <div class="engagement-panel-header">
+
+                <div>
+
+                    <span class="engagement-panel-eyebrow">
+                        INBOX
+                    </span>
+
+                    <h2>
+                        Conversations
+                    </h2>
+
+                </div>
+
+                <span class="engagement-count-badge">
+                    {{ comments|length }}
+                </span>
+
+            </div>
+
+
+            <div class="engagement-comment-list">
+
+                {% if comments %}
+
+                    {% for comment in comments %}
+
+                    <article
+                        class="engagement-comment-card {% if loop.first %}active{% endif %}"
+                        data-comment-id="{{ comment.id }}"
+                        data-author="{{ comment.author_name or 'Unknown User' }}"
+                        data-username="{{ comment.author_username or '' }}"
+                        data-content="{{ comment.content or '' }}"
+                        data-status="{{ comment.status or 'pending' }}"
+                        data-brand="{{ comment.brand_name or 'Unassigned' }}"
+                        data-platform="{{ comment.platform or 'Unknown' }}"
+                        data-account="{{ comment.account_name or comment.account_username or '' }}"
+                        data-reply="{{ comment.reply or '' }}"
+                        data-created="{{ comment.created_at.strftime('%d %b %Y, %I:%M %p') if comment.created_at else 'Unknown date' }}"
+                    >
+
+                        <div class="engagement-comment-top">
+
+                            <div class="engagement-avatar">
+                                {{ (comment.author_name or "U")[0]|upper }}
+                            </div>
+
+                            <div class="engagement-comment-author">
+
+                                <strong>
+                                    {{ comment.author_name or "Unknown User" }}
+                                </strong>
+
+                                {% if comment.author_username %}
+
+                                <span>
+                                    @{{ comment.author_username }}
+                                </span>
+
+                                {% endif %}
+
+                            </div>
+
+                            <span class="engagement-status status-{{ comment.status or 'pending' }}">
+                                {{ (comment.status or "pending")|replace("_", " ")|title }}
+                            </span>
+
+                        </div>
+
+
+                        <p class="engagement-comment-preview">
+                            {{ comment.content or "No comment content available." }}
+                        </p>
+
+
+                        <div class="engagement-comment-meta">
+
+                            <span>
+                                {{ comment.platform or "Platform" }}
+                            </span>
+
+                            <span>
+                                •
+                            </span>
+
+                            <span>
+                                {{ comment.brand_name or "Unassigned" }}
+                            </span>
+
+                        </div>
+
+
+                        <div class="engagement-comment-date">
+
+                            {{ comment.created_at.strftime('%d %b %Y, %I:%M %p') if comment.created_at else 'Unknown date' }}
+
+                        </div>
+
+                    </article>
+
+                    {% endfor %}
+
+                {% else %}
+
+                    <div class="engagement-empty-inbox">
+
+                        <div class="engagement-empty-icon">
+                            💬
+                        </div>
+
+                        <h3>
+                            No conversations found
+                        </h3>
+
+                        <p>
+                            There are no community conversations matching
+                            your current filters.
+                        </p>
+
+                        <a
+                            href="{{ url_for('community') }}"
+                            class="engagement-clear-button"
+                        >
+                            Reset Filters
+                        </a>
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             CONVERSATION DETAIL
+        ================================================== -->
+
+        <div class="engagement-detail-panel">
+
+            {% if comments %}
+
+            <div
+                class="engagement-detail-content"
+                id="engagement-detail"
+            >
+
+                <!-- JavaScript populates this area -->
+
+            </div>
+
+            {% else %}
+
+            <div class="engagement-detail-empty">
+
+                <div class="engagement-detail-empty-icon">
+                    💬
+                </div>
+
+                <h2>
+                    Select a conversation
+                </h2>
+
+                <p>
+                    Choose a conversation from the inbox to view the
+                    complete engagement details.
+                </p>
+
+            </div>
+
+            {% endif %}
+
+        </div>
+
+    </section>
+
+</div>
+
+{% endblock %}
+
+
+{% block extra_js %}
+
+<script
+    src="{{ url_for('static', filename='js/community.js') }}"
+></script>
+
+{% endblock %}

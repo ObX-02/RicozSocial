@@ -1,0 +1,895 @@
+{% extends "base.html" %}
+
+{% block title %}
+Approvals | RicozSocial
+{% endblock %}
+
+
+{% block extra_css %}
+
+<link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/approvals.css') }}"
+>
+
+{% endblock %}
+
+
+{% block content %}
+
+<div class="approvals-page">
+
+
+    <!-- =====================================================
+         PAGE HEADER
+    ====================================================== -->
+
+    <section class="approvals-header">
+
+        <div class="approvals-eyebrow">
+            CONTENT GOVERNANCE
+        </div>
+
+        <h1 class="approvals-title">
+            Content Approvals
+        </h1>
+
+        <p class="approvals-subtitle">
+            Review, approve and manage content submitted by your team
+            before it moves into the publishing workflow.
+        </p>
+
+    </section>
+
+
+    <!-- =====================================================
+         APPROVAL STATISTICS
+    ====================================================== -->
+
+    <section class="approvals-stats">
+
+
+        <!-- TOTAL -->
+
+        <div class="approvals-stat-card">
+
+            <div class="approvals-stat-top">
+
+                <div>
+                    <p class="approvals-stat-label">
+                        Total Requests
+                    </p>
+
+                    <h2 class="approvals-stat-value">
+                        {{ total_count or 0 }}
+                    </h2>
+                </div>
+
+                <div class="approvals-stat-icon">
+                    <span>◉</span>
+                </div>
+
+            </div>
+
+            <div class="approvals-stat-meta">
+                All submitted approval requests
+            </div>
+
+        </div>
+
+
+        <!-- PENDING -->
+
+        <div class="approvals-stat-card">
+
+            <div class="approvals-stat-top">
+
+                <div>
+                    <p class="approvals-stat-label">
+                        Pending Review
+                    </p>
+
+                    <h2 class="approvals-stat-value">
+                        {{ pending_count or 0 }}
+                    </h2>
+                </div>
+
+                <div class="approvals-stat-icon">
+                    <span>◷</span>
+                </div>
+
+            </div>
+
+            <div class="approvals-stat-meta">
+                Waiting for reviewer action
+            </div>
+
+        </div>
+
+
+        <!-- APPROVED -->
+
+        <div class="approvals-stat-card">
+
+            <div class="approvals-stat-top">
+
+                <div>
+                    <p class="approvals-stat-label">
+                        Approved
+                    </p>
+
+                    <h2 class="approvals-stat-value">
+                        {{ approved_count or 0 }}
+                    </h2>
+                </div>
+
+                <div class="approvals-stat-icon">
+                    <span>✓</span>
+                </div>
+
+            </div>
+
+            <div class="approvals-stat-meta">
+                Content cleared for publishing
+            </div>
+
+        </div>
+
+
+        <!-- REJECTED -->
+
+        <div class="approvals-stat-card">
+
+            <div class="approvals-stat-top">
+
+                <div>
+                    <p class="approvals-stat-label">
+                        Rejected
+                    </p>
+
+                    <h2 class="approvals-stat-value">
+                        {{ rejected_count or 0 }}
+                    </h2>
+                </div>
+
+                <div class="approvals-stat-icon">
+                    <span>!</span>
+                </div>
+
+            </div>
+
+            <div class="approvals-stat-meta">
+                Content requiring revision
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =====================================================
+         FILTERS
+    ====================================================== -->
+
+    <section class="approvals-filter-card">
+
+        <form
+            method="GET"
+            action="{{ url_for('approvals') }}"
+            class="approvals-filter-form"
+        >
+
+
+            <!-- SEARCH -->
+
+            <div class="approvals-field">
+
+                <label for="approval-search">
+                    Search
+                </label>
+
+                <input
+                    type="text"
+                    id="approval-search"
+                    name="search"
+                    value="{{ search or '' }}"
+                    placeholder="Search posts, brands or submitters..."
+                >
+
+            </div>
+
+
+            <!-- BRAND -->
+
+            <div class="approvals-field">
+
+                <label for="approval-brand">
+                    Brand
+                </label>
+
+                <select
+                    id="approval-brand"
+                    name="brand_id"
+                >
+
+                    <option value="">
+                        All Brands
+                    </option>
+
+                    {% for brand in available_brands %}
+
+                        <option
+                            value="{{ brand.id }}"
+                            {% if selected_brand|string == brand.id|string %}
+                                selected
+                            {% endif %}
+                        >
+                            {{ brand.name }}
+                        </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <!-- STATUS -->
+
+            <div class="approvals-field">
+
+                <label for="approval-status">
+                    Status
+                </label>
+
+                <select
+                    id="approval-status"
+                    name="status"
+                >
+
+                    <option value="">
+                        All Statuses
+                    </option>
+
+                    <option
+                        value="pending"
+                        {% if selected_status == "pending" %}
+                            selected
+                        {% endif %}
+                    >
+                        Pending
+                    </option>
+
+                    <option
+                        value="approved"
+                        {% if selected_status == "approved" %}
+                            selected
+                        {% endif %}
+                    >
+                        Approved
+                    </option>
+
+                    <option
+                        value="rejected"
+                        {% if selected_status == "rejected" %}
+                            selected
+                        {% endif %}
+                    >
+                        Rejected
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <!-- APPLY -->
+
+            <button
+                type="submit"
+                class="approvals-filter-btn"
+            >
+                Apply Filters
+            </button>
+
+
+            <!-- RESET -->
+
+            <a
+                href="{{ url_for('approvals') }}"
+                class="approvals-reset-btn"
+            >
+                Reset
+            </a>
+
+        </form>
+
+    </section>
+
+
+
+    <!-- =====================================================
+         REVIEW QUEUE
+    ====================================================== -->
+
+    <section class="approvals-content-card">
+
+
+        <!-- CONTENT HEADER -->
+
+        <div class="approvals-content-header">
+
+            <div>
+
+                <h2 class="approvals-content-title">
+                    Review Queue
+                </h2>
+
+            </div>
+
+            <div class="approvals-content-count">
+                {{ approval_items|length }} items
+            </div>
+
+        </div>
+
+
+
+        {% if approval_items %}
+
+
+            <!-- =================================================
+                 TABLE
+            ================================================== -->
+
+            <div class="approvals-table-wrapper">
+
+                <table class="approvals-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Content
+                            </th>
+
+                            <th>
+                                Brand
+                            </th>
+
+                            <th>
+                                Submitted By
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+
+                            <th>
+                                Submitted
+                            </th>
+
+                            <th>
+                                Actions
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for approval in approval_items %}
+
+                        <tr>
+
+
+                            <!-- CONTENT -->
+
+                            <td>
+
+                                <div class="approval-post-title">
+
+                                    {{ approval.post_title or "Untitled Post" }}
+
+                                </div>
+
+                                {% if approval.post_content %}
+
+                                    <div class="approval-post-content">
+
+                                        {{ approval.post_content }}
+
+                                    </div>
+
+                                {% else %}
+
+                                    <div class="approval-post-content">
+
+                                        No content description available.
+
+                                    </div>
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <!-- BRAND -->
+
+                            <td>
+
+                                <div class="approval-brand">
+
+                                    {{ approval.brand_name or "No Brand" }}
+
+                                </div>
+
+                            </td>
+
+
+                            <!-- SUBMITTER -->
+
+                            <td>
+
+                                <div class="approval-submitter">
+
+                                    <strong>
+                                        {{ approval.submitter_name or "Unknown User" }}
+                                    </strong>
+
+                                    {% if approval.submitter_email %}
+
+                                        <br>
+
+                                        {{ approval.submitter_email }}
+
+                                    {% endif %}
+
+                                </div>
+
+                            </td>
+
+
+                            <!-- STATUS -->
+
+                            <td>
+
+                                {% if approval.status == "pending" %}
+
+                                    <span class="approval-status approval-status-pending">
+                                        Pending
+                                    </span>
+
+                                {% elif approval.status == "approved" %}
+
+                                    <span class="approval-status approval-status-approved">
+                                        Approved
+                                    </span>
+
+                                {% elif approval.status == "rejected" %}
+
+                                    <span class="approval-status approval-status-rejected">
+                                        Rejected
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="approval-status">
+                                        {{ approval.status|capitalize }}
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <!-- DATE -->
+
+                            <td>
+
+                                <div class="approval-submitter">
+
+                                    {% if approval.created_at %}
+
+                                        {{ approval.created_at.strftime("%d %b %Y") }}
+
+                                        <br>
+
+                                        {{ approval.created_at.strftime("%I:%M %p") }}
+
+                                    {% else %}
+
+                                        —
+
+                                    {% endif %}
+
+                                </div>
+
+                            </td>
+
+
+                            <!-- ACTIONS -->
+
+                            <td>
+
+                                {% if approval.status == "pending" %}
+
+                                    <div class="approval-actions">
+
+
+                                        <!-- APPROVE -->
+
+                                        <form
+                                            method="POST"
+                                            action="{{ url_for('approve_content', approval_id=approval.id) }}"
+                                            class="approval-inline-form"
+                                        >
+
+                                            <button
+                                                type="submit"
+                                                class="approval-action-btn approval-approve-btn"
+                                                onclick="return confirm('Approve this content?');"
+                                            >
+                                                ✓ Approve
+                                            </button>
+
+                                        </form>
+
+
+                                        <!-- REJECT -->
+
+                                        <button
+                                            type="button"
+                                            class="approval-action-btn approval-reject-btn"
+                                            data-approval-id="{{ approval.id }}"
+                                            data-post-title="{{ approval.post_title or 'Untitled Post' }}"
+                                            onclick="openRejectModal(
+                                                this.dataset.approvalId,
+                                                this.dataset.postTitle
+                                            )"
+                                        >
+                                            Reject
+                                        </button>
+
+                                    </div>
+
+                                {% else %}
+
+                                    <div class="approval-review-info">
+
+                                        {% if approval.reviewer_name %}
+
+                                            <strong>
+                                                Reviewed by
+                                            </strong>
+
+                                            {{ approval.reviewer_name }}
+
+                                        {% endif %}
+
+                                        {% if approval.reviewed_at %}
+
+                                            <span>
+                                                {{ approval.reviewed_at.strftime("%d %b %Y, %I:%M %p") }}
+                                            </span>
+
+                                        {% endif %}
+
+                                    </div>
+
+                                    {% if approval.comments %}
+
+                                        <div class="approval-review-comment">
+
+                                            {{ approval.comments }}
+
+                                        </div>
+
+                                    {% endif %}
+
+                                {% endif %}
+
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+
+        {% else %}
+
+
+            <!-- =================================================
+                 EMPTY STATE
+            ================================================== -->
+
+            <div class="approvals-empty">
+
+                <div class="approvals-empty-icon">
+                    ✓
+                </div>
+
+                <h3>
+                    No Approval Requests
+                </h3>
+
+                <p>
+                    Content submitted for review will appear here.
+                    Once a team member sends a post for approval,
+                    you will be able to review it from this queue.
+                </p>
+
+            </div>
+
+        {% endif %}
+
+    </section>
+
+
+
+    <!-- =====================================================
+     REJECT CONTENT MODAL
+====================================================== -->
+
+<div
+    id="rejectModal"
+    class="approval-modal"
+    aria-hidden="true"
+>
+
+    <div
+        class="approval-modal-overlay"
+        onclick="closeRejectModal()"
+    ></div>
+
+
+    <div class="approval-modal-card">
+
+
+        <!-- MODAL TOP -->
+
+        <div class="approval-modal-top">
+
+            <div class="approval-modal-icon">
+                <br>
+            </div>
+
+            <button
+                type="button"
+                class="approval-modal-close"
+                onclick="closeRejectModal()"
+                aria-label="Close"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <!-- MODAL CONTENT -->
+
+        <div class="approval-modal-content">
+
+            <h3 class="approval-modal-title">
+                Reject Content
+            </h3>
+
+            <p class="approval-modal-text">
+                Please provide feedback for this content.
+            </p>
+
+
+            <div class="approval-modal-post">
+
+                <span class="approval-modal-post-label">
+                    Content:
+                </span>
+
+                <strong id="rejectPostTitle">
+                    Content
+                </strong>
+
+            </div>
+
+
+            <form
+                id="rejectForm"
+                method="POST"
+            >
+
+                <div class="approval-modal-field">
+
+                    <label for="rejectComments">
+                        Reason / Feedback
+                        
+                    </label>
+                    <br><br>
+                    <textarea
+                        id="rejectComments"
+                        name="comments"
+                        class="approval-comment-box"
+                        placeholder="Tell the creator what needs to be changed..."
+                        required
+                    ></textarea>
+<br>
+                </div>
+
+                <div class="approval-modal-actions">
+<br>
+                    <button
+                        type="button"
+                        class="approval-modal-cancel"
+                        onclick="closeRejectModal()"
+                    >
+                        Cancel
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="approval-modal-submit"
+                    >
+                        Reject Content
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+            <!-- MODAL BODY -->
+
+            <div class="approval-modal-body">
+
+                <p class="approval-modal-description">
+
+                    You are rejecting:
+
+                    <strong id="rejectPostTitle">
+                        Content
+                    </strong>
+
+                </p>
+
+
+                <form
+                    id="rejectForm"
+                    method="POST"
+                >
+
+                    <div class="approval-modal-field">
+
+                        <label for="rejectComments">
+                            <u>Reason / Feedback:</u>
+                        </label>
+<br><br>
+                        <textarea
+                            id="rejectComments"
+                            name="comments"
+                            class="approval-comment-box"
+                            placeholder="Explain what needs to be changed before this content can be approved..."
+                            required
+                        ></textarea>
+
+                        <small>
+                            This feedback will be stored with the approval request.
+                        </small>
+<br><br>
+
+                    </div>
+
+
+                    <div class="approval-modal-actions">
+
+                        <button
+                            type="button"
+                            class="approval-modal-cancel"
+                            onclick="closeRejectModal()"
+                        >
+                            Cancel
+                        </button>
+
+                        <button
+                            type="submit"
+                            class="approval-modal-submit"
+                        >
+                            Reject Content
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+</div>
+
+{% endblock %}
+
+
+{% block extra_js %}
+
+<script src="{{ url_for('static', filename='js/approvals.js') }}"></script>
+
+<script>
+
+function openRejectModal(approvalId, postTitle) {
+
+    const modal = document.getElementById("rejectModal");
+    const form = document.getElementById("rejectForm");
+    const title = document.getElementById("rejectPostTitle");
+    const comments = document.getElementById("rejectComments");
+
+    if (!modal || !form) {
+        return;
+    }
+
+    form.action = "/approvals/" + approvalId + "/reject";
+
+    title.textContent = postTitle || "Content";
+
+    comments.value = "";
+
+    modal.classList.add("is-open");
+
+    modal.setAttribute("aria-hidden", "false");
+
+    document.body.classList.add("modal-open");
+
+    setTimeout(function () {
+
+        comments.focus();
+
+    }, 150);
+}
+
+
+function closeRejectModal() {
+
+    const modal = document.getElementById("rejectModal");
+
+    if (!modal) {
+        return;
+    }
+
+    modal.classList.remove("is-open");
+
+    modal.setAttribute("aria-hidden", "true");
+
+    document.body.classList.remove("modal-open");
+}
+
+
+document.addEventListener("keydown", function(event) {
+
+    if (event.key === "Escape") {
+
+        closeRejectModal();
+
+    }
+
+});
+
+
+</script>
+
+{% endblock %}

@@ -1,0 +1,1044 @@
+{% extends "base.html" %}
+
+
+{% block title %}
+Listening | RicozSocial
+{% endblock %}
+
+
+{% block extra_css %}
+
+<link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/listening.css') }}"
+>
+
+{% endblock %}
+
+
+{% block content %}
+
+<div class="listening-page">
+
+
+    <!-- =====================================================
+         PAGE HEADER
+    ====================================================== -->
+
+    <section class="listening-header">
+
+        <div class="listening-header-content">
+
+            <div class="listening-eyebrow">
+                SOCIAL LISTENING
+            </div>
+
+            <h1 class="listening-title">
+                Listening
+            </h1>
+
+            <p class="listening-subtitle">
+                Monitor conversations, discover brand mentions,
+                track keywords and understand audience sentiment
+                across your connected social channels.
+            </p>
+
+        </div>
+
+
+        <div class="listening-header-badge">
+
+            <span class="listening-live-dot"></span>
+
+            Monitoring
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =====================================================
+         STATISTICS
+    ====================================================== -->
+
+    <section class="listening-stats">
+
+
+        <div class="listening-stat-card">
+
+            <div class="listening-stat-icon red">
+                ◉
+            </div>
+
+            <div class="listening-stat-content">
+
+                <span class="listening-stat-label">
+                    Total Mentions
+                </span>
+
+                <strong class="listening-stat-value">
+                    {{ total_mentions or 0 }}
+                </strong>
+
+                <span class="listening-stat-description">
+                    Conversations captured
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="listening-stat-card">
+
+            <div class="listening-stat-icon red">
+                #
+            </div>
+
+            <div class="listening-stat-content">
+
+                <span class="listening-stat-label">
+                    Active Keywords
+                </span>
+
+                <strong class="listening-stat-value">
+                    {{ active_keywords or 0 }}
+                </strong>
+
+                <span class="listening-stat-description">
+                    Terms being monitored
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="listening-stat-card">
+
+            <div class="listening-stat-icon green">
+                ✓
+            </div>
+
+            <div class="listening-stat-content">
+
+                <span class="listening-stat-label">
+                    Positive
+                </span>
+
+                <strong class="listening-stat-value green-text">
+                    {{ positive_mentions or 0 }}
+                </strong>
+
+                <span class="listening-stat-description">
+                    Positive conversations
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="listening-stat-card">
+
+            <div class="listening-stat-icon red">
+                !
+            </div>
+
+            <div class="listening-stat-content">
+
+                <span class="listening-stat-label">
+                    Negative
+                </span>
+
+                <strong class="listening-stat-value">
+                    {{ negative_mentions or 0 }}
+                </strong>
+
+                <span class="listening-stat-description">
+                    Conversations needing attention
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="listening-stat-card">
+
+            <div class="listening-stat-icon neutral">
+                —
+            </div>
+
+            <div class="listening-stat-content">
+
+                <span class="listening-stat-label">
+                    Neutral
+                </span>
+
+                <strong class="listening-stat-value">
+                    {{ neutral_mentions or 0 }}
+                </strong>
+
+                <span class="listening-stat-description">
+                    Neutral conversations
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="listening-stat-card">
+
+            <div class="listening-stat-icon green">
+                ●
+            </div>
+
+            <div class="listening-stat-content">
+
+                <span class="listening-stat-label">
+                    New Mentions
+                </span>
+
+                <strong class="listening-stat-value green-text">
+                    {{ new_mentions or 0 }}
+                </strong>
+
+                <span class="listening-stat-description">
+                    Recent items to review
+                </span>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =====================================================
+         FILTERS
+    ====================================================== -->
+
+    <section class="listening-filter-card">
+
+        <div class="listening-section-heading">
+
+            <div>
+
+                <span class="listening-section-eyebrow">
+                    MONITORING
+                </span>
+
+                <h2>
+                    Filter Conversations
+                </h2>
+
+            </div>
+
+        </div>
+
+
+        <form
+            method="GET"
+            action="{{ url_for('listening') }}"
+            class="listening-filter-form"
+        >
+
+
+            <div class="listening-field">
+
+                <label for="listening-search">
+                    Search
+                </label>
+
+                <input
+                    type="text"
+                    id="listening-search"
+                    name="search"
+                    value="{{ search or '' }}"
+                    placeholder="Search mentions, keywords or authors..."
+                >
+
+            </div>
+
+
+            <div class="listening-field">
+
+                <label for="listening-brand">
+                    Brand
+                </label>
+
+                <select
+                    id="listening-brand"
+                    name="brand_id"
+                >
+
+                    <option value="">
+                        All Brands
+                    </option>
+
+                    {% for brand in available_brands %}
+
+                        <option
+                            value="{{ brand.id }}"
+                            {% if selected_brand|string == brand.id|string %}
+                                selected
+                            {% endif %}
+                        >
+                            {{ brand.name }}
+                        </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <div class="listening-field">
+
+                <label for="listening-platform">
+                    Platform
+                </label>
+
+                <select
+                    id="listening-platform"
+                    name="platform"
+                >
+
+                    <option value="">
+                        All Platforms
+                    </option>
+
+                    {% for item in platforms %}
+
+                        <option
+                            value="{{ item }}"
+                            {% if selected_platform == item %}
+                                selected
+                            {% endif %}
+                        >
+                            {{ item }}
+                        </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <div class="listening-field">
+
+                <label for="listening-sentiment">
+                    Sentiment
+                </label>
+
+                <select
+                    id="listening-sentiment"
+                    name="sentiment"
+                >
+
+                    <option value="">
+                        All Sentiments
+                    </option>
+
+                    <option
+                        value="positive"
+                        {% if selected_sentiment == "positive" %}
+                            selected
+                        {% endif %}
+                    >
+                        Positive
+                    </option>
+
+                    <option
+                        value="neutral"
+                        {% if selected_sentiment == "neutral" %}
+                            selected
+                        {% endif %}
+                    >
+                        Neutral
+                    </option>
+
+                    <option
+                        value="negative"
+                        {% if selected_sentiment == "negative" %}
+                            selected
+                        {% endif %}
+                    >
+                        Negative
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="listening-field">
+
+                <label for="listening-status">
+                    Status
+                </label>
+
+                <select
+                    id="listening-status"
+                    name="status"
+                >
+
+                    <option value="">
+                        All Statuses
+                    </option>
+
+                    <option
+                        value="new"
+                        {% if selected_status == "new" %}
+                            selected
+                        {% endif %}
+                    >
+                        New
+                    </option>
+
+                    <option
+                        value="open"
+                        {% if selected_status == "open" %}
+                            selected
+                        {% endif %}
+                    >
+                        Open
+                    </option>
+
+                    <option
+                        value="resolved"
+                        {% if selected_status == "resolved" %}
+                            selected
+                        {% endif %}
+                    >
+                        Resolved
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="listening-filter-actions">
+
+                <button
+                    type="submit"
+                    class="listening-apply-btn"
+                >
+                    Apply Filters
+                </button>
+
+                <a
+                    href="{{ url_for('listening') }}"
+                    class="listening-reset-btn"
+                >
+                    Reset
+                </a>
+
+            </div>
+
+        </form>
+
+    </section>
+
+
+
+    <!-- =====================================================
+         KEYWORD MANAGEMENT
+    ====================================================== -->
+
+    <section class="listening-keyword-manager">
+
+
+        <div class="listening-manager-header">
+
+            <div>
+
+                <span class="listening-section-eyebrow">
+                    KEYWORD MANAGEMENT
+                </span>
+
+                <h2>
+                    Manage Listening Keywords
+                </h2>
+
+                <p>
+                    Add keywords and phrases that RicozSocial should
+                    monitor across your connected channels.
+                </p>
+
+            </div>
+
+
+            <div class="listening-manager-count">
+
+                <strong>
+                    {{ keywords|length }}
+                </strong>
+
+                <span>
+                    Keywords
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <!-- ADD KEYWORD -->
+
+        <div class="listening-add-keyword">
+
+            <form
+                method="POST"
+                action="{{ url_for('create_listening_keyword') }}"
+                class="listening-keyword-form"
+            >
+
+
+                <div class="listening-keyword-form-field">
+
+                    <label for="keyword-brand">
+                        Brand
+                    </label>
+
+                    <select
+                        id="keyword-brand"
+                        name="brand_id"
+                        required
+                    >
+
+                        <option value="">
+                            Select Brand
+                        </option>
+
+                        {% for brand in available_brands %}
+
+                            <option value="{{ brand.id }}">
+                                {{ brand.name }}
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+                <div class="listening-keyword-form-field keyword-input-field">
+
+                    <label for="keyword">
+                        Keyword or Phrase
+                    </label>
+
+                    <input
+                        type="text"
+                        id="keyword"
+                        name="keyword"
+                        maxlength="150"
+                        placeholder="e.g. Ricoz, Ricoz Technology, #Ricoz"
+                        required
+                    >
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="listening-add-keyword-btn"
+                >
+                    <span>
+                        +
+                    </span>
+
+                    Add Keyword
+                </button>
+
+            </form>
+
+        </div>
+
+
+        <!-- KEYWORD LIST -->
+
+        {% if keywords %}
+
+            <div class="listening-managed-keywords">
+
+                {% for keyword in keywords %}
+
+                    <div class="listening-managed-keyword">
+
+
+                        <div class="listening-managed-main">
+
+                            <div class="listening-managed-icon">
+                                #
+                            </div>
+
+                            <div>
+
+                                <strong>
+                                    {{ keyword.keyword }}
+                                </strong>
+
+                                <span>
+                                    {{ keyword.brand_name or "No Brand" }}
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="listening-managed-status">
+
+                            {% if keyword.is_active %}
+
+                                <span class="listening-active">
+                                    Active
+                                </span>
+
+                            {% else %}
+
+                                <span class="listening-inactive">
+                                    Paused
+                                </span>
+
+                            {% endif %}
+
+                        </div>
+
+
+                        <div class="listening-managed-actions">
+
+
+                            <form
+                                method="POST"
+                                action="{{ url_for(
+                                    'toggle_listening_keyword',
+                                    keyword_id=keyword.id
+                                ) }}"
+                            >
+
+                                <button
+                                    type="submit"
+                                    class="listening-keyword-action toggle"
+                                >
+
+                                    {% if keyword.is_active %}
+                                        Pause
+                                    {% else %}
+                                        Activate
+                                    {% endif %}
+
+                                </button>
+
+                            </form>
+
+
+                            <form
+                                method="POST"
+                                action="{{ url_for(
+                                    'delete_listening_keyword',
+                                    keyword_id=keyword.id
+                                ) }}"
+                                onsubmit="return confirm(
+                                    'Delete this listening keyword?'
+                                );"
+                            >
+
+                                <button
+                                    type="submit"
+                                    class="listening-keyword-action delete"
+                                >
+                                    Delete
+                                </button>
+
+                            </form>
+
+                        </div>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        {% else %}
+
+            <div class="listening-keywords-empty">
+
+                <div class="listening-keywords-empty-icon">
+                    #
+                </div>
+
+                <h3>
+                    No Listening Keywords
+                </h3>
+
+                <p>
+                    Add your first brand keyword above to start
+                    building your social listening configuration.
+                </p>
+
+            </div>
+
+        {% endif %}
+
+    </section>
+
+
+
+    <!-- =====================================================
+         MAIN CONTENT
+    ====================================================== -->
+
+    <section class="listening-main-grid">
+
+
+        <!-- =================================================
+             RECENT MENTIONS
+        ================================================== -->
+
+        <div class="listening-mentions-card">
+
+            <div class="listening-card-header">
+
+                <div>
+
+                    <span class="listening-section-eyebrow">
+                        LIVE FEED
+                    </span>
+
+                    <h2>
+                        Recent Mentions
+                    </h2>
+
+                    <p>
+                        Latest conversations detected by your
+                        listening keywords.
+                    </p>
+
+                </div>
+
+                <span class="listening-count-badge">
+                    {{ mentions|length }}
+                </span>
+
+            </div>
+
+
+            {% if mentions %}
+
+                <div class="listening-mentions-list">
+
+                    {% for mention in mentions %}
+
+                        <article class="listening-mention">
+
+
+                            <div class="listening-platform-icon">
+
+                                {% if mention.platform == "Instagram" %}
+                                    ◎
+                                {% elif mention.platform == "Facebook" %}
+                                    f
+                                {% elif mention.platform == "LinkedIn" %}
+                                    in
+                                {% elif mention.platform == "X" %}
+                                    𝕏
+                                {% elif mention.platform == "YouTube" %}
+                                    ▶
+                                {% elif mention.platform == "TikTok" %}
+                                    ♪
+                                {% else %}
+                                    #
+                                {% endif %}
+
+                            </div>
+
+
+                            <div class="listening-mention-content">
+
+                                <div class="listening-mention-top">
+
+                                    <div>
+
+                                        <strong>
+                                            {{ mention.author_name or "Unknown User" }}
+                                        </strong>
+
+                                        {% if mention.author_username %}
+
+                                            <span>
+                                                @{{ mention.author_username }}
+                                            </span>
+
+                                        {% endif %}
+
+                                    </div>
+
+
+                                    <span class="listening-platform-name">
+                                        {{ mention.platform or "Social" }}
+                                    </span>
+
+                                </div>
+
+
+                                <p class="listening-mention-text">
+                                    {{ mention.content or "No mention content available." }}
+                                </p>
+
+
+                                <div class="listening-mention-meta">
+
+                                    {% if mention.keyword %}
+
+                                        <span class="listening-keyword">
+                                            #{{ mention.keyword }}
+                                        </span>
+
+                                    {% endif %}
+
+                                    {% if mention.brand_name %}
+
+                                        <span>
+                                            {{ mention.brand_name }}
+                                        </span>
+
+                                    {% endif %}
+
+                                    {% if mention.mentioned_at %}
+
+                                        <span>
+                                            {{ mention.mentioned_at.strftime(
+                                                "%d %b %Y, %I:%M %p"
+                                            ) }}
+                                        </span>
+
+                                    {% endif %}
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="listening-mention-sentiment">
+
+                                {% set mention_sentiment =
+                                    (mention.sentiment or "neutral")|lower
+                                %}
+
+                                {% if mention_sentiment == "positive" %}
+
+                                    <span class="listening-sentiment positive">
+                                        Positive
+                                    </span>
+
+                                {% elif mention_sentiment == "negative" %}
+
+                                    <span class="listening-sentiment negative">
+                                        Negative
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="listening-sentiment neutral">
+                                        Neutral
+                                    </span>
+
+                                {% endif %}
+
+                            </div>
+
+                        </article>
+
+                    {% endfor %}
+
+                </div>
+
+            {% else %}
+
+                <div class="listening-empty">
+
+                    <div class="listening-empty-icon">
+                        ◌
+                    </div>
+
+                    <h3>
+                        No Mentions Yet
+                    </h3>
+
+                    <p>
+                        When social conversations match your
+                        listening keywords, they will appear here.
+                    </p>
+
+                </div>
+
+            {% endif %}
+
+        </div>
+
+
+
+        <!-- =================================================
+             SIDEBAR
+        ================================================== -->
+
+        <aside class="listening-sidebar">
+
+
+            <!-- PLATFORM BREAKDOWN -->
+
+            <div class="listening-sidebar-card">
+
+                <div class="listening-card-header compact">
+
+                    <div>
+
+                        <span class="listening-section-eyebrow">
+                            CHANNELS
+                        </span>
+
+                        <h2>
+                            Platforms
+                        </h2>
+
+                    </div>
+
+                </div>
+
+
+                {% if platform_counts %}
+
+                    <div class="listening-platform-list">
+
+                        {% for item in platform_counts %}
+
+                            <div class="listening-platform-row">
+
+                                <span>
+                                    {{ item.platform or "Unknown" }}
+                                </span>
+
+                                <strong>
+                                    {{ item.count }}
+                                </strong>
+
+                            </div>
+
+                        {% endfor %}
+
+                    </div>
+
+                {% else %}
+
+                    <div class="listening-sidebar-empty">
+
+                        <span>
+                            ◉
+                        </span>
+
+                        <p>
+                            No platform activity available yet.
+                        </p>
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+
+            <!-- QUICK INFO -->
+
+            <div class="listening-sidebar-card">
+
+                <div class="listening-card-header compact">
+
+                    <div>
+
+                        <span class="listening-section-eyebrow">
+                            LISTENING STATUS
+                        </span>
+
+                        <h2>
+                            Monitoring Health
+                        </h2>
+
+                    </div>
+
+                </div>
+
+
+                <div class="listening-health">
+
+                    <div class="listening-health-row">
+
+                        <span>
+                            Keyword monitoring
+                        </span>
+
+                        <strong class="health-green">
+                            Active
+                        </strong>
+
+                    </div>
+
+
+                    <div class="listening-health-row">
+
+                        <span>
+                            Mention collection
+                        </span>
+
+                        <strong class="health-green">
+                            Ready
+                        </strong>
+
+                    </div>
+
+
+                    <div class="listening-health-row">
+
+                        <span>
+                            Sentiment tracking
+                        </span>
+
+                        <strong class="health-green">
+                            Enabled
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </aside>
+
+    </section>
+
+
+
+    <!-- =====================================================
+         FOOTER
+    ====================================================== -->
+
+    <div class="listening-footer">
+        RicozSocial • Social Listening • Audience Intelligence
+    </div>
+
+
+</div>
+
+{% endblock %}

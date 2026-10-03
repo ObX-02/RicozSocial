@@ -1,0 +1,1135 @@
+/* =========================================================
+   RICOZSOCIAL
+   CONTENT APPROVALS — PREMIUM ENTERPRISE UI
+========================================================= */
+
+
+/* =========================================================
+   DESIGN TOKENS
+========================================================= */
+
+:root {
+
+    --approval-red: #e31e24;
+    --approval-red-dark: #b9151a;
+    --approval-red-light: #fff1f2;
+
+    --approval-green: #198754;
+    --approval-green-dark: #146c43;
+    --approval-green-light: #ecfdf3;
+
+    --approval-white: #ffffff;
+    --approval-bg: #f7f7f8;
+    --approval-surface: #ffffff;
+
+    --approval-text: #171717;
+    --approval-heading: #111111;
+    --approval-muted: #777777;
+
+    --approval-border: #ececec;
+
+    --approval-shadow:
+        0 8px 25px rgba(0, 0, 0, 0.06);
+
+    --approval-shadow-hover:
+        0 14px 35px rgba(0, 0, 0, 0.10);
+
+    --approval-radius: 18px;
+}
+
+
+/* =========================================================
+   PAGE
+========================================================= */
+
+.approvals-page {
+
+    width: 100%;
+    max-width: 1500px;
+
+    margin: 0 auto;
+
+    padding: 28px 30px 50px;
+
+    color: var(--approval-text);
+}
+
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.approvals-header {
+
+    position: relative;
+
+    overflow: hidden;
+
+    background:
+        linear-gradient(
+            135deg,
+            #b9151a 0%,
+            #e31e24 55%,
+            #f04449 100%
+        );
+
+    border-radius: 24px;
+
+    padding: 34px 38px;
+
+    margin-bottom: 26px;
+
+    color: white;
+
+    box-shadow:
+        0 14px 40px rgba(227, 30, 36, 0.20);
+}
+
+.approvals-header::before {
+
+    content: "";
+
+    position: absolute;
+
+    width: 220px;
+    height: 220px;
+
+    right: -70px;
+    top: -100px;
+
+    border-radius: 50%;
+
+    background: rgba(255,255,255,0.10);
+}
+
+.approvals-header::after {
+
+    content: "";
+
+    position: absolute;
+
+    width: 150px;
+    height: 150px;
+
+    right: 130px;
+    bottom: -100px;
+
+    border-radius: 50%;
+
+    background: rgba(255,255,255,0.06);
+}
+
+.approvals-eyebrow {
+
+    position: relative;
+    z-index: 2;
+
+    display: inline-flex;
+
+    align-items: center;
+
+    padding: 7px 12px;
+
+    border-radius: 999px;
+
+    background: rgba(255,255,255,0.14);
+
+    font-size: 11px;
+
+    font-weight: 800;
+
+    letter-spacing: 1.5px;
+
+    text-transform: uppercase;
+
+    margin-bottom: 12px;
+}
+
+.approvals-title {
+
+    position: relative;
+    z-index: 2;
+
+    margin: 0;
+
+    font-size: 30px;
+
+    font-weight: 800;
+
+    letter-spacing: -0.7px;
+}
+
+.approvals-subtitle {
+
+    position: relative;
+    z-index: 2;
+
+    margin: 8px 0 0;
+
+    max-width: 700px;
+
+    color: rgba(255,255,255,0.82);
+
+    font-size: 14px;
+
+    line-height: 1.6;
+}
+
+
+/* =========================================================
+   STATS SECTION
+========================================================= */
+
+.approvals-stats {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+
+    gap: 18px;
+
+    margin-bottom: 26px;
+}
+
+
+/* =========================================================
+   INDIVIDUAL STAT CARD
+========================================================= */
+
+.approvals-stat-card {
+
+    position: relative;
+
+    min-height: 145px;
+
+    padding: 22px;
+
+    background: var(--approval-white);
+
+    border: 1px solid var(--approval-border);
+
+    border-radius: var(--approval-radius);
+
+    box-shadow: var(--approval-shadow);
+
+    overflow: hidden;
+
+    transition:
+        transform 0.25s ease,
+        box-shadow 0.25s ease,
+        border-color 0.25s ease;
+}
+
+.approvals-stat-card:hover {
+
+    transform: translateY(-4px);
+
+    box-shadow: var(--approval-shadow-hover);
+
+    border-color: #dddddd;
+}
+
+
+/* =========================================================
+   TOP ACCENT
+========================================================= */
+
+.approvals-stat-card::before {
+
+    content: "";
+
+    position: absolute;
+
+    left: 0;
+    top: 0;
+
+    width: 100%;
+    height: 4px;
+
+    background: var(--approval-red);
+}
+
+.approvals-stat-card:nth-child(2)::before {
+
+    background: #e31e24;
+}
+
+.approvals-stat-card:nth-child(3)::before {
+
+    background: var(--approval-green);
+}
+
+.approvals-stat-card:nth-child(4)::before {
+
+    background: #d92b30;
+}
+
+
+/* =========================================================
+   STAT CARD TOP ROW
+========================================================= */
+
+.approvals-stat-top {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 12px;
+
+    margin-bottom: 14px;
+}
+
+
+/* =========================================================
+   STAT ICON
+========================================================= */
+
+.approvals-stat-icon {
+
+    width: 44px;
+    height: 44px;
+
+    flex: 0 0 44px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 13px;
+
+    background: var(--approval-red-light);
+
+    color: var(--approval-red);
+
+    font-size: 20px;
+
+    font-weight: 800;
+}
+
+.approvals-stat-card:nth-child(2)
+.approvals-stat-icon {
+
+    background: #fff1f2;
+
+    color: var(--approval-red);
+}
+
+.approvals-stat-card:nth-child(3)
+.approvals-stat-icon {
+
+    background: var(--approval-green-light);
+
+    color: var(--approval-green);
+}
+
+.approvals-stat-card:nth-child(4)
+.approvals-stat-icon {
+
+    background: #fff1f2;
+
+    color: var(--approval-red-dark);
+}
+
+
+/* =========================================================
+   STAT LABEL
+========================================================= */
+
+.approvals-stat-label {
+
+    margin: 0;
+
+    font-size: 12px;
+
+    font-weight: 700;
+
+    letter-spacing: 0.3px;
+
+    color: var(--approval-muted);
+
+    text-transform: uppercase;
+}
+
+
+/* =========================================================
+   STAT NUMBER
+========================================================= */
+
+.approvals-stat-value {
+
+    margin: 0;
+
+    font-size: 32px;
+
+    line-height: 1;
+
+    font-weight: 850;
+
+    letter-spacing: -1px;
+
+    color: var(--approval-heading);
+}
+
+
+/* =========================================================
+   STAT DESCRIPTION
+========================================================= */
+
+.approvals-stat-meta {
+
+    margin-top: 9px;
+
+    font-size: 12px;
+
+    color: #8a8a8a;
+
+    line-height: 1.4;
+}
+
+
+/* =========================================================
+   FILTER CARD
+========================================================= */
+
+.approvals-filter-card {
+
+    background: var(--approval-white);
+
+    border: 1px solid var(--approval-border);
+
+    border-radius: var(--approval-radius);
+
+    padding: 20px;
+
+    margin-bottom: 24px;
+
+    box-shadow: var(--approval-shadow);
+}
+
+.approvals-filter-form {
+
+    display: grid;
+
+    grid-template-columns:
+        minmax(220px, 2fr)
+        minmax(160px, 1fr)
+        minmax(160px, 1fr)
+        auto
+        auto;
+
+    gap: 14px;
+
+    align-items: end;
+}
+
+.approvals-field {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 7px;
+}
+
+.approvals-field label {
+
+    font-size: 11px;
+
+    font-weight: 800;
+
+    text-transform: uppercase;
+
+    letter-spacing: 0.6px;
+
+    color: #686868;
+}
+
+.approvals-field input,
+.approvals-field select {
+
+    width: 100%;
+
+    height: 44px;
+
+    padding: 0 13px;
+
+    border: 1px solid #dddddd;
+
+    border-radius: 11px;
+
+    background: #ffffff;
+
+    color: #222222;
+
+    font-size: 13px;
+
+    outline: none;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.approvals-field input:focus,
+.approvals-field select:focus {
+
+    border-color: var(--approval-red);
+
+    box-shadow:
+        0 0 0 3px rgba(227,30,36,0.08);
+}
+
+
+/* =========================================================
+   FILTER BUTTONS
+========================================================= */
+
+.approvals-filter-btn,
+.approvals-reset-btn {
+
+    height: 44px;
+
+    padding: 0 18px;
+
+    border-radius: 11px;
+
+    font-size: 13px;
+
+    font-weight: 800;
+
+    cursor: pointer;
+
+    text-decoration: none;
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    transition: all 0.2s ease;
+}
+
+.approvals-filter-btn {
+
+    border: 1px solid var(--approval-red);
+
+    background: var(--approval-red);
+
+    color: white;
+}
+
+.approvals-filter-btn:hover {
+
+    background: var(--approval-red-dark);
+
+    border-color: var(--approval-red-dark);
+
+    transform: translateY(-1px);
+}
+
+.approvals-reset-btn {
+
+    border: 1px solid #dddddd;
+
+    background: #ffffff;
+
+    color: #555555;
+}
+
+.approvals-reset-btn:hover {
+
+    border-color: #bbbbbb;
+
+    background: #fafafa;
+}
+
+
+/* =========================================================
+   CONTENT CARD
+========================================================= */
+
+.approvals-content-card {
+
+    background: var(--approval-white);
+
+    border: 1px solid var(--approval-border);
+
+    border-radius: var(--approval-radius);
+
+    box-shadow: var(--approval-shadow);
+
+    overflow: hidden;
+}
+
+
+/* =========================================================
+   CONTENT HEADER
+========================================================= */
+
+.approvals-content-header {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 15px;
+
+    padding: 22px 24px;
+
+    border-bottom: 1px solid var(--approval-border);
+}
+
+.approvals-content-title {
+
+    margin: 0;
+
+    font-size: 18px;
+
+    font-weight: 800;
+
+    color: var(--approval-heading);
+}
+
+.approvals-content-count {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    min-width: 32px;
+
+    height: 28px;
+
+    padding: 0 10px;
+
+    border-radius: 999px;
+
+    background: var(--approval-red-light);
+
+    color: var(--approval-red);
+
+    font-size: 12px;
+
+    font-weight: 800;
+}
+
+
+/* =========================================================
+   TABLE
+========================================================= */
+
+.approvals-table-wrapper {
+
+    width: 100%;
+
+    overflow-x: auto;
+}
+
+.approvals-table {
+
+    width: 100%;
+
+    border-collapse: collapse;
+
+    min-width: 1050px;
+}
+
+.approvals-table thead th {
+
+    padding: 14px 20px;
+
+    background: #fafafa;
+
+    border-bottom: 1px solid var(--approval-border);
+
+    color: #777777;
+
+    font-size: 10px;
+
+    font-weight: 850;
+
+    text-transform: uppercase;
+
+    letter-spacing: 0.8px;
+
+    text-align: left;
+}
+
+.approvals-table tbody td {
+
+    padding: 18px 20px;
+
+    border-bottom: 1px solid #f0f0f0;
+
+    vertical-align: middle;
+
+    font-size: 13px;
+}
+
+.approvals-table tbody tr {
+
+    transition: background 0.2s ease;
+}
+
+.approvals-table tbody tr:hover {
+
+    background: #fffafa;
+}
+
+.approvals-table tbody tr:last-child td {
+
+    border-bottom: none;
+}
+
+
+/* =========================================================
+   POST DETAILS
+========================================================= */
+
+.approval-post-title {
+
+    font-size: 14px;
+
+    font-weight: 800;
+
+    color: #181818;
+
+    margin-bottom: 5px;
+}
+
+.approval-post-content {
+
+    max-width: 330px;
+
+    color: #777777;
+
+    font-size: 12px;
+
+    line-height: 1.5;
+
+    display: -webkit-box;
+
+    -webkit-line-clamp: 2;
+
+    -webkit-box-orient: vertical;
+
+    overflow: hidden;
+}
+
+.approval-brand {
+
+    font-size: 13px;
+
+    font-weight: 700;
+
+    color: #333333;
+}
+
+.approval-submitter {
+
+    font-size: 12px;
+
+    color: #777777;
+
+    line-height: 1.5;
+}
+
+
+/* =========================================================
+   STATUS
+========================================================= */
+
+.approval-status {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 7px;
+
+    padding: 7px 11px;
+
+    border-radius: 999px;
+
+    font-size: 11px;
+
+    font-weight: 850;
+
+    white-space: nowrap;
+}
+
+.approval-status::before {
+
+    content: "";
+
+    width: 6px;
+    height: 6px;
+
+    border-radius: 50%;
+
+    background: currentColor;
+}
+
+.approval-status-pending {
+
+    color: var(--approval-red);
+
+    background: #fff1f2;
+}
+
+.approval-status-approved {
+
+    color: var(--approval-green);
+
+    background: var(--approval-green-light);
+}
+
+.approval-status-rejected {
+
+    color: var(--approval-red-dark);
+
+    background: #fff1f2;
+}
+
+
+/* =========================================================
+   ACTIONS
+========================================================= */
+
+.approval-actions {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+}
+
+.approval-action-btn {
+
+    min-width: 82px;
+
+    height: 36px;
+
+    padding: 0 12px;
+
+    border-radius: 9px;
+
+    font-size: 11px;
+
+    font-weight: 800;
+
+    border: 1px solid transparent;
+
+    cursor: pointer;
+
+    transition: all 0.2s ease;
+}
+
+.approval-approve-btn {
+
+    background: var(--approval-green);
+
+    color: white;
+
+    border-color: var(--approval-green);
+}
+
+.approval-approve-btn:hover {
+
+    background: var(--approval-green-dark);
+
+    border-color: var(--approval-green-dark);
+
+    transform: translateY(-1px);
+}
+
+.approval-reject-btn {
+
+    background: #fff1f2;
+
+    color: var(--approval-red);
+
+    border-color: #ffd1d3;
+}
+
+.approval-reject-btn:hover {
+
+    background: var(--approval-red);
+
+    color: white;
+
+    border-color: var(--approval-red);
+}
+
+
+/* =========================================================
+   COMMENT BOX
+========================================================= */
+
+.approval-comment-box {
+
+    width: 100%;
+
+    min-height: 90px;
+
+    resize: vertical;
+
+    padding: 12px;
+
+    border: 1px solid #dddddd;
+
+    border-radius: 10px;
+
+    font-family: inherit;
+
+    font-size: 12px;
+
+    color: #333333;
+
+    outline: none;
+}
+
+.approval-comment-box:focus {
+
+    border-color: var(--approval-red);
+
+    box-shadow:
+        0 0 0 3px rgba(227,30,36,0.08);
+}
+
+
+/* =========================================================
+   REVIEW INFO
+========================================================= */
+
+.approval-review-info {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 4px;
+
+    font-size: 11px;
+
+    color: #777777;
+}
+
+.approval-review-comment {
+
+    margin-top: 6px;
+
+    padding: 9px 11px;
+
+    border-left: 3px solid var(--approval-red);
+
+    background: #fafafa;
+
+    border-radius: 0 8px 8px 0;
+
+    font-size: 11px;
+
+    color: #666666;
+
+    line-height: 1.5;
+}
+
+
+/* =========================================================
+   EMPTY STATE
+========================================================= */
+
+.approvals-empty {
+
+    padding: 75px 30px;
+
+    text-align: center;
+}
+
+.approvals-empty-icon {
+
+    width: 70px;
+    height: 70px;
+
+    margin: 0 auto 18px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 20px;
+
+    background: var(--approval-red-light);
+
+    color: var(--approval-red);
+
+    font-size: 28px;
+}
+
+.approvals-empty h3 {
+
+    margin: 0 0 8px;
+
+    font-size: 18px;
+
+    font-weight: 800;
+
+    color: #222222;
+}
+
+.approvals-empty p {
+
+    max-width: 500px;
+
+    margin: 0 auto;
+
+    color: #858585;
+
+    font-size: 13px;
+
+    line-height: 1.6;
+}
+
+
+/* =========================================================
+   FOOTER
+========================================================= */
+
+.approvals-page::after {
+
+    content:
+        "RicozSocial  •  Content Governance  •  Secure Approval Workflow";
+
+    display: block;
+
+    margin-top: 28px;
+
+    padding-top: 20px;
+
+    border-top: 1px solid #e8e8e8;
+
+    text-align: center;
+
+    color: #999999;
+
+    font-size: 11px;
+
+    font-weight: 600;
+
+    letter-spacing: 0.3px;
+}
+
+
+/* =========================================================
+   RESPONSIVE — TABLET
+========================================================= */
+
+@media (max-width: 1200px) {
+
+    .approvals-stats {
+
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+    .approvals-filter-form {
+
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+}
+
+
+/* =========================================================
+   RESPONSIVE — MOBILE
+========================================================= */
+
+@media (max-width: 700px) {
+
+    .approvals-page {
+
+        padding: 18px 14px 35px;
+    }
+
+    .approvals-header {
+
+        padding: 26px 22px;
+
+        border-radius: 18px;
+    }
+
+    .approvals-title {
+
+        font-size: 24px;
+    }
+
+    .approvals-subtitle {
+
+        font-size: 13px;
+    }
+
+    .approvals-stats {
+
+        grid-template-columns: 1fr;
+
+        gap: 12px;
+    }
+
+    .approvals-stat-card {
+
+        min-height: 130px;
+    }
+
+    .approvals-filter-form {
+
+        grid-template-columns: 1fr;
+    }
+
+    .approvals-content-header {
+
+        padding: 18px;
+    }
+
+}
+
+
+/* =========================================================
+   SMALL MOBILE
+========================================================= */
+
+@media (max-width: 430px) {
+
+    .approvals-header {
+
+        padding: 22px 18px;
+    }
+
+    .approvals-title {
+
+        font-size: 21px;
+    }
+
+    .approvals-stat-value {
+
+        font-size: 29px;
+    }
+
+    .approvals-stat-card {
+
+        padding: 18px;
+    }
+
+}
