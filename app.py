@@ -5,12 +5,24 @@
 
 import os
 import re
+from google import genai
 from functools import wraps
 from datetime import datetime, date, timedelta
 
 import psycopg
 from psycopg.rows import dict_row
 from dotenv import load_dotenv
+# =========================================================
+# GEMINI AI CONFIGURATION
+# =========================================================
+
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+
+gemini_client = (
+    genai.Client(api_key=GEMINI_API_KEY)
+    if GEMINI_API_KEY
+    else None
+)
 
 from flask import (
     Flask,
@@ -506,12 +518,104 @@ def init_db():
                 CREATE INDEX IF NOT EXISTS idx_content_approvals_post
                 ON content_approvals(post_id)
             """)
+                       # =========================================================
+            # CAMPAIGNS
+            # =========================================================
 
-            conn.commit()
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS campaigns (
+                    id SERIAL PRIMARY KEY,
+
+                    brand_id INTEGER NOT NULL
+                        REFERENCES brands(id)
+                        ON DELETE CASCADE,
+
+                    created_by INTEGER
+                        REFERENCES users(id)
+                        ON DELETE SET NULL,
+
+                    name VARCHAR(200) NOT NULL,
+
+                    description TEXT,
+
+                    goal_type VARCHAR(50),
+
+                    target_value NUMERIC(14, 2),
+
+                    start_date DATE,
+
+                    end_date DATE,
+
+                    status VARCHAR(30) DEFAULT 'Draft',
+
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+
+
+            # =========================================================
+            # CAMPAIGN POSTS
+            # =========================================================
+
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS campaign_posts (
+                    id SERIAL PRIMARY KEY,
+
+                    campaign_id INTEGER NOT NULL
+                        REFERENCES campaigns(id)
+                        ON DELETE CASCADE,
+
+                    post_id INTEGER NOT NULL
+                        REFERENCES posts(id)
+                        ON DELETE CASCADE,
+
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+                    UNIQUE(campaign_id, post_id)
+                )
+            """)
+
+
+            # =========================================================
+            # CAMPAIGN INDEXES
+            # =========================================================
+
+            cur.execute("""
+                CREATE INDEX IF NOT EXISTS idx_campaigns_brand_id
+                ON campaigns(brand_id)
+            """)
+
+
+            cur.execute("""
+                CREATE INDEX IF NOT EXISTS idx_campaigns_status
+                ON campaigns(status)
+            """)
+
+
+            cur.execute("""
+                CREATE INDEX IF NOT EXISTS idx_campaigns_dates
+                ON campaigns(start_date, end_date)
+            """)
+
+
+            cur.execute("""
+                CREATE INDEX IF NOT EXISTS idx_campaign_posts_campaign_id
+                ON campaign_posts(campaign_id)
+            """)
+
+
+            cur.execute("""
+                CREATE INDEX IF NOT EXISTS idx_campaign_posts_post_id
+                ON campaign_posts(post_id)
+            """)
+
+
+        conn.commit()
 
     finally:
         conn.close()
-
 
 # =========================================================
 # CONSTANTS
@@ -879,6 +983,98 @@ def get_brand_or_404(brand_id):
             """, (brand_id,))
 
             brand = cur.fetchone()
+            # =========================================================
+            # CAMPAIGNS
+            # =========================================================
+
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS campaigns (
+                    id SERIAL PRIMARY KEY,
+
+                    brand_id INTEGER NOT NULL
+                        REFERENCES brands(id)
+                        ON DELETE CASCADE,
+
+                    created_by INTEGER
+                        REFERENCES users(id)
+                        ON DELETE SET NULL,
+
+                    name VARCHAR(200) NOT NULL,
+
+                    description TEXT,
+
+                    goal_type VARCHAR(50),
+
+                    target_value NUMERIC(14, 2),
+
+                    start_date DATE,
+
+                    end_date DATE,
+
+                    status VARCHAR(30) DEFAULT 'Draft',
+
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+
+
+            # =========================================================
+            # CAMPAIGN POSTS
+            # =========================================================
+
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS campaign_posts (
+                    id SERIAL PRIMARY KEY,
+
+                    campaign_id INTEGER NOT NULL
+                        REFERENCES campaigns(id)
+                        ON DELETE CASCADE,
+
+                    post_id INTEGER NOT NULL
+                        REFERENCES posts(id)
+                        ON DELETE CASCADE,
+
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+                    UNIQUE(campaign_id, post_id)
+                )
+            """)
+
+
+            # =========================================================
+            # CAMPAIGN INDEXES
+            # =========================================================
+
+            cur.execute("""
+                CREATE INDEX IF NOT EXISTS idx_campaigns_brand_id
+                ON campaigns(brand_id)
+            """)
+
+
+            cur.execute("""
+                CREATE INDEX IF NOT EXISTS idx_campaigns_status
+                ON campaigns(status)
+            """)
+
+
+            cur.execute("""
+                CREATE INDEX IF NOT EXISTS idx_campaigns_dates
+                ON campaigns(start_date, end_date)
+            """)
+
+
+            cur.execute("""
+                CREATE INDEX IF NOT EXISTS idx_campaign_posts_campaign_id
+                ON campaign_posts(campaign_id)
+            """)
+
+
+            cur.execute("""
+                CREATE INDEX IF NOT EXISTS idx_campaign_posts_post_id
+                ON campaign_posts(post_id)
+            """)
 
             if not brand:
                 abort(404)
@@ -1022,6 +1218,14 @@ def index():
 def register():
 
     if get_current_user():
+
+        current_user = get_current_user()
+
+        if current_user.get("role") == "admin":
+            return redirect(
+                url_for("admin_dashboard")
+            )
+
         return redirect(
             url_for("dashboard")
         )
@@ -1115,24 +1319,36 @@ def register():
                         "register.html"
                     )
 
+                # -------------------------------------------------
+                # IMPORTANT:
+                # New registrations are normal client accounts.
+                # Nobody can create an admin account through
+                # the public registration page.
+                # -------------------------------------------------
+
                 cur.execute("""
                     INSERT INTO users (
                         name,
                         email,
-                        password_hash
+                        password_hash,
+                        role,
+                        is_active
                     )
-                    VALUES (%s, %s, %s)
+                    VALUES (%s, %s, %s, %s, %s)
                     RETURNING id
                 """, (
                     name,
                     email,
-                    generate_password_hash(password)
+                    generate_password_hash(password),
+                    "member",
+                    True
                 ))
 
                 user = cur.fetchone()
 
                 conn.commit()
 
+                session.clear()
                 session["user_id"] = user["id"]
 
                 flash(
@@ -1144,7 +1360,25 @@ def register():
                     url_for("dashboard")
                 )
 
+        except Exception:
+
+            conn.rollback()
+
+            app.logger.exception(
+                "Registration failed."
+            )
+
+            flash(
+                "Unable to create your account right now.",
+                "danger"
+            )
+
+            return render_template(
+                "register.html"
+            )
+
         finally:
+
             conn.close()
 
     return render_template(
@@ -1160,6 +1394,13 @@ def register():
 def login():
 
     if get_current_user():
+
+        current_user = get_current_user()
+
+        if current_user.get("role") == "admin":
+            return redirect(
+                url_for("admin_dashboard")
+            )
 
         return redirect(
             url_for("dashboard")
@@ -1177,6 +1418,22 @@ def login():
             ""
         )
 
+        login_type = request.form.get(
+            "login_type",
+            "client"
+        ).strip().lower()
+
+        # ---------------------------------------------------------
+        # ALLOW ONLY THESE TWO LOGIN TYPES
+        # ---------------------------------------------------------
+
+        if login_type not in (
+            "client",
+            "admin"
+        ):
+
+            login_type = "client"
+
         conn = get_db_connection()
 
         try:
@@ -1191,7 +1448,23 @@ def login():
 
                 user = cur.fetchone()
 
-                if not user or not check_password_hash(
+                # -------------------------------------------------
+                # BASIC CREDENTIAL CHECK
+                # -------------------------------------------------
+
+                if not user or not user.get("password_hash"):
+
+                    flash(
+                        "Invalid email or password.",
+                        "danger"
+                    )
+
+                    return render_template(
+                        "login.html",
+                        login_type=login_type
+                    )
+
+                if not check_password_hash(
                     user["password_hash"],
                     password
                 ):
@@ -1202,8 +1475,13 @@ def login():
                     )
 
                     return render_template(
-                        "login.html"
+                        "login.html",
+                        login_type=login_type
                     )
+
+                # -------------------------------------------------
+                # ACCOUNT STATUS CHECK
+                # -------------------------------------------------
 
                 if not user["is_active"]:
 
@@ -1213,34 +1491,351 @@ def login():
                     )
 
                     return render_template(
-                        "login.html"
+                        "login.html",
+                        login_type=login_type
                     )
 
-                session.clear()
-                session["user_id"] = user["id"]
+                # -------------------------------------------------
+                # ADMIN LOGIN
+                # -------------------------------------------------
+
+                if login_type == "admin":
+
+                    if user.get("role") != "admin":
+
+                        flash(
+                            "This account does not have administrator access.",
+                            "danger"
+                        )
+
+                        return render_template(
+                            "login.html",
+                            login_type="admin"
+                        )
+
+                    session.clear()
+
+                    session["user_id"] = user["id"]
+                    session["login_type"] = "admin"
+
+                    log_activity(
+                        "admin_login",
+                        "user",
+                        user["id"],
+                        "Administrator logged into the admin panel."
+                    )
+
+                    flash(
+                        "Welcome to the Admin Panel.",
+                        "success"
+                    )
+
+                    next_url = request.args.get(
+                        "next"
+                    )
+
+                    if (
+                        next_url
+                        and next_url.startswith("/")
+                        and not next_url.startswith("//")
+                    ):
+
+                        return redirect(
+                            next_url
+                        )
+
+                    return redirect(
+                        url_for("admin_dashboard")
+                    )
+
+                        # -------------------------------------------------
+            # CLIENT LOGIN
+            # -------------------------------------------------
+
+            if user.get("role") == "admin":
 
                 flash(
-                    "Welcome back.",
-                    "success"
+                    "Please use Admin Login for this administrator account.",
+                    "warning"
                 )
 
-                next_url = request.args.get("next")
+                return render_template(
+                    "login.html",
+                    login_type="client"
+                )
 
-                if next_url and next_url.startswith("/"):
-                    return redirect(next_url)
+            session.clear()
+
+            session["user_id"] = user["id"]
+            session["login_type"] = "client"
+
+            log_activity(
+                "login",
+                "user",
+                user["id"],
+                "User logged into the client panel."
+            )
+
+            flash(
+                "Welcome back.",
+                "success"
+            )
+
+            next_url = request.args.get(
+                "next"
+            )
+
+            if (
+                next_url
+                and next_url.startswith("/")
+                and not next_url.startswith("//")
+            ):
 
                 return redirect(
-                    url_for("dashboard")
+                    next_url
                 )
 
+            return redirect(
+                url_for("dashboard")
+            )
+
+        except Exception:
+
+            app.logger.exception(
+                "Login failed."
+            )
+
+            flash(
+                "Unable to complete login right now.",
+                "danger"
+            )
+
+            return render_template(
+                "login.html",
+                login_type=login_type
+            )
+
         finally:
+
             conn.close()
 
+
+    # =====================================================
+    # LOGIN PAGE — GET REQUEST
+    # =====================================================
+
+    login_type = request.args.get(
+        "login_type",
+        "client"
+    ).strip().lower()
+
+    if login_type not in ("client", "admin"):
+        login_type = "client"
+
     return render_template(
-        "login.html"
+        "login.html",
+        login_type=login_type
     )
 
+# =========================================================
+# ONE-TIME ADMIN SETUP
+# =========================================================
 
+@app.route("/setup-admin", methods=["GET", "POST"])
+def setup_admin():
+
+    conn = get_db_connection()
+
+    try:
+        with conn.cursor() as cur:
+
+            # Check whether an admin already exists
+            cur.execute("""
+                SELECT id
+                FROM users
+                WHERE role = 'admin'
+                LIMIT 1
+            """)
+
+            existing_admin = cur.fetchone()
+
+            if existing_admin:
+                return """
+                    <h2>Admin account already exists.</h2>
+                    <p>Please use the Admin Login page.</p>
+                """
+
+            if request.method == "POST":
+
+                name = request.form.get("name", "").strip()
+                email = request.form.get("email", "").strip().lower()
+                password = request.form.get("password", "")
+
+                if not name or not email or not password:
+                    return """
+                        <h2>All fields are required.</h2>
+                        <a href="/setup-admin">Go Back</a>
+                    """
+
+                if len(password) < 8:
+                    return """
+                        <h2>Password must be at least 8 characters.</h2>
+                        <a href="/setup-admin">Go Back</a>
+                    """
+
+                password_hash = generate_password_hash(password)
+
+                cur.execute("""
+                    INSERT INTO users (
+                        name,
+                        email,
+                        password_hash,
+                        role,
+                        is_active
+                    )
+                    VALUES (%s, %s, %s, 'admin', TRUE)
+                    RETURNING id
+                """, (
+                    name,
+                    email,
+                    password_hash
+                ))
+
+                admin_user = cur.fetchone()
+
+                conn.commit()
+
+                log_activity(
+                    user_id=admin_user["id"],
+                    action="admin_account_created",
+                    entity_type="user",
+                    entity_id=admin_user["id"],
+                    description="Initial administrator account created."
+                )
+
+                return """
+                    <h2>Admin account created successfully.</h2>
+                    <p>You can now login as administrator.</p>
+                    <a href="/login?login_type=admin">
+                        Go to Admin Login
+                    </a>
+                """
+
+        return """
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Admin Setup — RicozSocial</title>
+                <style>
+                    body {
+                        font-family: Arial, sans-serif;
+                        background: #f5f5f5;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        min-height: 100vh;
+                        margin: 0;
+                    }
+
+                    .setup-box {
+                        width: 400px;
+                        background: white;
+                        padding: 30px;
+                        border-radius: 14px;
+                        box-shadow: 0 10px 30px rgba(0,0,0,.12);
+                    }
+
+                    h2 {
+                        margin-top: 0;
+                    }
+
+                    input {
+                        width: 100%;
+                        box-sizing: border-box;
+                        padding: 12px;
+                        margin: 8px 0 14px;
+                        border: 1px solid #ddd;
+                        border-radius: 8px;
+                    }
+
+                    button {
+                        width: 100%;
+                        padding: 12px;
+                        border: 0;
+                        border-radius: 8px;
+                        background: #d71920;
+                        color: white;
+                        font-weight: 600;
+                        cursor: pointer;
+                    }
+
+                    small {
+                        color: #666;
+                    }
+                </style>
+            </head>
+
+            <body>
+
+                <div class="setup-box">
+
+                    <h2>RicozSocial Admin Setup</h2>
+
+                    <p>
+                        Create the first administrator account.
+                    </p>
+
+                    <form method="POST">
+
+                        <label>Admin Name</label>
+                        <input
+                            type="text"
+                            name="name"
+                            placeholder="Administrator"
+                            required
+                        >
+
+                        <label>Admin Email</label>
+                        <input
+                            type="email"
+                            name="email"
+                            placeholder="admin@example.com"
+                            required
+                        >
+
+                        <label>Admin Password</label>
+                        <input
+                            type="password"
+                            name="password"
+                            minlength="8"
+                            placeholder="Minimum 8 characters"
+                            required
+                        >
+
+                        <button type="submit">
+                            Create Admin Account
+                        </button>
+
+                    </form>
+
+                    <br>
+
+                    <small>
+                        This page works only while no admin account exists.
+                    </small>
+
+                </div>
+
+            </body>
+            </html>
+        """
+
+    except Exception:
+        conn.rollback()
+        raise
+
+    finally:
+        conn.close()
 # =========================================================
 # LOGOUT
 # =========================================================
@@ -1248,6 +1843,36 @@ def login():
 @app.route("/logout", methods=["GET", "POST"])
 @login_required
 def logout():
+
+    current_user = get_current_user()
+
+    if current_user:
+
+        try:
+
+            if current_user.get("role") == "admin":
+
+                log_activity(
+                    "admin_logout",
+                    "user",
+                    current_user["id"],
+                    "Administrator logged out of the admin panel."
+                )
+
+            else:
+
+                log_activity(
+                    "logout",
+                    "user",
+                    current_user["id"],
+                    "User logged out of the client panel."
+                )
+
+        except Exception:
+
+            app.logger.exception(
+                "Failed to log logout activity."
+            )
 
     session.clear()
 
@@ -1259,8 +1884,6 @@ def logout():
     return redirect(
         url_for("login")
     )
-
-
 # =========================================================
 # DASHBOARD
 # =========================================================
@@ -1356,7 +1979,5240 @@ def dashboard():
     finally:
         conn.close()
 
+# =========================================================
+# ADMIN DASHBOARD
+# =========================================================
 
+@app.route("/admin")
+@login_required
+def admin_dashboard():
+
+    current_user = get_current_user()
+
+    # ---------------------------------------------------------
+    # ADMIN ACCESS CHECK
+    # ---------------------------------------------------------
+
+    if not current_user:
+        return redirect(
+            url_for("login")
+        )
+
+    if current_user.get("role") != "admin":
+
+        flash(
+            "Administrator access is required.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("dashboard")
+        )
+
+    conn = get_db_connection()
+
+    try:
+
+        with conn.cursor() as cur:
+
+            # =================================================
+            # TOTAL CLIENTS
+            # =================================================
+
+            cur.execute("""
+                SELECT COUNT(*) AS count
+                FROM users
+                WHERE role <> 'admin'
+            """)
+
+            total_clients = cur.fetchone()["count"]
+
+            # =================================================
+            # ACTIVE CLIENTS
+            # =================================================
+
+            cur.execute("""
+                SELECT COUNT(*) AS count
+                FROM users
+                WHERE role <> 'admin'
+                AND is_active = TRUE
+            """)
+
+            active_clients = cur.fetchone()["count"]
+
+            # =================================================
+            # INACTIVE CLIENTS
+            # =================================================
+
+            cur.execute("""
+                SELECT COUNT(*) AS count
+                FROM users
+                WHERE role <> 'admin'
+                AND is_active = FALSE
+            """)
+
+            inactive_clients = cur.fetchone()["count"]
+
+            # =================================================
+            # TOTAL BRANDS
+            # =================================================
+
+            cur.execute("""
+                SELECT COUNT(*) AS count
+                FROM brands
+                WHERE is_active = TRUE
+            """)
+
+            total_brands = cur.fetchone()["count"]
+
+            # =================================================
+            # TOTAL SOCIAL ACCOUNTS
+            # =================================================
+
+            cur.execute("""
+                SELECT COUNT(*) AS count
+                FROM social_accounts
+            """)
+
+            total_social_accounts = cur.fetchone()["count"]
+
+            # =================================================
+            # CONNECTED SOCIAL ACCOUNTS
+            # =================================================
+
+            cur.execute("""
+                SELECT COUNT(*) AS count
+                FROM social_accounts
+                WHERE is_connected = TRUE
+            """)
+
+            connected_accounts = cur.fetchone()["count"]
+
+            # =================================================
+            # TOTAL POSTS
+            # =================================================
+
+            cur.execute("""
+                SELECT COUNT(*) AS count
+                FROM posts
+            """)
+
+            total_posts = cur.fetchone()["count"]
+
+            # =================================================
+            # PUBLISHED POSTS
+            # =================================================
+
+            cur.execute("""
+                SELECT COUNT(*) AS count
+                FROM posts
+                WHERE status = 'published'
+            """)
+
+            published_posts = cur.fetchone()["count"]
+
+            # =================================================
+            # SCHEDULED POSTS
+            # =================================================
+
+            cur.execute("""
+                SELECT COUNT(*) AS count
+                FROM posts
+                WHERE status = 'scheduled'
+            """)
+
+            scheduled_posts = cur.fetchone()["count"]
+
+            # =================================================
+            # DRAFT POSTS
+            # =================================================
+
+            cur.execute("""
+                SELECT COUNT(*) AS count
+                FROM posts
+                WHERE status = 'draft'
+            """)
+
+            draft_posts = cur.fetchone()["count"]
+
+            # =================================================
+            # PENDING APPROVALS
+            # =================================================
+
+            cur.execute("""
+                SELECT COUNT(*) AS count
+                FROM content_approvals
+                WHERE status = 'pending'
+            """)
+
+            pending_approvals = cur.fetchone()["count"]
+
+            # =================================================
+            # COMMUNITY ITEMS
+            # =================================================
+
+            cur.execute("""
+                SELECT COUNT(*) AS count
+                FROM community_comments
+                WHERE status IN ('pending', 'unread')
+            """)
+
+            community_items = cur.fetchone()["count"]
+
+            # =================================================
+            # TOTAL USERS
+            # =================================================
+
+            cur.execute("""
+                SELECT COUNT(*) AS count
+                FROM users
+            """)
+
+            total_users = cur.fetchone()["count"]
+
+            # =================================================
+            # RECENT CLIENTS
+            # =================================================
+
+            cur.execute("""
+                SELECT
+                    id,
+                    name,
+                    email,
+                    role,
+                    is_active,
+                    created_at
+                FROM users
+                WHERE role <> 'admin'
+                ORDER BY created_at DESC
+                LIMIT 8
+            """)
+
+            recent_clients = cur.fetchall()
+
+            # =================================================
+            # RECENT POSTS
+            # =================================================
+
+            cur.execute("""
+                SELECT
+                    p.id,
+                    p.title,
+                    p.status,
+                    p.created_at,
+                    p.scheduled_at,
+                    p.published_at,
+                    p.brand_id,
+                    b.name AS brand_name,
+                    u.name AS creator_name
+                FROM posts p
+                LEFT JOIN brands b
+                    ON b.id = p.brand_id
+                LEFT JOIN users u
+                    ON u.id = p.created_by
+                ORDER BY p.created_at DESC
+                LIMIT 8
+            """)
+
+            recent_posts = cur.fetchall()
+
+            # =================================================
+            # RECENT CLIENT ACTIVITY
+            # =================================================
+
+            cur.execute("""
+                SELECT
+                    al.id,
+                    al.user_id,
+                    al.brand_id,
+                    al.action,
+                    al.entity_type,
+                    al.entity_id,
+                    al.description,
+                    al.ip_address,
+                    al.created_at,
+                    u.name AS user_name,
+                    u.email AS user_email,
+                    b.name AS brand_name
+                FROM activity_logs al
+                LEFT JOIN users u
+                    ON u.id = al.user_id
+                LEFT JOIN brands b
+                    ON b.id = al.brand_id
+                WHERE al.user_id IS NOT NULL
+                AND (
+                    u.role IS NULL
+                    OR u.role <> 'admin'
+                )
+                ORDER BY al.created_at DESC
+                LIMIT 15
+            """)
+
+            recent_activity = cur.fetchall()
+
+            # =================================================
+            # RECENT APPROVALS
+            # =================================================
+
+            cur.execute("""
+                SELECT
+                    ca.id,
+                    ca.post_id,
+                    ca.status,
+                    ca.created_at,
+                    ca.reviewed_at,
+                    p.title AS post_title,
+                    u.name AS submitted_by_name
+                FROM content_approvals ca
+                LEFT JOIN posts p
+                    ON p.id = ca.post_id
+                LEFT JOIN users u
+                    ON u.id = ca.submitted_by
+                ORDER BY ca.created_at DESC
+                LIMIT 8
+            """)
+
+            recent_approvals = cur.fetchall()
+
+            # =================================================
+            # SYSTEM NOTIFICATIONS
+            # =================================================
+
+            cur.execute("""
+                SELECT
+                    id,
+                    title,
+                    message,
+                    notification_type,
+                    is_read,
+                    created_at
+                FROM notifications
+                WHERE user_id = %s
+                ORDER BY created_at DESC
+                LIMIT 8
+            """, (
+                current_user["id"],
+            ))
+
+            admin_notifications = cur.fetchall()
+
+        return render_template(
+            "admin_dashboard.html",
+
+            # Current admin
+            current_user=current_user,
+
+            # Main statistics
+            total_users=total_users,
+            total_clients=total_clients,
+            active_clients=active_clients,
+            inactive_clients=inactive_clients,
+
+            # Brands / accounts
+            total_brands=total_brands,
+            total_social_accounts=total_social_accounts,
+            connected_accounts=connected_accounts,
+
+            # Content
+            total_posts=total_posts,
+            published_posts=published_posts,
+            scheduled_posts=scheduled_posts,
+            draft_posts=draft_posts,
+
+            # Workflow
+            pending_approvals=pending_approvals,
+            community_items=community_items,
+
+            # Recent data
+            recent_clients=recent_clients,
+            recent_posts=recent_posts,
+            recent_activity=recent_activity,
+            recent_approvals=recent_approvals,
+            admin_notifications=admin_notifications,
+        )
+
+    except Exception:
+
+        app.logger.exception(
+            "Failed to load admin dashboard."
+        )
+
+        flash(
+            "Unable to load the admin dashboard right now.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("dashboard")
+        )
+
+    finally:
+
+        conn.close()
+# =========================================================
+# AI CONTENT ASSISTANT
+# =========================================================
+
+@app.route("/ai-assistant", methods=["GET", "POST"])
+@login_required
+def ai_assistant():
+
+    current_user = get_current_user()
+
+    if not current_user:
+        return redirect(url_for("login"))
+
+    generated_content = None
+    error_message = None
+
+    if request.method == "POST":
+
+        topic = request.form.get("topic", "").strip()
+        platform = request.form.get("platform", "Instagram").strip()
+        tone = request.form.get("tone", "Professional").strip()
+        length = request.form.get("length", "Medium").strip()
+
+        if not topic:
+
+            error_message = "Please enter a topic or idea."
+
+        elif not gemini_client:
+
+            error_message = (
+                "AI service is not configured. "
+                "Please check the OpenAI API key."
+            )
+
+        else:
+
+            try:
+
+                prompt = f"""
+You are an expert social media content strategist
+working inside RicozSocial.
+
+Create a high-quality social media post based on
+the following information.
+
+Topic:
+{topic}
+
+Platform:
+{platform}
+
+Tone:
+{tone}
+
+Length:
+{length}
+
+Requirements:
+
+1. Write engaging and professional content.
+2. Match the selected platform.
+3. Do not mention that AI generated the content.
+4. Do not use unnecessary quotation marks.
+5. Include a clear call-to-action when appropriate.
+6. After the post, provide 5 relevant hashtags.
+7. Keep the content natural and ready to publish.
+
+Return the response in this exact format:
+
+POST:
+[post content]
+
+HASHTAGS:
+#hashtag1 #hashtag2 #hashtag3 #hashtag4 #hashtag5
+"""
+
+                response = gemini_client.models.generate_content(
+                    model="gemini-3.8-flash",
+                    contents=prompt
+                )
+
+                generated_content = response.text.strip()
+
+            except Exception as e:
+
+                app.logger.exception(
+                    "AI content generation failed: %s",
+                    e
+                )
+
+                error_message = f"AI Error: {str(e)}"
+
+    return render_template(
+        "ai_assistant.html",
+        current_user=current_user,
+        generated_content=generated_content,
+        error_message=error_message
+    )
+# =========================================================
+# ADMIN CLIENT MANAGEMENT
+# =========================================================
+
+@app.route("/admin/clients")
+@login_required
+def admin_clients():
+
+    current_user = get_current_user()
+
+    # -----------------------------------------------------
+    # AUTHENTICATION
+    # -----------------------------------------------------
+
+    if not current_user:
+
+        return redirect(
+            url_for("login")
+        )
+
+
+    # -----------------------------------------------------
+    # ADMIN ACCESS
+    # -----------------------------------------------------
+
+    if current_user.get("role") != "admin":
+
+        flash(
+            "Administrator access is required.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("dashboard")
+        )
+
+
+    # -----------------------------------------------------
+    # FILTERS
+    # -----------------------------------------------------
+
+    search = request.args.get(
+        "search",
+        ""
+    ).strip()
+
+    status = request.args.get(
+        "status",
+        ""
+    ).strip().lower()
+
+
+    conn = get_db_connection()
+
+
+    try:
+
+        with conn.cursor() as cur:
+
+            # =================================================
+            # CLIENT LIST
+            # =================================================
+
+            query = """
+                SELECT
+                    u.id,
+                    u.name,
+                    u.email,
+                    u.role,
+                    u.is_active,
+                    u.created_at,
+
+                    COALESCE(
+                        (
+                            SELECT COUNT(*)
+                            FROM brands b
+                            WHERE b.created_by = u.id
+                        ),
+                        0
+                    ) AS brands_count,
+
+                    COALESCE(
+                        (
+                            SELECT COUNT(*)
+                            FROM posts p
+                            WHERE p.created_by = u.id
+                        ),
+                        0
+                    ) AS posts_count,
+
+                    (
+                        SELECT MAX(al.created_at)
+                        FROM activity_logs al
+                        WHERE al.user_id = u.id
+                    ) AS last_activity
+
+                FROM users u
+
+                WHERE u.role <> 'admin'
+            """
+
+
+            params = []
+
+
+            # =================================================
+            # SEARCH FILTER
+            # =================================================
+
+            if search:
+
+                query += """
+                    AND (
+                        u.name ILIKE %s
+                        OR u.email ILIKE %s
+                    )
+                """
+
+                search_value = f"%{search}%"
+
+                params.extend([
+                    search_value,
+                    search_value
+                ])
+
+
+            # =================================================
+            # STATUS FILTER
+            # =================================================
+
+            if status == "active":
+
+                query += """
+                    AND u.is_active = TRUE
+                """
+
+
+            elif status == "inactive":
+
+                query += """
+                    AND u.is_active = FALSE
+                """
+
+
+            # =================================================
+            # ORDER CLIENTS
+            # =================================================
+
+            query += """
+                ORDER BY u.created_at DESC
+            """
+
+
+            # =================================================
+            # EXECUTE CLIENT QUERY
+            # =================================================
+
+            cur.execute(
+                query,
+                tuple(params)
+            )
+
+            clients = cur.fetchall()
+
+
+            # =================================================
+            # TOTAL CLIENTS
+            # =================================================
+
+            cur.execute("""
+                SELECT COUNT(*) AS count
+                FROM users
+                WHERE role <> 'admin'
+            """)
+
+            total_clients = cur.fetchone()["count"]
+
+
+            # =================================================
+            # ACTIVE CLIENTS
+            # =================================================
+
+            cur.execute("""
+                SELECT COUNT(*) AS count
+                FROM users
+                WHERE role <> 'admin'
+                AND is_active = TRUE
+            """)
+
+            active_clients = cur.fetchone()["count"]
+
+
+            # =================================================
+            # INACTIVE CLIENTS
+            # =================================================
+
+            cur.execute("""
+                SELECT COUNT(*) AS count
+                FROM users
+                WHERE role <> 'admin'
+                AND is_active = FALSE
+            """)
+
+            inactive_clients = cur.fetchone()["count"]
+
+
+        # =====================================================
+        # CLIENT MANAGEMENT PAGE
+        # =====================================================
+
+        return render_template(
+            "admin_clients.html",
+
+            current_user=current_user,
+
+            clients=clients,
+
+            total_clients=total_clients,
+
+            active_clients=active_clients,
+
+            inactive_clients=inactive_clients,
+
+            search=search,
+
+            status=status
+        )
+
+
+    # =====================================================
+    # ERROR HANDLING
+    # =====================================================
+
+    except Exception as e:
+
+        app.logger.exception(
+            "Failed to load admin client management."
+        )
+
+
+        # -------------------------------------------------
+        # SHOW ACTUAL ERROR
+        # -------------------------------------------------
+
+        return f"""
+        <!DOCTYPE html>
+
+        <html lang="en">
+
+        <head>
+
+            <meta charset="UTF-8">
+
+            <meta name="viewport"
+                  content="width=device-width, initial-scale=1.0">
+
+            <title>
+                Client Management Error — RicozSocial
+            </title>
+
+            <style>
+
+                * {{
+                    box-sizing: border-box;
+                }}
+
+                body {{
+                    margin: 0;
+                    min-height: 100vh;
+
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+
+                    padding: 30px;
+
+                    font-family:
+                        Arial,
+                        Helvetica,
+                        sans-serif;
+
+                    background: #f8f8f8;
+
+                    color: #222222;
+                }}
+
+                .error-card {{
+                    width: 100%;
+                    max-width: 760px;
+
+                    padding: 35px;
+
+                    background: #ffffff;
+
+                    border: 1px solid #eeeeee;
+
+                    border-top: 5px solid #e31e24;
+
+                    border-radius: 16px;
+
+                    box-shadow:
+                        0 15px 45px
+                        rgba(0, 0, 0, 0.08);
+                }}
+
+                .error-icon {{
+                    width: 52px;
+                    height: 52px;
+
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+
+                    margin-bottom: 20px;
+
+                    border-radius: 12px;
+
+                    background: #fff0f1;
+
+                    color: #e31e24;
+
+                    font-size: 25px;
+                    font-weight: 800;
+                }}
+
+                h1 {{
+                    margin: 0 0 10px;
+
+                    color: #171717;
+
+                    font-size: 25px;
+                    font-weight: 800;
+                }}
+
+                .description {{
+                    margin: 0 0 22px;
+
+                    color: #777777;
+
+                    font-size: 14px;
+
+                    line-height: 1.6;
+                }}
+
+                .error-box {{
+                    padding: 18px;
+
+                    background: #fff7f7;
+
+                    border: 1px solid #ffd6d8;
+
+                    border-radius: 10px;
+
+                    color: #b31318;
+
+                    font-family:
+                        monospace;
+
+                    font-size: 13px;
+
+                    line-height: 1.6;
+
+                    overflow-wrap: anywhere;
+                }}
+
+                .back-button {{
+                    display: inline-flex;
+
+                    align-items: center;
+                    justify-content: center;
+
+                    margin-top: 22px;
+
+                    min-height: 42px;
+
+                    padding: 0 18px;
+
+                    background: #e31e24;
+
+                    color: #ffffff;
+
+                    border-radius: 9px;
+
+                    text-decoration: none;
+
+                    font-size: 13px;
+
+                    font-weight: 700;
+                }}
+
+                .back-button:hover {{
+                    background: #c8171d;
+                }}
+
+            </style>
+
+        </head>
+
+
+        <body>
+
+            <div class="error-card">
+
+                <div class="error-icon">
+                    !
+                </div>
+
+
+                <h1>
+                    Client Management Error
+                </h1>
+
+
+                <p class="description">
+                    RicozSocial could not load the Client Management
+                    page. The exact technical error is shown below.
+                </p>
+
+
+                <div class="error-box">
+                    {str(e)}
+                </div>
+
+
+                <a
+                    href="{url_for('admin_dashboard')}"
+                    class="back-button"
+                >
+                    ← Back to Admin Dashboard
+                </a>
+
+            </div>
+
+        </body>
+
+        </html>
+        """, 500
+
+
+    finally:
+
+        conn.close()
+# =========================================================
+# ADMIN CLIENT DETAILS
+# =========================================================
+
+@app.route("/admin/clients/<int:user_id>")
+@login_required
+def admin_client_details(user_id):
+
+    current_user = get_current_user()
+
+    if not current_user:
+        return redirect(url_for("login"))
+
+    if current_user.get("role") != "admin":
+        flash("Administrator access is required.", "danger")
+        return redirect(url_for("dashboard"))
+
+    conn = get_db_connection()
+
+    try:
+
+        with conn.cursor() as cur:
+
+            # =================================================
+            # CLIENT PROFILE
+            # =================================================
+
+            cur.execute("""
+                SELECT
+                    id,
+                    name,
+                    email,
+                    role,
+                    is_active,
+                    created_at,
+                    updated_at
+                FROM users
+                WHERE id = %s
+                AND role <> 'admin'
+            """, (user_id,))
+
+            client = cur.fetchone()
+
+            if not client:
+                flash("Client account was not found.", "danger")
+                return redirect(url_for("admin_clients"))
+
+
+            # =================================================
+            # BRAND COUNT
+            # =================================================
+
+            cur.execute("""
+                SELECT COUNT(*) AS count
+                FROM brands
+                WHERE created_by = %s
+            """, (user_id,))
+
+            brands_count = cur.fetchone()["count"]
+
+
+            # =================================================
+            # SOCIAL ACCOUNTS
+            # =================================================
+
+            cur.execute("""
+                SELECT COUNT(*) AS count
+                FROM social_accounts sa
+                INNER JOIN brands b
+                    ON b.id = sa.brand_id
+                WHERE b.created_by = %s
+            """, (user_id,))
+
+            social_accounts_count = cur.fetchone()["count"]
+
+
+            # =================================================
+            # CONNECTED SOCIAL ACCOUNTS
+            # =================================================
+
+            cur.execute("""
+                SELECT COUNT(*) AS count
+                FROM social_accounts sa
+                INNER JOIN brands b
+                    ON b.id = sa.brand_id
+                WHERE b.created_by = %s
+                AND sa.is_connected = TRUE
+            """, (user_id,))
+
+            connected_accounts_count = cur.fetchone()["count"]
+
+
+            # =================================================
+            # TOTAL POSTS
+            # =================================================
+
+            cur.execute("""
+                SELECT COUNT(*) AS count
+                FROM posts
+                WHERE created_by = %s
+            """, (user_id,))
+
+            total_posts = cur.fetchone()["count"]
+
+
+            # =================================================
+            # PUBLISHED POSTS
+            # =================================================
+
+            cur.execute("""
+                SELECT COUNT(*) AS count
+                FROM posts
+                WHERE created_by = %s
+                AND status = 'published'
+            """, (user_id,))
+
+            published_posts = cur.fetchone()["count"]
+
+
+            # =================================================
+            # SCHEDULED POSTS
+            # =================================================
+
+            cur.execute("""
+                SELECT COUNT(*) AS count
+                FROM posts
+                WHERE created_by = %s
+                AND status = 'scheduled'
+            """, (user_id,))
+
+            scheduled_posts = cur.fetchone()["count"]
+
+
+            # =================================================
+            # DRAFT POSTS
+            # =================================================
+
+            cur.execute("""
+                SELECT COUNT(*) AS count
+                FROM posts
+                WHERE created_by = %s
+                AND status = 'draft'
+            """, (user_id,))
+
+            draft_posts = cur.fetchone()["count"]
+
+
+            # =================================================
+            # PENDING APPROVALS
+            # =================================================
+
+            cur.execute("""
+                SELECT COUNT(*) AS count
+                FROM content_approvals ca
+                INNER JOIN posts p
+                    ON p.id = ca.post_id
+                WHERE p.created_by = %s
+                AND ca.status = 'pending'
+            """, (user_id,))
+
+            pending_approvals = cur.fetchone()["count"]
+
+
+            # =================================================
+            # COMMUNITY ITEMS
+            # =================================================
+
+            cur.execute("""
+                SELECT COUNT(*) AS count
+                FROM community_comments cc
+                INNER JOIN brands b
+                    ON b.id = cc.brand_id
+                WHERE b.created_by = %s
+                AND cc.status IN ('pending', 'unread')
+            """, (user_id,))
+
+            community_items = cur.fetchone()["count"]
+
+
+            # =================================================
+            # CLIENT BRANDS
+            # =================================================
+
+            cur.execute("""
+                SELECT
+                    b.id,
+                    b.name,
+                    b.description,
+                    b.website_url,
+                    b.logo_url,
+                    b.is_active,
+                    b.created_at,
+
+                    (
+                        SELECT COUNT(*)
+                        FROM social_accounts sa
+                        WHERE sa.brand_id = b.id
+                    ) AS social_accounts_count,
+
+                    (
+                        SELECT COUNT(*)
+                        FROM posts p
+                        WHERE p.brand_id = b.id
+                    ) AS posts_count
+
+                FROM brands b
+                WHERE b.created_by = %s
+                ORDER BY b.created_at DESC
+            """, (user_id,))
+
+            client_brands = cur.fetchall()
+
+
+            # =================================================
+            # CLIENT SOCIAL ACCOUNTS
+            # =================================================
+
+            cur.execute("""
+                SELECT
+                    sa.id,
+                    sa.platform,
+                    sa.account_name,
+                    sa.username,
+                    sa.profile_url,
+                    sa.is_connected,
+                    sa.created_at,
+                    b.name AS brand_name
+                FROM social_accounts sa
+                INNER JOIN brands b
+                    ON b.id = sa.brand_id
+                WHERE b.created_by = %s
+                ORDER BY sa.created_at DESC
+                LIMIT 20
+            """, (user_id,))
+
+            client_social_accounts = cur.fetchall()
+
+
+            # =================================================
+            # RECENT POSTS
+            # =================================================
+
+            cur.execute("""
+                SELECT
+                    p.id,
+                    p.title,
+                    p.content,
+                    p.status,
+                    p.scheduled_at,
+                    p.published_at,
+                    p.created_at,
+                    b.name AS brand_name
+                FROM posts p
+                LEFT JOIN brands b
+                    ON b.id = p.brand_id
+                WHERE p.created_by = %s
+                ORDER BY p.created_at DESC
+                LIMIT 10
+            """, (user_id,))
+
+            client_posts = cur.fetchall()
+
+
+            # =================================================
+            # RECENT APPROVALS
+            # =================================================
+
+            cur.execute("""
+                SELECT
+                    ca.id,
+                    ca.post_id,
+                    ca.status,
+                    ca.comments,
+                    ca.created_at,
+                    ca.reviewed_at,
+                    p.title AS post_title
+                FROM content_approvals ca
+                INNER JOIN posts p
+                    ON p.id = ca.post_id
+                WHERE p.created_by = %s
+                ORDER BY ca.created_at DESC
+                LIMIT 10
+            """, (user_id,))
+
+            client_approvals = cur.fetchall()
+
+
+            # =================================================
+            # RECENT ACTIVITY
+            # =================================================
+
+            cur.execute("""
+                SELECT
+                    al.id,
+                    al.action,
+                    al.entity_type,
+                    al.entity_id,
+                    al.description,
+                    al.ip_address,
+                    al.created_at,
+                    b.name AS brand_name
+                FROM activity_logs al
+                LEFT JOIN brands b
+                    ON b.id = al.brand_id
+                WHERE al.user_id = %s
+                ORDER BY al.created_at DESC
+                LIMIT 20
+            """, (user_id,))
+
+            client_activity = cur.fetchall()
+
+
+            # =================================================
+            # LAST ACTIVITY
+            # =================================================
+
+            cur.execute("""
+                SELECT MAX(created_at) AS last_activity
+                FROM activity_logs
+                WHERE user_id = %s
+            """, (user_id,))
+
+            last_activity = cur.fetchone()["last_activity"]
+
+
+            # =================================================
+            # CLIENT NOTIFICATIONS
+            # =================================================
+
+            cur.execute("""
+                SELECT
+                    id,
+                    title,
+                    message,
+                    notification_type,
+                    is_read,
+                    created_at
+                FROM notifications
+                WHERE user_id = %s
+                ORDER BY created_at DESC
+                LIMIT 10
+            """, (user_id,))
+
+            client_notifications = cur.fetchall()
+
+
+        return render_template(
+            "admin_client_details.html",
+
+            current_user=current_user,
+
+            client=client,
+
+            brands_count=brands_count,
+
+            social_accounts_count=social_accounts_count,
+
+            connected_accounts_count=connected_accounts_count,
+
+            total_posts=total_posts,
+
+            published_posts=published_posts,
+
+            scheduled_posts=scheduled_posts,
+
+            draft_posts=draft_posts,
+
+            pending_approvals=pending_approvals,
+
+            community_items=community_items,
+
+            last_activity=last_activity,
+
+            client_brands=client_brands,
+
+            client_social_accounts=client_social_accounts,
+
+            client_posts=client_posts,
+
+            client_approvals=client_approvals,
+
+            client_activity=client_activity,
+
+            client_notifications=client_notifications
+        )
+
+    except Exception:
+
+        app.logger.exception(
+            "Failed to load admin client details."
+        )
+
+        flash(
+            "Unable to load client details right now.",
+            "danger"
+        )
+
+        return redirect(url_for("admin_clients"))
+
+    finally:
+
+        conn.close()
+# =========================================================
+# ADMIN CLIENT MANAGEMENT ACTIONS
+# =========================================================
+
+@app.route(
+    "/admin/clients/<int:user_id>/toggle-status",
+    methods=["POST"]
+)
+@login_required
+def admin_toggle_client_status(user_id):
+
+    current_user = get_current_user()
+
+    if not current_user:
+        return redirect(url_for("login"))
+
+    if current_user.get("role") != "admin":
+        flash(
+            "Administrator access is required.",
+            "danger"
+        )
+        return redirect(url_for("dashboard"))
+
+    # ---------------------------------------------------------
+    # Prevent admin accounts from being modified here
+    # ---------------------------------------------------------
+
+    conn = get_db_connection()
+
+    try:
+
+        with conn.cursor() as cur:
+
+            cur.execute("""
+                SELECT
+                    id,
+                    name,
+                    email,
+                    role,
+                    is_active
+                FROM users
+                WHERE id = %s
+            """, (
+                user_id,
+            ))
+
+            client = cur.fetchone()
+
+            if not client:
+
+                flash(
+                    "Client account was not found.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for("admin_clients")
+                )
+
+            if client["role"] == "admin":
+
+                flash(
+                    "Administrator accounts cannot be managed from Client Management.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for("admin_clients")
+                )
+
+            # -------------------------------------------------
+            # Toggle status
+            # -------------------------------------------------
+
+            new_status = not client["is_active"]
+
+            cur.execute("""
+                UPDATE users
+                SET
+                    is_active = %s,
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE id = %s
+            """, (
+                new_status,
+                user_id
+            ))
+
+            # -------------------------------------------------
+            # Notification
+            # -------------------------------------------------
+
+            if new_status:
+
+                notification_title = "Account Activated"
+
+                notification_message = (
+                    "Your RicozSocial account has been activated "
+                    "by an administrator."
+                )
+
+                activity_action = "client_activated"
+
+                activity_description = (
+                    f"Activated client account: "
+                    f"{client['name']} ({client['email']})."
+                )
+
+                flash_message = (
+                    f"{client['name']}'s account has been activated."
+                )
+
+            else:
+
+                notification_title = "Account Deactivated"
+
+                notification_message = (
+                    "Your RicozSocial account has been deactivated "
+                    "by an administrator. Please contact support "
+                    "if you believe this was done in error."
+                )
+
+                activity_action = "client_deactivated"
+
+                activity_description = (
+                    f"Deactivated client account: "
+                    f"{client['name']} ({client['email']})."
+                )
+
+                flash_message = (
+                    f"{client['name']}'s account has been deactivated."
+                )
+
+            cur.execute("""
+                INSERT INTO notifications (
+                    user_id,
+                    title,
+                    message,
+                    notification_type,
+                    is_read,
+                    created_at
+                )
+                VALUES (
+                    %s,
+                    %s,
+                    %s,
+                    %s,
+                    FALSE,
+                    CURRENT_TIMESTAMP
+                )
+            """, (
+                user_id,
+                notification_title,
+                notification_message,
+                "account"
+            ))
+
+        conn.commit()
+
+        log_activity(
+            activity_action,
+            "user",
+            user_id,
+            activity_description
+        )
+
+        flash(
+            flash_message,
+            "success"
+        )
+
+        return redirect(
+            request.referrer
+            or url_for(
+                "admin_client_details",
+                user_id=user_id
+            )
+        )
+
+    except Exception:
+
+        conn.rollback()
+
+        app.logger.exception(
+            "Failed to toggle client status."
+        )
+
+        flash(
+            "Unable to update client account status.",
+            "danger"
+        )
+
+        return redirect(
+            url_for(
+                "admin_client_details",
+                user_id=user_id
+            )
+        )
+
+    finally:
+
+        conn.close()
+
+
+# =========================================================
+# ADMIN EDIT CLIENT
+# =========================================================
+
+@app.route(
+    "/admin/clients/<int:user_id>/edit",
+    methods=["GET", "POST"]
+)
+@login_required
+def admin_edit_client(user_id):
+
+    current_user = get_current_user()
+
+    if not current_user:
+        return redirect(url_for("login"))
+
+    if current_user.get("role") != "admin":
+
+        flash(
+            "Administrator access is required.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("dashboard")
+        )
+
+    conn = get_db_connection()
+
+    try:
+
+        with conn.cursor() as cur:
+
+            cur.execute("""
+                SELECT
+                    id,
+                    name,
+                    email,
+                    role,
+                    is_active,
+                    created_at,
+                    updated_at
+                FROM users
+                WHERE id = %s
+                AND role <> 'admin'
+            """, (
+                user_id,
+            ))
+
+            client = cur.fetchone()
+
+            if not client:
+
+                flash(
+                    "Client account was not found.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for("admin_clients")
+                )
+
+            if request.method == "POST":
+
+                name = request.form.get(
+                    "name",
+                    ""
+                ).strip()
+
+                email = request.form.get(
+                    "email",
+                    ""
+                ).strip().lower()
+
+                if not name:
+
+                    flash(
+                        "Client name is required.",
+                        "danger"
+                    )
+
+                    return render_template(
+                        "admin_edit_client.html",
+                        current_user=current_user,
+                        client=client
+                    )
+
+                if not email:
+
+                    flash(
+                        "Client email is required.",
+                        "danger"
+                    )
+
+                    return render_template(
+                        "admin_edit_client.html",
+                        current_user=current_user,
+                        client=client
+                    )
+
+                # -------------------------------------------------
+                # Check duplicate email
+                # -------------------------------------------------
+
+                cur.execute("""
+                    SELECT id
+                    FROM users
+                    WHERE LOWER(email) = LOWER(%s)
+                    AND id <> %s
+                """, (
+                    email,
+                    user_id
+                ))
+
+                existing_user = cur.fetchone()
+
+                if existing_user:
+
+                    flash(
+                        "Another account is already using this email address.",
+                        "danger"
+                    )
+
+                    return render_template(
+                        "admin_edit_client.html",
+                        current_user=current_user,
+                        client=client
+                    )
+
+                # -------------------------------------------------
+                # Update client
+                # -------------------------------------------------
+
+                cur.execute("""
+                    UPDATE users
+                    SET
+                        name = %s,
+                        email = %s,
+                        updated_at = CURRENT_TIMESTAMP
+                    WHERE id = %s
+                """, (
+                    name,
+                    email,
+                    user_id
+                ))
+
+                # -------------------------------------------------
+                # Notification
+                # -------------------------------------------------
+
+                cur.execute("""
+                    INSERT INTO notifications (
+                        user_id,
+                        title,
+                        message,
+                        notification_type,
+                        is_read,
+                        created_at
+                    )
+                    VALUES (
+                        %s,
+                        %s,
+                        %s,
+                        %s,
+                        FALSE,
+                        CURRENT_TIMESTAMP
+                    )
+                """, (
+                    user_id,
+                    "Account Profile Updated",
+                    "Your RicozSocial profile was updated by an administrator.",
+                    "account"
+                ))
+
+            conn.commit()
+
+            if request.method == "POST":
+
+                log_activity(
+                    "client_updated",
+                    "user",
+                    user_id,
+                    f"Updated client profile: {name} ({email})."
+                )
+
+                flash(
+                    "Client profile updated successfully.",
+                    "success"
+                )
+
+                return redirect(
+                    url_for(
+                        "admin_client_details",
+                        user_id=user_id
+                    )
+                )
+
+        return render_template(
+            "admin_edit_client.html",
+            current_user=current_user,
+            client=client
+        )
+
+    except Exception:
+
+        conn.rollback()
+
+        app.logger.exception(
+            "Failed to edit client account."
+        )
+
+        flash(
+            "Unable to update client account.",
+            "danger"
+        )
+
+        return redirect(
+            url_for(
+                "admin_client_details",
+                user_id=user_id
+            )
+        )
+
+    finally:
+
+        conn.close()
+
+
+# =========================================================
+# ADMIN RESET CLIENT PASSWORD
+# =========================================================
+
+@app.route(
+    "/admin/clients/<int:user_id>/reset-password",
+    methods=["POST"]
+)
+@login_required
+def admin_reset_client_password(user_id):
+
+    current_user = get_current_user()
+
+    if not current_user:
+        return redirect(url_for("login"))
+
+    if current_user.get("role") != "admin":
+
+        flash(
+            "Administrator access is required.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("dashboard")
+        )
+
+    new_password = request.form.get(
+        "new_password",
+        ""
+    )
+
+    confirm_password = request.form.get(
+        "confirm_password",
+        ""
+    )
+
+    if len(new_password) < 8:
+
+        flash(
+            "Password must contain at least 8 characters.",
+            "danger"
+        )
+
+        return redirect(
+            url_for(
+                "admin_client_details",
+                user_id=user_id
+            )
+        )
+
+    if new_password != confirm_password:
+
+        flash(
+            "Passwords do not match.",
+            "danger"
+        )
+
+        return redirect(
+            url_for(
+                "admin_client_details",
+                user_id=user_id
+            )
+        )
+
+    conn = get_db_connection()
+
+    try:
+
+        with conn.cursor() as cur:
+
+            cur.execute("""
+                SELECT
+                    id,
+                    name,
+                    email,
+                    role
+                FROM users
+                WHERE id = %s
+            """, (
+                user_id,
+            ))
+
+            client = cur.fetchone()
+
+            if not client:
+
+                flash(
+                    "Client account was not found.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for("admin_clients")
+                )
+
+            if client["role"] == "admin":
+
+                flash(
+                    "Administrator passwords cannot be reset from Client Management.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for("admin_clients")
+                )
+
+            password_hash = generate_password_hash(
+                new_password
+            )
+
+            cur.execute("""
+                UPDATE users
+                SET
+                    password_hash = %s,
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE id = %s
+            """, (
+                password_hash,
+                user_id
+            ))
+
+            cur.execute("""
+                INSERT INTO notifications (
+                    user_id,
+                    title,
+                    message,
+                    notification_type,
+                    is_read,
+                    created_at
+                )
+                VALUES (
+                    %s,
+                    %s,
+                    %s,
+                    %s,
+                    FALSE,
+                    CURRENT_TIMESTAMP
+                )
+            """, (
+                user_id,
+                "Password Reset",
+                "Your RicozSocial password was reset by an administrator.",
+                "security"
+            ))
+
+        conn.commit()
+
+        log_activity(
+            "password_reset",
+            "user",
+            user_id,
+            f"Administrator reset password for client: "
+            f"{client['name']} ({client['email']})."
+        )
+
+        flash(
+            "Client password has been reset successfully.",
+            "success"
+        )
+
+    except Exception:
+
+        conn.rollback()
+
+        app.logger.exception(
+            "Failed to reset client password."
+        )
+
+        flash(
+            "Unable to reset client password.",
+            "danger"
+        )
+
+    finally:
+
+        conn.close()
+
+    return redirect(
+        url_for(
+            "admin_client_details",
+            user_id=user_id
+        )
+    )
+# =========================================================
+# ADMIN BRANDS MANAGEMENT
+# =========================================================
+
+@app.route("/admin/brands")
+@login_required
+def admin_brands():
+
+    current_user = get_current_user()
+
+    if not current_user:
+        return redirect(url_for("login"))
+
+    if current_user.get("role") != "admin":
+        flash(
+            "Administrator access is required.",
+            "danger"
+        )
+        return redirect(url_for("dashboard"))
+
+    search = request.args.get(
+        "search",
+        ""
+    ).strip()
+
+    status = request.args.get(
+        "status",
+        ""
+    ).strip().lower()
+
+    conn = get_db_connection()
+
+    try:
+
+        with conn.cursor() as cur:
+
+            query = """
+                SELECT
+                    b.id,
+                    b.name,
+                    b.description,
+                    b.logo_url,
+                    b.website_url,
+                    b.is_active,
+                    b.created_at,
+                    b.updated_at,
+
+                    u.id AS owner_id,
+                    u.name AS owner_name,
+                    u.email AS owner_email,
+
+                    COALESCE(
+                        (
+                            SELECT COUNT(*)
+                            FROM social_accounts sa
+                            WHERE sa.brand_id = b.id
+                        ),
+                        0
+                    ) AS social_accounts_count,
+
+                    COALESCE(
+                        (
+                            SELECT COUNT(*)
+                            FROM social_accounts sa
+                            WHERE sa.brand_id = b.id
+                            AND sa.is_connected = TRUE
+                        ),
+                        0
+                    ) AS connected_accounts_count,
+
+                    COALESCE(
+                        (
+                            SELECT COUNT(*)
+                            FROM posts p
+                            WHERE p.brand_id = b.id
+                        ),
+                        0
+                    ) AS posts_count,
+
+                    COALESCE(
+                        (
+                            SELECT COUNT(*)
+                            FROM brand_members bm
+                            WHERE bm.brand_id = b.id
+                        ),
+                        0
+                    ) AS members_count
+
+                FROM brands b
+
+                LEFT JOIN users u
+                    ON u.id = b.created_by
+
+                WHERE 1 = 1
+            """
+
+            params = []
+
+            if search:
+
+                query += """
+                    AND (
+                        b.name ILIKE %s
+                        OR b.description ILIKE %s
+                        OR u.name ILIKE %s
+                        OR u.email ILIKE %s
+                    )
+                """
+
+                search_value = f"%{search}%"
+
+                params.extend([
+                    search_value,
+                    search_value,
+                    search_value,
+                    search_value
+                ])
+
+            if status == "active":
+
+                query += """
+                    AND b.is_active = TRUE
+                """
+
+            elif status == "inactive":
+
+                query += """
+                    AND b.is_active = FALSE
+                """
+
+            query += """
+                ORDER BY b.created_at DESC
+            """
+
+            cur.execute(
+                query,
+                tuple(params)
+            )
+
+            brands_list = cur.fetchall()
+
+            # -------------------------------------------------
+            # TOTAL BRANDS
+            # -------------------------------------------------
+
+            cur.execute("""
+                SELECT COUNT(*) AS count
+                FROM brands
+            """)
+
+            total_brands = cur.fetchone()["count"]
+
+            # -------------------------------------------------
+            # ACTIVE BRANDS
+            # -------------------------------------------------
+
+            cur.execute("""
+                SELECT COUNT(*) AS count
+                FROM brands
+                WHERE is_active = TRUE
+            """)
+
+            active_brands = cur.fetchone()["count"]
+
+            # -------------------------------------------------
+            # INACTIVE BRANDS
+            # -------------------------------------------------
+
+            cur.execute("""
+                SELECT COUNT(*) AS count
+                FROM brands
+                WHERE is_active = FALSE
+            """)
+
+            inactive_brands = cur.fetchone()["count"]
+
+            # -------------------------------------------------
+            # TOTAL SOCIAL ACCOUNTS
+            # -------------------------------------------------
+
+            cur.execute("""
+                SELECT COUNT(*) AS count
+                FROM social_accounts
+            """)
+
+            total_social_accounts = cur.fetchone()["count"]
+
+            # -------------------------------------------------
+            # CONNECTED SOCIAL ACCOUNTS
+            # -------------------------------------------------
+
+            cur.execute("""
+                SELECT COUNT(*) AS count
+                FROM social_accounts
+                WHERE is_connected = TRUE
+            """)
+
+            connected_social_accounts = cur.fetchone()["count"]
+
+            # -------------------------------------------------
+            # TOTAL POSTS
+            # -------------------------------------------------
+
+            cur.execute("""
+                SELECT COUNT(*) AS count
+                FROM posts
+            """)
+
+            total_posts = cur.fetchone()["count"]
+
+        return render_template(
+            "admin_brands.html",
+            current_user=current_user,
+            brands_list=brands_list,
+            total_brands=total_brands,
+            active_brands=active_brands,
+            inactive_brands=inactive_brands,
+            total_social_accounts=total_social_accounts,
+            connected_social_accounts=connected_social_accounts,
+            total_posts=total_posts,
+            search=search,
+            status=status
+        )
+
+    except Exception:
+
+        app.logger.exception(
+            "Failed to load admin brands management."
+        )
+
+        flash(
+            "Unable to load brand management right now.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("admin_dashboard")
+        )
+
+    finally:
+
+        conn.close()
+
+
+# =========================================================
+# ADMIN BRAND DETAILS
+# =========================================================
+
+@app.route("/admin/brands/<int:brand_id>")
+@login_required
+def admin_brand_details(brand_id):
+
+    current_user = get_current_user()
+
+    if not current_user:
+        return redirect(url_for("login"))
+
+    if current_user.get("role") != "admin":
+
+        flash(
+            "Administrator access is required.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("dashboard")
+        )
+
+    conn = get_db_connection()
+
+    try:
+
+        with conn.cursor() as cur:
+
+            # -------------------------------------------------
+            # BRAND
+            # -------------------------------------------------
+
+            cur.execute("""
+                SELECT
+                    b.id,
+                    b.name,
+                    b.description,
+                    b.logo_url,
+                    b.website_url,
+                    b.is_active,
+                    b.created_at,
+                    b.updated_at,
+
+                    u.id AS owner_id,
+                    u.name AS owner_name,
+                    u.email AS owner_email
+
+                FROM brands b
+
+                LEFT JOIN users u
+                    ON u.id = b.created_by
+
+                WHERE b.id = %s
+            """, (
+                brand_id,
+            ))
+
+            brand = cur.fetchone()
+
+            if not brand:
+
+                flash(
+                    "Brand was not found.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for("admin_brands")
+                )
+
+            # -------------------------------------------------
+            # SOCIAL ACCOUNTS
+            # -------------------------------------------------
+
+            cur.execute("""
+                SELECT
+                    id,
+                    platform,
+                    account_name,
+                    username,
+                    account_id,
+                    profile_url,
+                    is_connected,
+                    created_at,
+                    updated_at
+                FROM social_accounts
+                WHERE brand_id = %s
+                ORDER BY created_at DESC
+            """, (
+                brand_id,
+            ))
+
+            brand_social_accounts = cur.fetchall()
+
+            # -------------------------------------------------
+            # MEMBERS
+            # -------------------------------------------------
+
+            cur.execute("""
+                SELECT
+                    bm.id,
+                    bm.user_id,
+                    bm.role,
+                    bm.created_at,
+                    u.name,
+                    u.email,
+                    u.is_active
+                FROM brand_members bm
+
+                INNER JOIN users u
+                    ON u.id = bm.user_id
+
+                WHERE bm.brand_id = %s
+                ORDER BY bm.created_at ASC
+            """, (
+                brand_id,
+            ))
+
+            brand_members_list = cur.fetchall()
+
+            # -------------------------------------------------
+            # POSTS
+            # -------------------------------------------------
+
+            cur.execute("""
+                SELECT
+                    p.id,
+                    p.title,
+                    p.content,
+                    p.status,
+                    p.scheduled_at,
+                    p.published_at,
+                    p.created_at,
+                    u.name AS creator_name
+                FROM posts p
+
+                LEFT JOIN users u
+                    ON u.id = p.created_by
+
+                WHERE p.brand_id = %s
+                ORDER BY p.created_at DESC
+                LIMIT 20
+            """, (
+                brand_id,
+            ))
+
+            brand_posts = cur.fetchall()
+
+            # -------------------------------------------------
+            # POST COUNTS
+            # -------------------------------------------------
+
+            cur.execute("""
+                SELECT COUNT(*) AS count
+                FROM posts
+                WHERE brand_id = %s
+            """, (
+                brand_id,
+            ))
+
+            total_brand_posts = cur.fetchone()["count"]
+
+            cur.execute("""
+                SELECT COUNT(*) AS count
+                FROM posts
+                WHERE brand_id = %s
+                AND status = 'published'
+            """, (
+                brand_id,
+            ))
+
+            published_brand_posts = cur.fetchone()["count"]
+
+            cur.execute("""
+                SELECT COUNT(*) AS count
+                FROM posts
+                WHERE brand_id = %s
+                AND status = 'scheduled'
+            """, (
+                brand_id,
+            ))
+
+            scheduled_brand_posts = cur.fetchone()["count"]
+
+            cur.execute("""
+                SELECT COUNT(*) AS count
+                FROM posts
+                WHERE brand_id = %s
+                AND status = 'draft'
+            """, (
+                brand_id,
+            ))
+
+            draft_brand_posts = cur.fetchone()["count"]
+
+            # -------------------------------------------------
+            # COMMUNITY
+            # -------------------------------------------------
+
+            cur.execute("""
+                SELECT COUNT(*) AS count
+                FROM community_comments
+                WHERE brand_id = %s
+                AND status IN ('pending', 'unread')
+            """, (
+                brand_id,
+            ))
+
+            pending_community = cur.fetchone()["count"]
+
+            # -------------------------------------------------
+            # ACTIVITY
+            # -------------------------------------------------
+
+            cur.execute("""
+                SELECT
+                    al.id,
+                    al.action,
+                    al.entity_type,
+                    al.entity_id,
+                    al.description,
+                    al.ip_address,
+                    al.created_at,
+                    u.name AS user_name,
+                    u.email AS user_email
+                FROM activity_logs al
+
+                LEFT JOIN users u
+                    ON u.id = al.user_id
+
+                WHERE al.brand_id = %s
+                ORDER BY al.created_at DESC
+                LIMIT 20
+            """, (
+                brand_id,
+            ))
+
+            brand_activity = cur.fetchall()
+
+        return render_template(
+            "admin_brand_details.html",
+            current_user=current_user,
+            brand=brand,
+            brand_social_accounts=brand_social_accounts,
+            brand_members_list=brand_members_list,
+            brand_posts=brand_posts,
+            total_brand_posts=total_brand_posts,
+            published_brand_posts=published_brand_posts,
+            scheduled_brand_posts=scheduled_brand_posts,
+            draft_brand_posts=draft_brand_posts,
+            pending_community=pending_community,
+            brand_activity=brand_activity
+        )
+
+    except Exception:
+
+        app.logger.exception(
+            "Failed to load admin brand details."
+        )
+
+        flash(
+            "Unable to load brand details right now.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("admin_brands")
+        )
+
+    finally:
+
+        conn.close()
+
+
+# =========================================================
+# ADMIN BRAND STATUS
+# =========================================================
+
+@app.route(
+    "/admin/brands/<int:brand_id>/toggle-status",
+    methods=["POST"]
+)
+@login_required
+def admin_toggle_brand_status(brand_id):
+
+    current_user = get_current_user()
+
+    if not current_user:
+        return redirect(url_for("login"))
+
+    if current_user.get("role") != "admin":
+
+        flash(
+            "Administrator access is required.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("dashboard")
+        )
+
+    conn = get_db_connection()
+
+    try:
+
+        with conn.cursor() as cur:
+
+            cur.execute("""
+                SELECT
+                    id,
+                    name,
+                    is_active,
+                    created_by
+                FROM brands
+                WHERE id = %s
+            """, (
+                brand_id,
+            ))
+
+            brand = cur.fetchone()
+
+            if not brand:
+
+                flash(
+                    "Brand was not found.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for("admin_brands")
+                )
+
+            new_status = not brand["is_active"]
+
+            cur.execute("""
+                UPDATE brands
+                SET
+                    is_active = %s,
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE id = %s
+            """, (
+                new_status,
+                brand_id
+            ))
+
+            # -------------------------------------------------
+            # Notify brand owner
+            # -------------------------------------------------
+
+            if brand["created_by"]:
+
+                if new_status:
+
+                    notification_title = "Brand Activated"
+
+                    notification_message = (
+                        f'Your brand "{brand["name"]}" '
+                        "has been activated by an administrator."
+                    )
+
+                else:
+
+                    notification_title = "Brand Deactivated"
+
+                    notification_message = (
+                        f'Your brand "{brand["name"]}" '
+                        "has been deactivated by an administrator."
+                    )
+
+                cur.execute("""
+                    INSERT INTO notifications (
+                        user_id,
+                        title,
+                        message,
+                        notification_type,
+                        is_read,
+                        created_at
+                    )
+                    VALUES (
+                        %s,
+                        %s,
+                        %s,
+                        %s,
+                        FALSE,
+                        CURRENT_TIMESTAMP
+                    )
+                """, (
+                    brand["created_by"],
+                    notification_title,
+                    notification_message,
+                    "brand"
+                ))
+
+        conn.commit()
+
+        if new_status:
+
+            activity_action = "brand_activated"
+
+            activity_description = (
+                f'Activated brand: "{brand["name"]}".'
+            )
+
+            flash_message = (
+                f'Brand "{brand["name"]}" has been activated.'
+            )
+
+        else:
+
+            activity_action = "brand_deactivated"
+
+            activity_description = (
+                f'Deactivated brand: "{brand["name"]}".'
+            )
+
+            flash_message = (
+                f'Brand "{brand["name"]}" has been deactivated.'
+            )
+
+        log_activity(
+            activity_action,
+            "brand",
+            brand_id,
+            activity_description,
+            brand_id
+        )
+
+        flash(
+            flash_message,
+            "success"
+        )
+
+        return redirect(
+            request.referrer
+            or url_for(
+                "admin_brand_details",
+                brand_id=brand_id
+            )
+        )
+
+    except Exception:
+
+        conn.rollback()
+
+        app.logger.exception(
+            "Failed to toggle brand status."
+        )
+
+        flash(
+            "Unable to update brand status.",
+            "danger"
+        )
+
+        return redirect(
+            url_for(
+                "admin_brand_details",
+                brand_id=brand_id
+            )
+        )
+
+    finally:
+
+        conn.close()
+# =========================================================
+# ADMIN SOCIAL ACCOUNTS MANAGEMENT
+# =========================================================
+
+@app.route("/admin/social-accounts")
+@login_required
+def admin_social_accounts():
+
+    current_user = get_current_user()
+
+    if not current_user:
+        return redirect(url_for("login"))
+
+    if current_user.get("role") != "admin":
+        flash(
+            "Administrator access is required.",
+            "danger"
+        )
+        return redirect(url_for("dashboard"))
+
+    search = request.args.get(
+        "search",
+        ""
+    ).strip()
+
+    platform = request.args.get(
+        "platform",
+        ""
+    ).strip().lower()
+
+    status = request.args.get(
+        "status",
+        ""
+    ).strip().lower()
+
+    conn = get_db_connection()
+
+    try:
+
+        with conn.cursor() as cur:
+
+            query = """
+                SELECT
+                    sa.id,
+                    sa.brand_id,
+                    sa.platform,
+                    sa.account_name,
+                    sa.username,
+                    sa.account_id,
+                    sa.profile_url,
+                    sa.is_connected,
+                    sa.token_expires_at,
+                    sa.created_at,
+                    sa.updated_at,
+
+                    b.name AS brand_name,
+                    b.is_active AS brand_is_active,
+
+                    u.id AS owner_id,
+                    u.name AS owner_name,
+                    u.email AS owner_email
+
+                FROM social_accounts sa
+
+                LEFT JOIN brands b
+                    ON b.id = sa.brand_id
+
+                LEFT JOIN users u
+                    ON u.id = b.created_by
+
+                WHERE 1 = 1
+            """
+
+            params = []
+
+            if search:
+
+                query += """
+                    AND (
+                        sa.account_name ILIKE %s
+                        OR sa.username ILIKE %s
+                        OR sa.account_id ILIKE %s
+                        OR sa.platform ILIKE %s
+                        OR b.name ILIKE %s
+                        OR u.name ILIKE %s
+                        OR u.email ILIKE %s
+                    )
+                """
+
+                search_value = f"%{search}%"
+
+                params.extend([
+                    search_value,
+                    search_value,
+                    search_value,
+                    search_value,
+                    search_value,
+                    search_value,
+                    search_value
+                ])
+
+            if platform:
+
+                query += """
+                    AND LOWER(sa.platform) = %s
+                """
+
+                params.append(platform)
+
+            if status == "connected":
+
+                query += """
+                    AND sa.is_connected = TRUE
+                """
+
+            elif status == "disconnected":
+
+                query += """
+                    AND sa.is_connected = FALSE
+                """
+
+            query += """
+                ORDER BY sa.created_at DESC
+            """
+
+            cur.execute(
+                query,
+                tuple(params)
+            )
+
+            accounts = cur.fetchall()
+
+            # -------------------------------------------------
+            # TOTAL ACCOUNTS
+            # -------------------------------------------------
+
+            cur.execute("""
+                SELECT COUNT(*) AS count
+                FROM social_accounts
+            """)
+
+            total_accounts = cur.fetchone()["count"]
+
+            # -------------------------------------------------
+            # CONNECTED
+            # -------------------------------------------------
+
+            cur.execute("""
+                SELECT COUNT(*) AS count
+                FROM social_accounts
+                WHERE is_connected = TRUE
+            """)
+
+            connected_accounts = cur.fetchone()["count"]
+
+            # -------------------------------------------------
+            # DISCONNECTED
+            # -------------------------------------------------
+
+            cur.execute("""
+                SELECT COUNT(*) AS count
+                FROM social_accounts
+                WHERE is_connected = FALSE
+            """)
+
+            disconnected_accounts = cur.fetchone()["count"]
+
+            # -------------------------------------------------
+            # TOTAL BRANDS
+            # -------------------------------------------------
+
+            cur.execute("""
+                SELECT COUNT(*) AS count
+                FROM brands
+                WHERE is_active = TRUE
+            """)
+
+            active_brands = cur.fetchone()["count"]
+
+            # -------------------------------------------------
+            # PLATFORM SUMMARY
+            # -------------------------------------------------
+
+            cur.execute("""
+                SELECT
+                    LOWER(platform) AS platform,
+                    COUNT(*) AS count
+                FROM social_accounts
+                GROUP BY LOWER(platform)
+                ORDER BY count DESC
+            """)
+
+            platform_summary = cur.fetchall()
+
+        return render_template(
+            "admin_social_accounts.html",
+            current_user=current_user,
+            accounts=accounts,
+            total_accounts=total_accounts,
+            connected_accounts=connected_accounts,
+            disconnected_accounts=disconnected_accounts,
+            active_brands=active_brands,
+            platform_summary=platform_summary,
+            search=search,
+            platform=platform,
+            status=status
+        )
+
+    except Exception:
+
+        app.logger.exception(
+            "Failed to load admin social accounts."
+        )
+
+        flash(
+            "Unable to load social account management right now.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("admin_dashboard")
+        )
+
+    finally:
+
+        conn.close()
+
+
+# =========================================================
+# ADMIN SOCIAL ACCOUNT DETAILS
+# =========================================================
+
+@app.route("/admin/social-accounts/<int:account_id>")
+@login_required
+def admin_social_account_details(account_id):
+
+    current_user = get_current_user()
+
+    if not current_user:
+        return redirect(url_for("login"))
+
+    if current_user.get("role") != "admin":
+
+        flash(
+            "Administrator access is required.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("dashboard")
+        )
+
+    conn = get_db_connection()
+
+    try:
+
+        with conn.cursor() as cur:
+
+            # -------------------------------------------------
+            # ACCOUNT
+            # -------------------------------------------------
+
+            cur.execute("""
+                SELECT
+                    sa.id,
+                    sa.brand_id,
+                    sa.platform,
+                    sa.account_name,
+                    sa.username,
+                    sa.account_id,
+                    sa.profile_url,
+                    sa.access_token,
+                    sa.refresh_token,
+                    sa.token_expires_at,
+                    sa.is_connected,
+                    sa.created_at,
+                    sa.updated_at,
+
+                    b.name AS brand_name,
+                    b.description AS brand_description,
+                    b.website_url AS brand_website,
+                    b.is_active AS brand_is_active,
+
+                    u.id AS owner_id,
+                    u.name AS owner_name,
+                    u.email AS owner_email
+
+                FROM social_accounts sa
+
+                LEFT JOIN brands b
+                    ON b.id = sa.brand_id
+
+                LEFT JOIN users u
+                    ON u.id = b.created_by
+
+                WHERE sa.id = %s
+            """, (
+                account_id,
+            ))
+
+            account = cur.fetchone()
+
+            if not account:
+
+                flash(
+                    "Social account was not found.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for("admin_social_accounts")
+                )
+
+            # -------------------------------------------------
+            # BRAND ACCOUNT SUMMARY
+            # -------------------------------------------------
+
+            cur.execute("""
+                SELECT COUNT(*) AS count
+                FROM social_accounts
+                WHERE brand_id = %s
+            """, (
+                account["brand_id"],
+            ))
+
+            brand_account_count = cur.fetchone()["count"]
+
+            cur.execute("""
+                SELECT COUNT(*) AS count
+                FROM social_accounts
+                WHERE brand_id = %s
+                AND is_connected = TRUE
+            """, (
+                account["brand_id"],
+            ))
+
+            brand_connected_count = cur.fetchone()["count"]
+
+            # -------------------------------------------------
+            # BRAND POSTS
+            # -------------------------------------------------
+
+            cur.execute("""
+                SELECT COUNT(*) AS count
+                FROM posts
+                WHERE brand_id = %s
+            """, (
+                account["brand_id"],
+            ))
+
+            brand_posts_count = cur.fetchone()["count"]
+
+            # -------------------------------------------------
+            # RECENT ACTIVITY
+            # -------------------------------------------------
+
+            cur.execute("""
+                SELECT
+                    al.id,
+                    al.action,
+                    al.entity_type,
+                    al.entity_id,
+                    al.description,
+                    al.created_at,
+                    u.name AS user_name,
+                    u.email AS user_email
+                FROM activity_logs al
+
+                LEFT JOIN users u
+                    ON u.id = al.user_id
+
+                WHERE
+                    al.entity_type = 'social_account'
+                    AND al.entity_id = %s
+
+                ORDER BY al.created_at DESC
+                LIMIT 20
+            """, (
+                account_id,
+            ))
+
+            account_activity = cur.fetchall()
+
+        return render_template(
+            "admin_social_account_details.html",
+            current_user=current_user,
+            account=account,
+            brand_account_count=brand_account_count,
+            brand_connected_count=brand_connected_count,
+            brand_posts_count=brand_posts_count,
+            account_activity=account_activity
+        )
+
+    except Exception:
+
+        app.logger.exception(
+            "Failed to load admin social account details."
+        )
+
+        flash(
+            "Unable to load social account details.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("admin_social_accounts")
+        )
+
+    finally:
+
+        conn.close()
+
+
+# =========================================================
+# ADMIN SOCIAL ACCOUNT STATUS
+# =========================================================
+
+@app.route(
+    "/admin/social-accounts/<int:account_id>/toggle-status",
+    methods=["POST"]
+)
+@login_required
+def admin_toggle_social_account_status(account_id):
+
+    current_user = get_current_user()
+
+    if not current_user:
+        return redirect(url_for("login"))
+
+    if current_user.get("role") != "admin":
+
+        flash(
+            "Administrator access is required.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("dashboard")
+        )
+
+    conn = get_db_connection()
+
+    try:
+
+        with conn.cursor() as cur:
+
+            cur.execute("""
+                SELECT
+                    sa.id,
+                    sa.brand_id,
+                    sa.platform,
+                    sa.account_name,
+                    sa.username,
+                    sa.is_connected,
+
+                    b.name AS brand_name,
+                    b.created_by AS owner_id
+
+                FROM social_accounts sa
+
+                LEFT JOIN brands b
+                    ON b.id = sa.brand_id
+
+                WHERE sa.id = %s
+            """, (
+                account_id,
+            ))
+
+            account = cur.fetchone()
+
+            if not account:
+
+                flash(
+                    "Social account was not found.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for("admin_social_accounts")
+                )
+
+            new_status = not account["is_connected"]
+
+            cur.execute("""
+                UPDATE social_accounts
+                SET
+                    is_connected = %s,
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE id = %s
+            """, (
+                new_status,
+                account_id
+            ))
+
+            # -------------------------------------------------
+            # NOTIFICATION
+            # -------------------------------------------------
+
+            if account["owner_id"]:
+
+                if new_status:
+
+                    notification_title = (
+                        "Social Account Activated"
+                    )
+
+                    notification_message = (
+                        f'The {account["platform"]} account '
+                        f'"{account["account_name"] or account["username"] or "Social Account"}" '
+                        f'for brand "{account["brand_name"]}" '
+                        "has been marked as connected by an administrator."
+                    )
+
+                else:
+
+                    notification_title = (
+                        "Social Account Disconnected"
+                    )
+
+                    notification_message = (
+                        f'The {account["platform"]} account '
+                        f'"{account["account_name"] or account["username"] or "Social Account"}" '
+                        f'for brand "{account["brand_name"]}" '
+                        "has been marked as disconnected by an administrator."
+                    )
+
+                cur.execute("""
+                    INSERT INTO notifications (
+                        user_id,
+                        title,
+                        message,
+                        notification_type,
+                        is_read,
+                        created_at
+                    )
+                    VALUES (
+                        %s,
+                        %s,
+                        %s,
+                        %s,
+                        FALSE,
+                        CURRENT_TIMESTAMP
+                    )
+                """, (
+                    account["owner_id"],
+                    notification_title,
+                    notification_message,
+                    "social_account"
+                ))
+
+        conn.commit()
+
+        if new_status:
+
+            activity_action = (
+                "social_account_activated"
+            )
+
+            activity_description = (
+                f'Activated {account["platform"]} account '
+                f'"{account["account_name"] or account["username"] or "Social Account"}" '
+                f'for brand "{account["brand_name"]}".'
+            )
+
+            flash_message = (
+                "Social account marked as connected."
+            )
+
+        else:
+
+            activity_action = (
+                "social_account_deactivated"
+            )
+
+            activity_description = (
+                f'Disconnected {account["platform"]} account '
+                f'"{account["account_name"] or account["username"] or "Social Account"}" '
+                f'for brand "{account["brand_name"]}".'
+            )
+
+            flash_message = (
+                "Social account marked as disconnected."
+            )
+
+        log_activity(
+            activity_action,
+            "social_account",
+            account_id,
+            activity_description,
+            account["brand_id"]
+        )
+
+        flash(
+            flash_message,
+            "success"
+        )
+
+        return redirect(
+            request.referrer
+            or url_for(
+                "admin_social_account_details",
+                account_id=account_id
+            )
+        )
+
+    except Exception:
+
+        conn.rollback()
+
+        app.logger.exception(
+            "Failed to toggle social account status."
+        )
+
+        flash(
+            "Unable to update social account status.",
+            "danger"
+        )
+
+        return redirect(
+            url_for(
+                "admin_social_account_details",
+                account_id=account_id
+            )
+        )
+
+    finally:
+
+        conn.close()
+# =========================================================
+# ADMIN CONTENT / POST MANAGEMENT
+# =========================================================
+
+@app.route("/admin/posts")
+@login_required
+def admin_posts():
+
+    current_user = get_current_user()
+
+    if not current_user:
+        return redirect(url_for("login"))
+
+    if current_user.get("role") != "admin":
+        flash(
+            "Administrator access is required.",
+            "danger"
+        )
+        return redirect(url_for("dashboard"))
+
+    search = request.args.get(
+        "search",
+        ""
+    ).strip()
+
+    brand_id = request.args.get(
+        "brand_id",
+        ""
+    ).strip()
+
+    status = request.args.get(
+        "status",
+        ""
+    ).strip().lower()
+
+    conn = get_db_connection()
+
+    try:
+
+        with conn.cursor() as cur:
+
+            # -------------------------------------------------
+            # POSTS
+            # -------------------------------------------------
+
+            query = """
+                SELECT
+                    p.id,
+                    p.brand_id,
+                    p.created_by,
+                    p.category_id,
+                    p.title,
+                    p.content,
+                    p.media_url,
+                    p.status,
+                    p.scheduled_at,
+                    p.published_at,
+                    p.created_at,
+                    p.updated_at,
+
+                    b.name AS brand_name,
+                    b.is_active AS brand_is_active,
+
+                    u.name AS creator_name,
+                    u.email AS creator_email,
+
+                    cc.name AS category_name,
+                    cc.color AS category_color
+
+                FROM posts p
+
+                LEFT JOIN brands b
+                    ON b.id = p.brand_id
+
+                LEFT JOIN users u
+                    ON u.id = p.created_by
+
+                LEFT JOIN content_categories cc
+                    ON cc.id = p.category_id
+
+                WHERE 1 = 1
+            """
+
+            params = []
+
+            if search:
+
+                query += """
+                    AND (
+                        p.title ILIKE %s
+                        OR p.content ILIKE %s
+                        OR b.name ILIKE %s
+                        OR u.name ILIKE %s
+                        OR u.email ILIKE %s
+                    )
+                """
+
+                search_value = f"%{search}%"
+
+                params.extend([
+                    search_value,
+                    search_value,
+                    search_value,
+                    search_value,
+                    search_value
+                ])
+
+            if brand_id:
+
+                try:
+
+                    brand_id_value = int(brand_id)
+
+                    query += """
+                        AND p.brand_id = %s
+                    """
+
+                    params.append(
+                        brand_id_value
+                    )
+
+                except ValueError:
+
+                    brand_id = ""
+
+            if status:
+
+                query += """
+                    AND LOWER(p.status) = %s
+                """
+
+                params.append(
+                    status
+                )
+
+            query += """
+                ORDER BY p.created_at DESC
+            """
+
+            cur.execute(
+                query,
+                tuple(params)
+            )
+
+            posts_list = cur.fetchall()
+
+            # -------------------------------------------------
+            # BRANDS FOR FILTER
+            # -------------------------------------------------
+
+            cur.execute("""
+                SELECT
+                    id,
+                    name,
+                    is_active
+                FROM brands
+                ORDER BY name ASC
+            """)
+
+            brands_for_filter = cur.fetchall()
+
+            # -------------------------------------------------
+            # TOTAL POSTS
+            # -------------------------------------------------
+
+            cur.execute("""
+                SELECT COUNT(*) AS count
+                FROM posts
+            """)
+
+            total_posts = cur.fetchone()["count"]
+
+            # -------------------------------------------------
+            # DRAFTS
+            # -------------------------------------------------
+
+            cur.execute("""
+                SELECT COUNT(*) AS count
+                FROM posts
+                WHERE LOWER(status) = 'draft'
+            """)
+
+            draft_posts = cur.fetchone()["count"]
+
+            # -------------------------------------------------
+            # SCHEDULED
+            # -------------------------------------------------
+
+            cur.execute("""
+                SELECT COUNT(*) AS count
+                FROM posts
+                WHERE LOWER(status) = 'scheduled'
+            """)
+
+            scheduled_posts = cur.fetchone()["count"]
+
+            # -------------------------------------------------
+            # PUBLISHED
+            # -------------------------------------------------
+
+            cur.execute("""
+                SELECT COUNT(*) AS count
+                FROM posts
+                WHERE LOWER(status) = 'published'
+            """)
+
+            published_posts = cur.fetchone()["count"]
+
+            # -------------------------------------------------
+            # PENDING APPROVALS
+            # -------------------------------------------------
+
+            cur.execute("""
+                SELECT COUNT(*) AS count
+                FROM content_approvals
+                WHERE LOWER(status) = 'pending'
+            """)
+
+            pending_approvals = cur.fetchone()["count"]
+
+        return render_template(
+            "admin_posts.html",
+            current_user=current_user,
+            posts_list=posts_list,
+            brands_for_filter=brands_for_filter,
+            total_posts=total_posts,
+            draft_posts=draft_posts,
+            scheduled_posts=scheduled_posts,
+            published_posts=published_posts,
+            pending_approvals=pending_approvals,
+            search=search,
+            brand_id=brand_id,
+            status=status
+        )
+
+    except Exception:
+
+        app.logger.exception(
+            "Failed to load admin post management."
+        )
+
+        flash(
+            "Unable to load content management right now.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("admin_dashboard")
+        )
+
+    finally:
+
+        conn.close()
+
+
+# =========================================================
+# ADMIN POST DETAILS
+# =========================================================
+
+@app.route("/admin/posts/<int:post_id>")
+@login_required
+def admin_post_details(post_id):
+
+    current_user = get_current_user()
+
+    if not current_user:
+        return redirect(url_for("login"))
+
+    if current_user.get("role") != "admin":
+
+        flash(
+            "Administrator access is required.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("dashboard")
+        )
+
+    conn = get_db_connection()
+
+    try:
+
+        with conn.cursor() as cur:
+
+            # -------------------------------------------------
+            # POST
+            # -------------------------------------------------
+
+            cur.execute("""
+                SELECT
+                    p.id,
+                    p.brand_id,
+                    p.created_by,
+                    p.category_id,
+                    p.title,
+                    p.content,
+                    p.media_url,
+                    p.status,
+                    p.scheduled_at,
+                    p.published_at,
+                    p.created_at,
+                    p.updated_at,
+
+                    b.name AS brand_name,
+                    b.description AS brand_description,
+                    b.website_url AS brand_website,
+                    b.is_active AS brand_is_active,
+
+                    u.name AS creator_name,
+                    u.email AS creator_email,
+
+                    cc.name AS category_name,
+                    cc.color AS category_color
+
+                FROM posts p
+
+                LEFT JOIN brands b
+                    ON b.id = p.brand_id
+
+                LEFT JOIN users u
+                    ON u.id = p.created_by
+
+                LEFT JOIN content_categories cc
+                    ON cc.id = p.category_id
+
+                WHERE p.id = %s
+            """, (
+                post_id,
+            ))
+
+            post = cur.fetchone()
+
+            if not post:
+
+                flash(
+                    "Post was not found.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for("admin_posts")
+                )
+
+            # -------------------------------------------------
+            # POST PLATFORMS
+            # -------------------------------------------------
+
+            cur.execute("""
+                SELECT
+                    pp.id,
+                    pp.social_account_id,
+                    pp.platform_status,
+                    pp.external_post_id,
+                    pp.published_at,
+                    pp.error_message,
+
+                    sa.platform,
+                    sa.account_name,
+                    sa.username,
+                    sa.is_connected
+
+                FROM post_platforms pp
+
+                LEFT JOIN social_accounts sa
+                    ON sa.id = pp.social_account_id
+
+                WHERE pp.post_id = %s
+
+                ORDER BY pp.id ASC
+            """, (
+                post_id,
+            ))
+
+            post_platforms = cur.fetchall()
+
+            # -------------------------------------------------
+            # APPROVALS
+            # -------------------------------------------------
+
+            cur.execute("""
+                SELECT
+                    ca.id,
+                    ca.submitted_by,
+                    ca.reviewer_id,
+                    ca.status,
+                    ca.comments,
+                    ca.reviewed_at,
+                    ca.created_at,
+
+                    submitter.name AS submitter_name,
+                    submitter.email AS submitter_email,
+
+                    reviewer.name AS reviewer_name,
+                    reviewer.email AS reviewer_email
+
+                FROM content_approvals ca
+
+                LEFT JOIN users submitter
+                    ON submitter.id = ca.submitted_by
+
+                LEFT JOIN users reviewer
+                    ON reviewer.id = ca.reviewer_id
+
+                WHERE ca.post_id = %s
+
+                ORDER BY ca.created_at DESC
+            """, (
+                post_id,
+            ))
+
+            post_approvals = cur.fetchall()
+
+            # -------------------------------------------------
+            # TAGS
+            # -------------------------------------------------
+
+            cur.execute("""
+                SELECT
+                    ct.id,
+                    ct.name
+                FROM post_tags pt
+
+                INNER JOIN content_tags ct
+                    ON ct.id = pt.tag_id
+
+                WHERE pt.post_id = %s
+
+                ORDER BY ct.name ASC
+            """, (
+                post_id,
+            ))
+
+            post_tags = cur.fetchall()
+
+            # -------------------------------------------------
+            # ACTIVITY
+            # -------------------------------------------------
+
+            cur.execute("""
+                SELECT
+                    al.id,
+                    al.action,
+                    al.entity_type,
+                    al.entity_id,
+                    al.description,
+                    al.ip_address,
+                    al.created_at,
+
+                    u.name AS user_name,
+                    u.email AS user_email
+
+                FROM activity_logs al
+
+                LEFT JOIN users u
+                    ON u.id = al.user_id
+
+                WHERE
+                    al.entity_type = 'post'
+                    AND al.entity_id = %s
+
+                ORDER BY al.created_at DESC
+
+                LIMIT 30
+            """, (
+                post_id,
+            ))
+
+            post_activity = cur.fetchall()
+
+        return render_template(
+            "admin_post_details.html",
+            current_user=current_user,
+            post=post,
+            post_platforms=post_platforms,
+            post_approvals=post_approvals,
+            post_tags=post_tags,
+            post_activity=post_activity
+        )
+
+    except Exception:
+
+        app.logger.exception(
+            "Failed to load admin post details."
+        )
+
+        flash(
+            "Unable to load post details.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("admin_posts")
+        )
+
+    finally:
+
+        conn.close()
+# =========================================================
+# ADMIN CAMPAIGN MANAGEMENT
+# =========================================================
+
+
+@app.route("/admin/campaigns")
+@login_required
+def admin_campaigns():
+
+    current_user = get_current_user()
+
+    if not current_user:
+        return redirect(url_for("login"))
+
+    if current_user.get("role") != "admin":
+
+        flash(
+            "Administrator access is required.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("dashboard")
+        )
+
+    search = request.args.get(
+        "search",
+        ""
+    ).strip()
+
+    brand_id = request.args.get(
+        "brand_id",
+        ""
+    ).strip()
+
+    status = request.args.get(
+        "status",
+        ""
+    ).strip().lower()
+
+    conn = get_db_connection()
+
+    try:
+
+        with conn.cursor() as cur:
+
+            # -------------------------------------------------
+            # CAMPAIGNS
+            # -------------------------------------------------
+
+            query = """
+                SELECT
+                    c.id,
+                    c.brand_id,
+                    c.created_by,
+                    c.name,
+                    c.description,
+                    c.goal_type,
+                    c.target_value,
+                    c.start_date,
+                    c.end_date,
+                    c.status,
+                    c.created_at,
+                    c.updated_at,
+
+                    b.name AS brand_name,
+                    b.is_active AS brand_is_active,
+
+                    u.name AS creator_name,
+                    u.email AS creator_email,
+
+                    COALESCE(
+                        (
+                            SELECT COUNT(*)
+                            FROM campaign_posts cp
+                            WHERE cp.campaign_id = c.id
+                        ),
+                        0
+                    ) AS posts_count,
+
+                    COALESCE(
+                        (
+                            SELECT COUNT(*)
+                            FROM campaign_posts cp
+                            INNER JOIN posts p
+                                ON p.id = cp.post_id
+                            WHERE cp.campaign_id = c.id
+                            AND LOWER(p.status) = 'published'
+                        ),
+                        0
+                    ) AS published_posts_count,
+
+                    COALESCE(
+                        (
+                            SELECT COUNT(*)
+                            FROM campaign_posts cp
+                            INNER JOIN posts p
+                                ON p.id = cp.post_id
+                            WHERE cp.campaign_id = c.id
+                            AND LOWER(p.status) = 'scheduled'
+                        ),
+                        0
+                    ) AS scheduled_posts_count
+
+                FROM campaigns c
+
+                LEFT JOIN brands b
+                    ON b.id = c.brand_id
+
+                LEFT JOIN users u
+                    ON u.id = c.created_by
+
+                WHERE 1 = 1
+            """
+
+            params = []
+
+            if search:
+
+                query += """
+                    AND (
+                        c.name ILIKE %s
+                        OR c.description ILIKE %s
+                        OR b.name ILIKE %s
+                        OR u.name ILIKE %s
+                        OR u.email ILIKE %s
+                    )
+                """
+
+                search_value = f"%{search}%"
+
+                params.extend([
+                    search_value,
+                    search_value,
+                    search_value,
+                    search_value,
+                    search_value
+                ])
+
+            if brand_id:
+
+                try:
+
+                    brand_id_value = int(
+                        brand_id
+                    )
+
+                    query += """
+                        AND c.brand_id = %s
+                    """
+
+                    params.append(
+                        brand_id_value
+                    )
+
+                except ValueError:
+
+                    brand_id = ""
+
+            if status:
+
+                query += """
+                    AND LOWER(c.status) = %s
+                """
+
+                params.append(
+                    status
+                )
+
+            query += """
+                ORDER BY c.created_at DESC
+            """
+
+            cur.execute(
+                query,
+                tuple(params)
+            )
+
+            campaigns = cur.fetchall()
+
+            # -------------------------------------------------
+            # BRANDS
+            # -------------------------------------------------
+
+            cur.execute("""
+                SELECT
+                    id,
+                    name,
+                    is_active
+                FROM brands
+                ORDER BY name ASC
+            """)
+
+            brands_for_filter = cur.fetchall()
+
+            # -------------------------------------------------
+            # TOTAL CAMPAIGNS
+            # -------------------------------------------------
+
+            cur.execute("""
+                SELECT COUNT(*) AS count
+                FROM campaigns
+            """)
+
+            total_campaigns = cur.fetchone()["count"]
+
+            # -------------------------------------------------
+            # ACTIVE CAMPAIGNS
+            # -------------------------------------------------
+
+            cur.execute("""
+                SELECT COUNT(*) AS count
+                FROM campaigns
+                WHERE LOWER(status) = 'active'
+            """)
+
+            active_campaigns = cur.fetchone()["count"]
+
+            # -------------------------------------------------
+            # DRAFT CAMPAIGNS
+            # -------------------------------------------------
+
+            cur.execute("""
+                SELECT COUNT(*) AS count
+                FROM campaigns
+                WHERE LOWER(status) = 'draft'
+            """)
+
+            draft_campaigns = cur.fetchone()["count"]
+
+            # -------------------------------------------------
+            # COMPLETED CAMPAIGNS
+            # -------------------------------------------------
+
+            cur.execute("""
+                SELECT COUNT(*) AS count
+                FROM campaigns
+                WHERE LOWER(status) = 'completed'
+            """)
+
+            completed_campaigns = cur.fetchone()["count"]
+
+            # -------------------------------------------------
+            # TOTAL CAMPAIGN POSTS
+            # -------------------------------------------------
+
+            cur.execute("""
+                SELECT COUNT(*) AS count
+                FROM campaign_posts
+            """)
+
+            total_campaign_posts = cur.fetchone()["count"]
+
+        return render_template(
+            "admin_campaigns.html",
+            current_user=current_user,
+            campaigns=campaigns,
+            brands_for_filter=brands_for_filter,
+            total_campaigns=total_campaigns,
+            active_campaigns=active_campaigns,
+            draft_campaigns=draft_campaigns,
+            completed_campaigns=completed_campaigns,
+            total_campaign_posts=total_campaign_posts,
+            search=search,
+            brand_id=brand_id,
+            status=status
+        )
+
+    except Exception:
+
+        app.logger.exception(
+            "Failed to load admin campaigns."
+        )
+
+        flash(
+            "Unable to load campaign management right now.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("admin_dashboard")
+        )
+
+    finally:
+
+        conn.close()
+
+
+# =========================================================
+# CREATE CAMPAIGN
+# =========================================================
+
+@app.route("/admin/campaigns/create", methods=["GET", "POST"])
+@login_required
+def admin_create_campaign():
+
+    current_user = get_current_user()
+
+    if not current_user:
+        return redirect(url_for("login"))
+
+    if current_user.get("role") != "admin":
+        flash(
+            "Administrator access is required.",
+            "danger"
+        )
+        return redirect(url_for("dashboard"))
+
+    conn = get_db_connection()
+
+    try:
+
+        # =====================================================
+        # LOAD BRANDS
+        # =====================================================
+
+        with conn.cursor() as cur:
+
+            cur.execute("""
+                SELECT
+                    id,
+                    name,
+                    created_by,
+                    is_active
+                FROM brands
+                WHERE is_active = TRUE
+                ORDER BY name ASC
+            """)
+
+            brands = cur.fetchall()
+
+
+        # =====================================================
+        # CREATE CAMPAIGN
+        # =====================================================
+
+        if request.method == "POST":
+
+            brand_id = request.form.get(
+                "brand_id",
+                ""
+            ).strip()
+
+            name = request.form.get(
+                "name",
+                ""
+            ).strip()
+
+            description = request.form.get(
+                "description",
+                ""
+            ).strip()
+
+            goal_type = request.form.get(
+                "goal_type",
+                ""
+            ).strip()
+
+            target_value = request.form.get(
+                "target_value",
+                ""
+            ).strip()
+
+            start_date = request.form.get(
+                "start_date",
+                ""
+            ).strip()
+
+            end_date = request.form.get(
+                "end_date",
+                ""
+            ).strip()
+
+            campaign_status = request.form.get(
+                "status",
+                "Draft"
+            ).strip()
+
+
+            # =================================================
+            # VALIDATE BRAND
+            # =================================================
+
+            try:
+
+                brand_id = int(brand_id)
+
+            except (TypeError, ValueError):
+
+                flash(
+                    "Please select a valid brand.",
+                    "danger"
+                )
+
+                return render_template(
+                    "admin_create_campaign.html",
+                    brands=brands
+                )
+
+
+            # =================================================
+            # VALIDATE NAME
+            # =================================================
+
+            if not name:
+
+                flash(
+                    "Campaign name is required.",
+                    "danger"
+                )
+
+                return render_template(
+                    "admin_create_campaign.html",
+                    brands=brands
+                )
+
+
+            # =================================================
+            # VALIDATE STATUS
+            # =================================================
+
+            allowed_statuses = [
+                "Draft",
+                "Active",
+                "Paused",
+                "Completed",
+                "Archived"
+            ]
+
+            if campaign_status not in allowed_statuses:
+
+                campaign_status = "Draft"
+
+
+            # =================================================
+            # VALIDATE TARGET VALUE
+            # =================================================
+
+            if target_value:
+
+                try:
+
+                    target_value = float(
+                        target_value
+                    )
+
+                    if target_value < 0:
+
+                        flash(
+                            "Target value cannot be negative.",
+                            "danger"
+                        )
+
+                        return render_template(
+                            "admin_create_campaign.html",
+                            brands=brands
+                        )
+
+                except ValueError:
+
+                    flash(
+                        "Target value must be a valid number.",
+                        "danger"
+                    )
+
+                    return render_template(
+                        "admin_create_campaign.html",
+                        brands=brands
+                    )
+
+            else:
+
+                target_value = None
+
+
+            # =================================================
+            # VALIDATE DATES
+            # =================================================
+
+            if start_date and end_date:
+
+                if end_date < start_date:
+
+                    flash(
+                        "End date cannot be before start date.",
+                        "danger"
+                    )
+
+                    return render_template(
+                        "admin_create_campaign.html",
+                        brands=brands
+                    )
+
+
+            # =================================================
+            # VERIFY BRAND
+            # =================================================
+
+            with conn.cursor() as cur:
+
+                cur.execute("""
+                    SELECT
+                        id,
+                        name,
+                        created_by
+                    FROM brands
+                    WHERE id = %s
+                    AND is_active = TRUE
+                """, (brand_id,))
+
+                selected_brand = cur.fetchone()
+
+
+                if not selected_brand:
+
+                    flash(
+                        "Selected brand was not found.",
+                        "danger"
+                    )
+
+                    return render_template(
+                        "admin_create_campaign.html",
+                        brands=brands
+                    )
+
+
+                # =================================================
+                # INSERT CAMPAIGN
+                # =================================================
+
+                cur.execute("""
+                    INSERT INTO campaigns (
+                        brand_id,
+                        created_by,
+                        name,
+                        description,
+                        goal_type,
+                        target_value,
+                        start_date,
+                        end_date,
+                        status
+                    )
+                    VALUES (
+                        %s,
+                        %s,
+                        %s,
+                        %s,
+                        %s,
+                        %s,
+                        %s,
+                        %s,
+                        %s
+                    )
+                    RETURNING id
+                """, (
+                    brand_id,
+                    current_user["id"],
+                    name,
+                    description or None,
+                    goal_type or None,
+                    target_value,
+                    start_date or None,
+                    end_date or None,
+                    campaign_status
+                ))
+
+                campaign_id = cur.fetchone()["id"]
+
+
+                # =================================================
+                # NOTIFY BRAND OWNER
+                # =================================================
+
+                if selected_brand.get("created_by"):
+
+                    cur.execute("""
+                        INSERT INTO notifications (
+                            user_id,
+                            title,
+                            message,
+                            notification_type
+                        )
+                        VALUES (
+                            %s,
+                            %s,
+                            %s,
+                            %s
+                        )
+                    """, (
+                        selected_brand["created_by"],
+                        "New Campaign Created",
+                        (
+                            f'Campaign "{name}" was created '
+                            f'for your brand.'
+                        ),
+                        "campaign"
+                    ))
+
+
+            conn.commit()
+
+
+            # =================================================
+            # ACTIVITY LOG
+            # =================================================
+
+            log_activity(
+                "created",
+                "campaign",
+                campaign_id,
+                (
+                    f'Created campaign "{name}" '
+                    f'for brand "{selected_brand["name"]}".'
+                ),
+                brand_id
+            )
+
+
+            flash(
+                "Campaign created successfully.",
+                "success"
+            )
+
+            return redirect(
+                url_for(
+                    "admin_campaign_details",
+                    campaign_id=campaign_id
+                )
+            )
+
+
+        # =====================================================
+        # GET REQUEST
+        # =====================================================
+
+        return render_template(
+            "admin_create_campaign.html",
+            brands=brands
+        )
+
+
+    except Exception:
+
+        conn.rollback()
+
+        app.logger.exception(
+            "Failed to create campaign."
+        )
+
+        flash(
+            "Unable to create campaign right now.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("admin_campaigns")
+        )
+
+
+    finally:
+
+        conn.close()
+# =========================================================
+# ADMIN CAMPAIGN DETAILS
+# =========================================================
+
+@app.route(
+    "/admin/campaigns/<int:campaign_id>"
+)
+@login_required
+def admin_campaign_details(campaign_id):
+
+    current_user = get_current_user()
+
+    if not current_user:
+        return redirect(url_for("login"))
+
+    if current_user.get("role") != "admin":
+
+        flash(
+            "Administrator access is required.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("dashboard")
+        )
+
+    conn = get_db_connection()
+
+    try:
+
+        with conn.cursor() as cur:
+
+            # -------------------------------------------------
+            # CAMPAIGN
+            # -------------------------------------------------
+
+            cur.execute("""
+                SELECT
+                    c.id,
+                    c.brand_id,
+                    c.created_by,
+                    c.name,
+                    c.description,
+                    c.goal_type,
+                    c.target_value,
+                    c.start_date,
+                    c.end_date,
+                    c.status,
+                    c.created_at,
+                    c.updated_at,
+
+                    b.name AS brand_name,
+                    b.description AS brand_description,
+                    b.website_url AS brand_website,
+                    b.is_active AS brand_is_active,
+
+                    u.name AS creator_name,
+                    u.email AS creator_email
+
+                FROM campaigns c
+
+                LEFT JOIN brands b
+                    ON b.id = c.brand_id
+
+                LEFT JOIN users u
+                    ON u.id = c.created_by
+
+                WHERE c.id = %s
+            """, (
+                campaign_id,
+            ))
+
+            campaign = cur.fetchone()
+
+            if not campaign:
+
+                flash(
+                    "Campaign was not found.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for("admin_campaigns")
+                )
+
+            # -------------------------------------------------
+            # CAMPAIGN POSTS
+            # -------------------------------------------------
+
+            cur.execute("""
+                SELECT
+                    p.id,
+                    p.title,
+                    p.content,
+                    p.status,
+                    p.scheduled_at,
+                    p.published_at,
+                    p.created_at,
+
+                    u.name AS creator_name
+
+                FROM campaign_posts cp
+
+                INNER JOIN posts p
+                    ON p.id = cp.post_id
+
+                LEFT JOIN users u
+                    ON u.id = p.created_by
+
+                WHERE cp.campaign_id = %s
+
+                ORDER BY p.created_at DESC
+            """, (
+                campaign_id,
+            ))
+
+            campaign_posts = cur.fetchall()
+
+            # -------------------------------------------------
+            # POST COUNTS
+            # -------------------------------------------------
+
+            cur.execute("""
+                SELECT COUNT(*) AS count
+                FROM campaign_posts
+                WHERE campaign_id = %s
+            """, (
+                campaign_id,
+            ))
+
+            total_campaign_posts = cur.fetchone()["count"]
+
+            cur.execute("""
+                SELECT COUNT(*) AS count
+                FROM campaign_posts cp
+
+                INNER JOIN posts p
+                    ON p.id = cp.post_id
+
+                WHERE cp.campaign_id = %s
+                AND LOWER(p.status) = 'published'
+            """, (
+                campaign_id,
+            ))
+
+            published_campaign_posts = cur.fetchone()["count"]
+
+            cur.execute("""
+                SELECT COUNT(*) AS count
+                FROM campaign_posts cp
+
+                INNER JOIN posts p
+                    ON p.id = cp.post_id
+
+                WHERE cp.campaign_id = %s
+                AND LOWER(p.status) = 'scheduled'
+            """, (
+                campaign_id,
+            ))
+
+            scheduled_campaign_posts = cur.fetchone()["count"]
+
+            cur.execute("""
+                SELECT COUNT(*) AS count
+                FROM campaign_posts cp
+
+                INNER JOIN posts p
+                    ON p.id = cp.post_id
+
+                WHERE cp.campaign_id = %s
+                AND LOWER(p.status) = 'draft'
+            """, (
+                campaign_id,
+            ))
+
+            draft_campaign_posts = cur.fetchone()["count"]
+
+            # -------------------------------------------------
+            # ANALYTICS
+            # -------------------------------------------------
+
+            cur.execute("""
+                SELECT
+                    COALESCE(SUM(a.impressions), 0) AS impressions,
+                    COALESCE(SUM(a.reach), 0) AS reach,
+                    COALESCE(SUM(a.likes), 0) AS likes,
+                    COALESCE(SUM(a.comments), 0) AS comments,
+                    COALESCE(SUM(a.shares), 0) AS shares,
+                    COALESCE(SUM(a.clicks), 0) AS clicks
+
+                FROM analytics a
+
+                INNER JOIN campaign_posts cp
+                    ON cp.post_id = a.post_id
+
+                WHERE cp.campaign_id = %s
+            """, (
+                campaign_id,
+            ))
+
+            campaign_analytics = cur.fetchone()
+            # -------------------------------------------------
+            # CAMPAIGN GOAL PROGRESS
+            # -------------------------------------------------
+
+            campaign_goal_progress = 0
+            campaign_goal_current = 0
+            campaign_goal_remaining = 0
+
+            goal_type = (
+                campaign.get("goal_type")
+                or ""
+            ).strip().lower()
+
+            target_value = (
+                campaign.get("target_value")
+                or 0
+            )
+
+            if goal_type:
+
+                if goal_type in (
+                    "impressions",
+                    "impression",
+                    "views",
+                ):
+
+                    campaign_goal_current = (
+                        campaign_analytics["impressions"]
+                        or 0
+                    )
+
+                elif goal_type in (
+                    "reach",
+                    "audience_reach",
+                ):
+
+                    campaign_goal_current = (
+                        campaign_analytics["reach"]
+                        or 0
+                    )
+
+                elif goal_type in (
+                    "likes",
+                    "engagement",
+                ):
+
+                    campaign_goal_current = (
+                        campaign_analytics["likes"]
+                        or 0
+                    )
+
+                elif goal_type in (
+                    "comments",
+                    "comment",
+                ):
+
+                    campaign_goal_current = (
+                        campaign_analytics["comments"]
+                        or 0
+                    )
+
+                elif goal_type in (
+                    "shares",
+                    "share",
+                ):
+
+                    campaign_goal_current = (
+                        campaign_analytics["shares"]
+                        or 0
+                    )
+
+                elif goal_type in (
+                    "clicks",
+                    "traffic",
+                ):
+
+                    campaign_goal_current = (
+                        campaign_analytics["clicks"]
+                        or 0
+                    )
+
+                else:
+
+                    campaign_goal_current = 0
+
+
+                if target_value and float(target_value) > 0:
+
+                    campaign_goal_progress = (
+                        float(campaign_goal_current)
+                        / float(target_value)
+                    ) * 100
+
+                    campaign_goal_progress = min(
+                        campaign_goal_progress,
+                        100
+                    )
+
+                    campaign_goal_remaining = max(
+                        float(target_value)
+                        - float(campaign_goal_current),
+                        0
+                    )
+
+            # -------------------------------------------------
+            # ACTIVITY
+            # -------------------------------------------------
+
+            cur.execute("""
+                SELECT
+                    al.id,
+                    al.action,
+                    al.entity_type,
+                    al.entity_id,
+                    al.description,
+                    al.created_at,
+
+                    u.name AS user_name,
+                    u.email AS user_email
+
+                FROM activity_logs al
+
+                LEFT JOIN users u
+                    ON u.id = al.user_id
+
+                WHERE
+                    al.entity_type = 'campaign'
+                    AND al.entity_id = %s
+
+                ORDER BY al.created_at DESC
+
+                LIMIT 30
+            """, (
+                campaign_id,
+            ))
+
+            campaign_activity = cur.fetchall()
+
+        return render_template(
+            "admin_campaign_details.html",
+            current_user=current_user,
+            campaign=campaign,
+            campaign_posts=campaign_posts,
+            total_campaign_posts=total_campaign_posts,
+            published_campaign_posts=published_campaign_posts,
+            scheduled_campaign_posts=scheduled_campaign_posts,
+            draft_campaign_posts=draft_campaign_posts,
+            campaign_analytics=campaign_analytics,
+            campaign_activity=campaign_activity
+        )
+
+    except Exception:
+
+        app.logger.exception(
+            "Failed to load campaign details."
+        )
+
+        flash(
+            "Unable to load campaign details.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("admin_campaigns")
+        )
+
+    finally:
+
+        conn.close()
+
+
+# =========================================================
+# ADMIN CAMPAIGN STATUS
+# =========================================================
+
+@app.route(
+    "/admin/campaigns/<int:campaign_id>/status",
+    methods=["POST"]
+)
+@login_required
+def admin_update_campaign_status(campaign_id):
+
+    current_user = get_current_user()
+
+    if not current_user:
+        return redirect(url_for("login"))
+
+    if current_user.get("role") != "admin":
+
+        flash(
+            "Administrator access is required.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("dashboard")
+        )
+
+    new_status = request.form.get(
+        "status",
+        ""
+    ).strip()
+
+    valid_statuses = {
+        "Draft",
+        "Active",
+        "Paused",
+        "Completed"
+    }
+
+    if new_status not in valid_statuses:
+
+        flash(
+            "Invalid campaign status.",
+            "danger"
+        )
+
+        return redirect(
+            url_for(
+                "admin_campaign_details",
+                campaign_id=campaign_id
+            )
+        )
+
+    conn = get_db_connection()
+
+    try:
+
+        with conn.cursor() as cur:
+
+            cur.execute("""
+                SELECT
+                    id,
+                    brand_id,
+                    name,
+                    status
+                FROM campaigns
+                WHERE id = %s
+            """, (
+                campaign_id,
+            ))
+
+            campaign = cur.fetchone()
+
+            if not campaign:
+
+                flash(
+                    "Campaign was not found.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for("admin_campaigns")
+                )
+
+            cur.execute("""
+                UPDATE campaigns
+                SET
+                    status = %s,
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE id = %s
+            """, (
+                new_status,
+                campaign_id
+            ))
+
+        conn.commit()
+
+        log_activity(
+            "campaign_status_changed",
+            "campaign",
+            campaign_id,
+            f'Changed campaign "{campaign["name"]}" status from "{campaign["status"]}" to "{new_status}".',
+            campaign["brand_id"]
+        )
+
+        flash(
+            "Campaign status updated successfully.",
+            "success"
+        )
+
+    except Exception:
+
+        conn.rollback()
+
+        app.logger.exception(
+            "Failed to update campaign status."
+        )
+
+        flash(
+            "Unable to update campaign status.",
+            "danger"
+        )
+
+    finally:
+
+        conn.close()
+
+    return redirect(
+        url_for(
+            "admin_campaign_details",
+            campaign_id=campaign_id
+        )
+    )
+
+
+# =========================================================
+# ADMIN ADD POST TO CAMPAIGN
+# =========================================================
+
+@app.route(
+    "/admin/campaigns/<int:campaign_id>/add-post",
+    methods=["POST"]
+)
+@login_required
+def admin_add_post_to_campaign(campaign_id):
+
+    current_user = get_current_user()
+
+    if not current_user:
+        return redirect(url_for("login"))
+
+    if current_user.get("role") != "admin":
+
+        flash(
+            "Administrator access is required.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("dashboard")
+        )
+
+    post_id = request.form.get(
+        "post_id",
+        ""
+    ).strip()
+
+    try:
+
+        post_id = int(
+            post_id
+        )
+
+    except ValueError:
+
+        flash(
+            "Invalid post selected.",
+            "danger"
+        )
+
+        return redirect(
+            url_for(
+                "admin_campaign_details",
+                campaign_id=campaign_id
+            )
+        )
+
+    conn = get_db_connection()
+
+    try:
+
+        with conn.cursor() as cur:
+
+            # -------------------------------------------------
+            # CAMPAIGN
+            # -------------------------------------------------
+
+            cur.execute("""
+                SELECT
+                    id,
+                    brand_id,
+                    name
+                FROM campaigns
+                WHERE id = %s
+            """, (
+                campaign_id,
+            ))
+
+            campaign = cur.fetchone()
+
+            if not campaign:
+
+                flash(
+                    "Campaign was not found.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for("admin_campaigns")
+                )
+
+            # -------------------------------------------------
+            # POST
+            # -------------------------------------------------
+
+            cur.execute("""
+                SELECT
+                    id,
+                    brand_id,
+                    title
+                FROM posts
+                WHERE id = %s
+            """, (
+                post_id,
+            ))
+
+            post = cur.fetchone()
+
+            if not post:
+
+                flash(
+                    "Post was not found.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for(
+                        "admin_campaign_details",
+                        campaign_id=campaign_id
+                    )
+                )
+
+            if post["brand_id"] != campaign["brand_id"]:
+
+                flash(
+                    "A post can only be added to a campaign belonging to the same brand.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for(
+                        "admin_campaign_details",
+                        campaign_id=campaign_id
+                    )
+                )
+
+            # -------------------------------------------------
+            # ADD
+            # -------------------------------------------------
+
+            cur.execute("""
+                INSERT INTO campaign_posts (
+                    campaign_id,
+                    post_id,
+                    created_at
+                )
+                VALUES (
+                    %s,
+                    %s,
+                    CURRENT_TIMESTAMP
+                )
+                ON CONFLICT (
+                    campaign_id,
+                    post_id
+                )
+                DO NOTHING
+            """, (
+                campaign_id,
+                post_id
+            ))
+
+        conn.commit()
+
+        log_activity(
+            "campaign_post_added",
+            "campaign",
+            campaign_id,
+            f'Added post "{post["title"] or "Untitled Post"}" to campaign "{campaign["name"]}".',
+            campaign["brand_id"]
+        )
+
+        flash(
+            "Post added to campaign successfully.",
+            "success"
+        )
+
+    except Exception:
+
+        conn.rollback()
+
+        app.logger.exception(
+            "Failed to add post to campaign."
+        )
+
+        flash(
+            "Unable to add post to campaign.",
+            "danger"
+        )
+
+    finally:
+
+        conn.close()
+
+    return redirect(
+        url_for(
+            "admin_campaign_details",
+            campaign_id=campaign_id
+        )
+    )
+
+
+# =========================================================
+# ADMIN REMOVE POST FROM CAMPAIGN
+# =========================================================
+
+@app.route(
+    "/admin/campaigns/<int:campaign_id>/remove-post/<int:post_id>",
+    methods=["POST"]
+)
+@login_required
+def admin_remove_post_from_campaign(
+    campaign_id,
+    post_id
+):
+
+    current_user = get_current_user()
+
+    if not current_user:
+        return redirect(url_for("login"))
+
+    if current_user.get("role") != "admin":
+
+        flash(
+            "Administrator access is required.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("dashboard")
+        )
+
+    conn = get_db_connection()
+
+    try:
+
+        with conn.cursor() as cur:
+
+            cur.execute("""
+                SELECT
+                    c.id,
+                    c.brand_id,
+                    c.name
+                FROM campaigns c
+                WHERE c.id = %s
+            """, (
+                campaign_id,
+            ))
+
+            campaign = cur.fetchone()
+
+            if not campaign:
+
+                flash(
+                    "Campaign was not found.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for("admin_campaigns")
+                )
+
+            cur.execute("""
+                DELETE FROM campaign_posts
+                WHERE campaign_id = %s
+                AND post_id = %s
+            """, (
+                campaign_id,
+                post_id
+            ))
+
+        conn.commit()
+
+        log_activity(
+            "campaign_post_removed",
+            "campaign",
+            campaign_id,
+            f"Removed post #{post_id} from campaign \"{campaign['name']}\".",
+            campaign["brand_id"]
+        )
+
+        flash(
+            "Post removed from campaign.",
+            "success"
+        )
+
+    except Exception:
+
+        conn.rollback()
+
+        app.logger.exception(
+            "Failed to remove post from campaign."
+        )
+
+        flash(
+            "Unable to remove post from campaign.",
+            "danger"
+        )
+
+    finally:
+
+        conn.close()
+
+    return redirect(
+        url_for(
+            "admin_campaign_details",
+            campaign_id=campaign_id
+        )
+    )
 # =========================================================
 # BRANDS
 # =========================================================

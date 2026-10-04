@@ -10,12 +10,70 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>Sign In | RicozSocial</title>
+    <title>
+        {% if login_type == 'admin' %}
+            Admin Sign In | RicozSocial
+        {% else %}
+            Sign In | RicozSocial
+        {% endif %}
+    </title>
 
     <link
         rel="stylesheet"
         href="{{ url_for('static', filename='css/login.css') }}"
     >
+
+    <style>
+
+        /* =========================================================
+           LOGIN TYPE SWITCH
+        ========================================================= */
+
+        .login-type-switch {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            margin: 0 0 22px;
+            padding: 5px;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            border-radius: 12px;
+            background: rgba(0, 0, 0, 0.035);
+        }
+
+        .login-type-switch a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 42px;
+            padding: 0 14px;
+            border-radius: 9px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 700;
+            transition: all 0.2s ease;
+        }
+
+        .login-type-switch a:hover {
+            color: #c8171d;
+            background: rgba(200, 23, 29, 0.06);
+        }
+
+        .login-type-switch a.active {
+            color: #fff;
+            background: #e31e24;
+            box-shadow: 0 5px 14px rgba(227, 30, 36, 0.18);
+        }
+
+        @media (max-width: 520px) {
+
+            .login-type-switch {
+                grid-template-columns: 1fr;
+            }
+
+        }
+
+    </style>
 
 </head>
 
@@ -29,7 +87,10 @@
              SOCIAL BACKGROUND
         ====================================================== -->
 
-        <div class="social-background" aria-hidden="true">
+        <div
+            class="social-background"
+            aria-hidden="true"
+        >
 
             <div class="social-grid"></div>
 
@@ -69,29 +130,65 @@
 
 
             <div class="social-mini-card mini-card-one">
-                <span class="mini-icon mini-red">♥</span>
+
+                <span class="mini-icon mini-red">
+                    ♥
+                </span>
+
                 <div>
-                    <strong>12.8K</strong>
-                    <small>Engagements</small>
+
+                    <strong>
+                        12.8K
+                    </strong>
+
+                    <small>
+                        Engagements
+                    </small>
+
                 </div>
+
             </div>
 
 
             <div class="social-mini-card mini-card-two">
-                <span class="mini-icon mini-green">↗</span>
+
+                <span class="mini-icon mini-green">
+                    ↗
+                </span>
+
                 <div>
-                    <strong>+24.6%</strong>
-                    <small>Growth</small>
+
+                    <strong>
+                        +24.6%
+                    </strong>
+
+                    <small>
+                        Growth
+                    </small>
+
                 </div>
+
             </div>
 
 
             <div class="social-mini-card mini-card-three">
-                <span class="mini-icon mini-red">●</span>
+
+                <span class="mini-icon mini-red">
+                    ●
+                </span>
+
                 <div>
-                    <strong>8 Platforms</strong>
-                    <small>Connected</small>
+
+                    <strong>
+                        8 Platforms
+                    </strong>
+
+                    <small>
+                        Connected
+                    </small>
+
                 </div>
+
             </div>
 
         </div>
@@ -176,8 +273,14 @@
                 <h1>
 
                     Your brands.
-                    <span>Your content.</span>
-                    <strong>One social workspace.</strong>
+
+                    <span>
+                        Your content.
+                    </span>
+
+                    <strong>
+                        One social workspace.
+                    </strong>
 
                 </h1>
 
@@ -414,12 +517,27 @@
                     <div class="login-heading">
 
                         <h2>
-                            Welcome back.
+                            {% if login_type == 'admin' %}
+                                Admin Sign In
+                            {% else %}
+                                Welcome back.
+                            {% endif %}
                         </h2>
 
                         <p>
-                            Sign in to continue managing your
-                            social workspace.
+
+                            {% if login_type == 'admin' %}
+
+                                Sign in to access the RicozSocial
+                                administration workspace.
+
+                            {% else %}
+
+                                Sign in to continue managing your
+                                social workspace.
+
+                            {% endif %}
+
                         </p>
 
                     </div>
@@ -474,6 +592,39 @@
 
 
                     <!-- =================================================
+                         LOGIN TYPE SWITCH
+                    ================================================== -->
+
+                    <div
+                        class="login-type-switch"
+                        role="tablist"
+                        aria-label="Login type"
+                    >
+
+                        <a
+                            href="{{ url_for('login', login_type='client') }}"
+                            class="{% if login_type == 'client' %}active{% endif %}"
+                            role="tab"
+                            aria-selected="{{ 'true' if login_type == 'client' else 'false' }}"
+                        >
+                            Client Login
+                        </a>
+
+
+                        <a
+                            href="{{ url_for('login', login_type='admin') }}"
+                            class="{% if login_type == 'admin' %}active{% endif %}"
+                            role="tab"
+                            aria-selected="{{ 'true' if login_type == 'admin' else 'false' }}"
+                        >
+                            Admin Login
+                        </a>
+
+                    </div>
+
+
+
+                    <!-- =================================================
                          LOGIN FORM
                     ================================================== -->
 
@@ -482,6 +633,12 @@
                         action="{{ url_for('login') }}"
                         class="login-form"
                     >
+
+                        <input
+                            type="hidden"
+                            name="login_type"
+                            value="{{ login_type or 'client' }}"
+                        >
 
 
                         <!-- Email -->
@@ -600,7 +757,13 @@
                         >
 
                             <span>
-                                Sign in to RicozSocial
+
+                                {% if login_type == 'admin' %}
+                                    Sign in as Administrator
+                                {% else %}
+                                    Sign in to RicozSocial
+                                {% endif %}
+
                             </span>
 
                             <span class="button-arrow">
@@ -616,36 +779,40 @@
 
                     <!-- Divider -->
 
-                    <div class="login-divider">
+                    {% if login_type != 'admin' %}
 
-                        <span></span>
+                        <div class="login-divider">
 
-                        <small>
-                            New to RicozSocial?
-                        </small>
+                            <span></span>
 
-                        <span></span>
+                            <small>
+                                New to RicozSocial?
+                            </small>
 
-                    </div>
+                            <span></span>
+
+                        </div>
 
 
 
-                    <!-- Register -->
+                        <!-- Register -->
 
-                    <a
-                        href="{{ url_for('register') }}"
-                        class="register-button"
-                    >
+                        <a
+                            href="{{ url_for('register') }}"
+                            class="register-button"
+                        >
 
-                        <span>
-                            Create your workspace account
-                        </span>
+                            <span>
+                                Create your workspace account
+                            </span>
 
-                        <span>
-                            →
-                        </span>
+                            <span>
+                                →
+                            </span>
 
-                    </a>
+                        </a>
+
+                    {% endif %}
 
 
 
@@ -658,8 +825,19 @@
                         </span>
 
                         <p>
-                            Your workspace keeps brands, publishing,
-                            approvals and insights organized in one place.
+
+                            {% if login_type == 'admin' %}
+
+                                Administrator access is restricted
+                                to authorized RicozSocial administrators.
+
+                            {% else %}
+
+                                Your workspace keeps brands, publishing,
+                                approvals and insights organized in one place.
+
+                            {% endif %}
+
                         </p>
 
                     </div>
@@ -699,10 +877,12 @@
             <span></span>
 
             <p>
+
                 PLAN <b>•</b>
                 PUBLISH <b>•</b>
                 ENGAGE <b>•</b>
                 ANALYZE
+
             </p>
 
             <span></span>

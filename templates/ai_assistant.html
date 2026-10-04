@@ -1,0 +1,725 @@
+{% extends "base.html" %}
+
+{% block title %}AI Content Assistant — RicozSocial{% endblock %}
+
+{% block extra_css %}
+
+<link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/ai_assistant.css') }}"
+>
+
+<style>
+
+/* =========================================================
+   AI → PUBLISHER ACTIONS
+   ========================================================= */
+
+.ai-result-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.ai-use-post-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.ai-saved-indicator {
+    display: none;
+    margin-top: 12px;
+    padding: 10px 13px;
+    border-radius: 9px;
+    background: #ecfdf3;
+    border: 1px solid #b7ebc6;
+    color: #16803a;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+@media (max-width: 600px) {
+
+    .ai-result-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .ai-result-actions a,
+    .ai-result-actions button {
+        width: 100%;
+    }
+
+}
+
+</style>
+
+{% endblock %}
+
+
+{% block content %}
+
+<div class="ai-page">
+
+    <!-- =====================================================
+         HEADER
+         ===================================================== -->
+
+    <section class="ai-header">
+
+        <div class="ai-header-content">
+
+            <div>
+
+                <span class="ai-eyebrow">
+                    RICOZ AI
+                </span>
+
+                <h1>
+                    AI Content Assistant
+                </h1>
+
+                <p>
+                    Create professional social media content
+                    in seconds with AI-powered assistance.
+                </p>
+
+            </div>
+
+
+            <div class="ai-header-badge">
+
+                <span>
+                    ✦
+                </span>
+
+                AI Powered
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         MAIN CONTENT
+         ===================================================== -->
+
+    <div class="ai-layout">
+
+
+        <!-- =================================================
+             GENERATOR
+             ================================================= -->
+
+        <section class="ai-card ai-generator-card">
+
+            <div class="ai-card-heading">
+
+                <div class="ai-card-icon">
+                    ✦
+                </div>
+
+                <div>
+
+                    <h2>
+                        Create Content
+                    </h2>
+
+                    <p>
+                        Tell Ricoz AI what you want to post.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            {% if error_message %}
+
+                <div class="ai-alert">
+                    {{ error_message }}
+                </div>
+
+            {% endif %}
+
+
+            <form
+                method="POST"
+                action="{{ url_for('ai_assistant') }}"
+                class="ai-form"
+            >
+
+                <!-- =================================================
+                     TOPIC
+                     ================================================= -->
+
+                <div class="ai-form-group">
+
+                    <label for="topic">
+                        What do you want to post about?
+                    </label>
+
+
+                    <textarea
+                        id="topic"
+                        name="topic"
+                        rows="6"
+                        placeholder="Example: Launching our new cybersecurity service for small businesses..."
+                        required
+                    ></textarea>
+
+
+                    <small>
+                        Describe your idea, product, campaign or announcement.
+                    </small>
+
+                </div>
+
+
+                <!-- =================================================
+                     OPTIONS
+                     ================================================= -->
+
+                <div class="ai-options-grid">
+
+
+                    <div class="ai-form-group">
+
+                        <label for="platform">
+                            Platform
+                        </label>
+
+
+                        <select
+                            id="platform"
+                            name="platform"
+                        >
+
+                            <option value="Instagram">
+                                Instagram
+                            </option>
+
+                            <option value="Facebook">
+                                Facebook
+                            </option>
+
+                            <option value="LinkedIn">
+                                LinkedIn
+                            </option>
+
+                            <option value="X">
+                                X / Twitter
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="ai-form-group">
+
+                        <label for="tone">
+                            Tone
+                        </label>
+
+
+                        <select
+                            id="tone"
+                            name="tone"
+                        >
+
+                            <option value="Professional">
+                                Professional
+                            </option>
+
+                            <option value="Friendly">
+                                Friendly
+                            </option>
+
+                            <option value="Promotional">
+                                Promotional
+                            </option>
+
+                            <option value="Educational">
+                                Educational
+                            </option>
+
+                            <option value="Inspirational">
+                                Inspirational
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="ai-form-group">
+
+                        <label for="length">
+                            Length
+                        </label>
+
+
+                        <select
+                            id="length"
+                            name="length"
+                        >
+
+                            <option value="Short">
+                                Short
+                            </option>
+
+                            <option value="Medium" selected>
+                                Medium
+                            </option>
+
+                            <option value="Long">
+                                Long
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =================================================
+                     GENERATE BUTTON
+                     ================================================= -->
+
+                <button
+                    type="submit"
+                    class="ai-generate-button"
+                >
+
+                    <span>
+                        ✦
+                    </span>
+
+                    Generate Content
+
+                </button>
+
+            </form>
+
+        </section>
+
+
+        <!-- =================================================
+             GENERATED RESULT
+             ================================================= -->
+
+        <section class="ai-card ai-result-card">
+
+
+            <div class="ai-card-heading">
+
+                <div class="ai-card-icon result-icon">
+                    ✓
+                </div>
+
+
+                <div>
+
+                    <h2>
+                        Generated Content
+                    </h2>
+
+                    <p>
+                        Your AI-generated post will appear here.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            {% if generated_content %}
+
+                <div class="ai-result">
+
+
+                    <!-- =================================================
+                         RESULT TOOLBAR
+                         ================================================= -->
+
+                    <div class="ai-result-toolbar">
+
+                        <span>
+                            READY TO PUBLISH
+                        </span>
+
+
+                        <button
+                            type="button"
+                            class="ai-copy-button"
+                            onclick="copyAIContent()"
+                        >
+                            Copy
+                        </button>
+
+                    </div>
+
+
+                    <!-- =================================================
+                         GENERATED CONTENT
+                         ================================================= -->
+
+                    <div
+                        class="ai-generated-content"
+                        id="aiGeneratedContent"
+                    >{{ generated_content }}</div>
+
+
+                    <!-- =================================================
+                         AI SAVED STATUS
+                         ================================================= -->
+
+                    <div
+                        id="aiSavedIndicator"
+                        class="ai-saved-indicator"
+                    >
+
+                        ✓ AI content is ready to use in Publisher.
+
+                    </div>
+
+
+                    <!-- =================================================
+                         RESULT ACTIONS
+                         ================================================= -->
+
+                    <div class="ai-result-actions">
+
+
+                        <button
+                            type="button"
+                            class="ai-secondary-button"
+                            onclick="copyAIContent()"
+                        >
+
+                            Copy Content
+
+                        </button>
+
+
+                        <a
+                            href="{{ url_for('publisher') }}"
+                            class="ai-primary-button ai-use-post-button"
+                            onclick="saveAIContentBeforePublisher(event)"
+                        >
+
+                            <span>
+                                ✦
+                            </span>
+
+                            Use in Post
+
+                            <span>
+                                →
+                            </span>
+
+                        </a>
+
+                    </div>
+
+
+                </div>
+
+
+            {% else %}
+
+
+                <!-- =================================================
+                     EMPTY RESULT
+                     ================================================= -->
+
+                <div class="ai-empty-result">
+
+                    <div class="ai-empty-icon">
+                        ✦
+                    </div>
+
+
+                    <h3>
+                        Your content will appear here
+                    </h3>
+
+
+                    <p>
+                        Enter a topic and choose your preferences,
+                        then click Generate Content.
+                    </p>
+
+                </div>
+
+
+            {% endif %}
+
+        </section>
+
+    </div>
+
+
+    <!-- =====================================================
+         AI FEATURES
+         ===================================================== -->
+
+    <section class="ai-features">
+
+
+        <div class="ai-feature-card">
+
+            <div class="ai-feature-icon">
+                ✦
+            </div>
+
+
+            <h3>
+                Smart Content
+            </h3>
+
+
+            <p>
+                Generate natural and engaging social media
+                copy based on your topic.
+            </p>
+
+        </div>
+
+
+        <div class="ai-feature-card">
+
+            <div class="ai-feature-icon">
+                #
+            </div>
+
+
+            <h3>
+                Hashtag Suggestions
+            </h3>
+
+
+            <p>
+                Get relevant hashtags automatically with
+                every generated post.
+            </p>
+
+        </div>
+
+
+        <div class="ai-feature-card">
+
+            <div class="ai-feature-icon">
+                ↗
+            </div>
+
+
+            <h3>
+                Platform Optimized
+            </h3>
+
+
+            <p>
+                Generate content tailored to the platform
+                you want to publish on.
+            </p>
+
+        </div>
+
+
+    </section>
+
+</div>
+
+
+<!-- =========================================================
+     AI JAVASCRIPT
+     ========================================================= -->
+
+<script>
+
+/* =========================================================
+   SAVE GENERATED AI CONTENT
+   ========================================================= */
+
+function saveAIContentToStorage() {
+
+    const contentElement =
+        document.getElementById(
+            "aiGeneratedContent"
+        );
+
+
+    if (!contentElement) {
+        return false;
+    }
+
+
+    const content =
+        contentElement.innerText.trim();
+
+
+    if (!content) {
+        return false;
+    }
+
+
+    localStorage.setItem(
+        "ricoz_ai_generated_content",
+        content
+    );
+
+
+    return true;
+}
+
+
+/* =========================================================
+   USE IN POST
+   ========================================================= */
+
+function saveAIContentBeforePublisher(event) {
+
+    const saved =
+        saveAIContentToStorage();
+
+
+    if (!saved) {
+
+        event.preventDefault();
+
+        alert(
+            "Unable to prepare the AI-generated content. Please generate the content again."
+        );
+
+        return false;
+    }
+
+
+    const indicator =
+        document.getElementById(
+            "aiSavedIndicator"
+        );
+
+
+    if (indicator) {
+        indicator.style.display = "block";
+    }
+
+
+    return true;
+}
+
+
+/* =========================================================
+   COPY AI CONTENT
+   ========================================================= */
+
+function copyAIContent() {
+
+    const content =
+        document.getElementById(
+            "aiGeneratedContent"
+        );
+
+
+    if (!content) {
+        return;
+    }
+
+
+    const text =
+        content.innerText.trim();
+
+
+    if (!text) {
+        return;
+    }
+
+
+    navigator.clipboard.writeText(
+        text
+    ).then(function () {
+
+
+        const buttons =
+            document.querySelectorAll(
+                ".ai-copy-button, .ai-secondary-button"
+            );
+
+
+        buttons.forEach(function(button) {
+
+            const originalText =
+                button.innerText;
+
+
+            button.innerText =
+                "Copied ✓";
+
+
+            setTimeout(function() {
+
+                button.innerText =
+                    originalText;
+
+            }, 1500);
+
+        });
+
+
+    }).catch(function() {
+
+        alert(
+            "Unable to copy the content. Please select and copy it manually."
+        );
+
+    });
+
+}
+
+
+/* =========================================================
+   AUTOMATICALLY SAVE GENERATED CONTENT
+   ========================================================= */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function() {
+
+        const contentElement =
+            document.getElementById(
+                "aiGeneratedContent"
+            );
+
+
+        if (contentElement) {
+
+            const content =
+                contentElement.innerText.trim();
+
+
+            if (content) {
+
+                localStorage.setItem(
+                    "ricoz_ai_generated_content",
+                    content
+                );
+
+            }
+
+        }
+
+    }
+);
+
+</script>
+
+{% endblock %}

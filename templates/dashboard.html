@@ -9,7 +9,229 @@ Dashboard | RicozSocial
     rel="stylesheet"
     href="{{ url_for('static', filename='css/dashboard.css') }}"
 >
+
+<style>
+    /* =====================================================
+       AI ASSISTANT DASHBOARD CARD
+       ===================================================== */
+
+    .dashboard-ai-card {
+        position: relative;
+        overflow: hidden;
+
+        background:
+            linear-gradient(
+                135deg,
+                #e31e24 0%,
+                #c8171d 55%,
+                #a91218 100%
+            );
+
+        border-radius: 24px;
+
+        padding: 30px 34px;
+
+        margin-top: 24px;
+
+        color: #ffffff;
+
+        box-shadow:
+            0 18px 42px rgba(200, 23, 29, 0.20);
+    }
+
+    .dashboard-ai-card::before {
+        content: "";
+
+        position: absolute;
+
+        width: 260px;
+        height: 260px;
+
+        border-radius: 50%;
+
+        background: rgba(255, 255, 255, 0.08);
+
+        top: -150px;
+        right: -70px;
+    }
+
+    .dashboard-ai-card::after {
+        content: "";
+
+        position: absolute;
+
+        width: 180px;
+        height: 180px;
+
+        border-radius: 50%;
+
+        background: rgba(255, 255, 255, 0.05);
+
+        bottom: -110px;
+        left: 35%;
+    }
+
+    .dashboard-ai-content {
+        position: relative;
+        z-index: 2;
+
+        display: flex;
+
+        align-items: center;
+        justify-content: space-between;
+
+        gap: 30px;
+    }
+
+    .dashboard-ai-copy {
+        display: flex;
+
+        align-items: flex-start;
+
+        gap: 18px;
+
+        min-width: 0;
+    }
+
+    .dashboard-ai-icon {
+        width: 58px;
+        height: 58px;
+
+        flex-shrink: 0;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        background: rgba(255, 255, 255, 0.16);
+
+        border: 1px solid rgba(255, 255, 255, 0.22);
+
+        border-radius: 17px;
+
+        font-size: 26px;
+        font-weight: 800;
+    }
+
+    .dashboard-ai-eyebrow {
+        display: block;
+
+        margin-bottom: 5px;
+
+        font-size: 10px;
+        font-weight: 850;
+
+        letter-spacing: 2px;
+
+        opacity: 0.82;
+    }
+
+    .dashboard-ai-copy h2 {
+        margin: 0;
+
+        font-size: 23px;
+        font-weight: 800;
+
+        color: #ffffff;
+    }
+
+    .dashboard-ai-copy p {
+        max-width: 680px;
+
+        margin: 7px 0 0;
+
+        font-size: 13px;
+
+        line-height: 1.65;
+
+        color: rgba(255, 255, 255, 0.88);
+    }
+
+    .dashboard-ai-action {
+        display: inline-flex;
+
+        align-items: center;
+        justify-content: center;
+
+        gap: 9px;
+
+        flex-shrink: 0;
+
+        min-height: 46px;
+
+        padding: 0 20px;
+
+        border-radius: 12px;
+
+        background: #ffffff;
+
+        color: #c8171d;
+
+        text-decoration: none;
+
+        font-size: 13px;
+        font-weight: 800;
+
+        box-shadow:
+            0 8px 20px rgba(0, 0, 0, 0.12);
+
+        transition:
+            transform 0.2s ease,
+            box-shadow 0.2s ease;
+    }
+
+    .dashboard-ai-action:hover {
+        transform: translateY(-2px);
+
+        box-shadow:
+            0 12px 25px rgba(0, 0, 0, 0.16);
+
+        color: #a91218;
+    }
+
+    .dashboard-ai-action span {
+        font-size: 16px;
+    }
+
+    @media (max-width: 800px) {
+
+        .dashboard-ai-content {
+            flex-direction: column;
+
+            align-items: flex-start;
+        }
+
+        .dashboard-ai-action {
+            width: 100%;
+        }
+
+    }
+
+    @media (max-width: 520px) {
+
+        .dashboard-ai-card {
+            padding: 24px 20px;
+        }
+
+        .dashboard-ai-copy {
+            gap: 13px;
+        }
+
+        .dashboard-ai-icon {
+            width: 48px;
+            height: 48px;
+
+            font-size: 21px;
+        }
+
+        .dashboard-ai-copy h2 {
+            font-size: 19px;
+        }
+
+    }
+</style>
 {% endblock %}
+
 
 {% block content %}
 
@@ -90,6 +312,55 @@ Dashboard | RicozSocial
                 </div>
 
             </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         AI CONTENT ASSISTANT
+         ===================================================== -->
+
+    <section class="dashboard-ai-card">
+
+        <div class="dashboard-ai-content">
+
+            <div class="dashboard-ai-copy">
+
+                <div class="dashboard-ai-icon">
+                    ✦
+                </div>
+
+                <div>
+
+                    <span class="dashboard-ai-eyebrow">
+                        RICOZ AI
+                    </span>
+
+                    <h2>
+                        Create better content with AI
+                    </h2>
+
+                    <p>
+                        Turn your ideas into professional social media
+                        posts with AI-powered content generation,
+                        platform optimization and hashtag suggestions.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <a
+                href="{{ url_for('ai_assistant') }}"
+                class="dashboard-ai-action"
+            >
+                <span>✦</span>
+                Open AI Assistant
+                <span>→</span>
+            </a>
 
         </div>
 

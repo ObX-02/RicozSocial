@@ -1,0 +1,660 @@
+/* =========================================================
+   RICOZ AI CONTENT ASSISTANT
+   ========================================================= */
+
+.ai-page {
+    max-width: 1380px;
+    margin: 0 auto;
+    padding: 34px 28px 60px;
+}
+
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.ai-header {
+    background:
+        linear-gradient(
+            135deg,
+            #e31e24,
+            #c8171d
+        );
+
+    border-radius: 24px;
+    padding: 34px 38px;
+    margin-bottom: 26px;
+
+    color: #ffffff;
+
+    box-shadow:
+        0 18px 45px rgba(200, 23, 29, 0.18);
+}
+
+.ai-header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 25px;
+}
+
+.ai-eyebrow {
+    display: inline-block;
+
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 2px;
+
+    margin-bottom: 8px;
+
+    opacity: 0.85;
+}
+
+.ai-header h1 {
+    margin: 0;
+
+    font-size: 32px;
+    font-weight: 800;
+}
+
+.ai-header p {
+    margin: 9px 0 0;
+
+    font-size: 15px;
+    line-height: 1.6;
+
+    max-width: 650px;
+
+    opacity: 0.92;
+}
+
+.ai-header-badge {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+
+    padding: 12px 18px;
+
+    background: rgba(255, 255, 255, 0.15);
+
+    border: 1px solid rgba(255, 255, 255, 0.25);
+
+    border-radius: 999px;
+
+    font-size: 13px;
+    font-weight: 700;
+
+    white-space: nowrap;
+}
+
+.ai-header-badge span {
+    font-size: 17px;
+}
+
+
+/* =========================================================
+   MAIN LAYOUT
+   ========================================================= */
+
+.ai-layout {
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 1fr)
+        minmax(0, 1fr);
+
+    gap: 24px;
+
+    align-items: start;
+}
+
+
+/* =========================================================
+   CARDS
+   ========================================================= */
+
+.ai-card {
+    background: #ffffff;
+
+    border: 1px solid #eeeeee;
+
+    border-radius: 22px;
+
+    padding: 28px;
+
+    box-shadow:
+        0 10px 30px rgba(0, 0, 0, 0.055);
+}
+
+.ai-card-heading {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+
+    margin-bottom: 26px;
+}
+
+.ai-card-icon {
+    width: 46px;
+    height: 46px;
+
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #e31e24;
+    color: #ffffff;
+
+    border-radius: 14px;
+
+    font-size: 21px;
+    font-weight: 800;
+}
+
+.ai-card-icon.result-icon {
+    background: #178447;
+}
+
+.ai-card-heading h2 {
+    margin: 0;
+
+    font-size: 20px;
+    font-weight: 800;
+
+    color: #191919;
+}
+
+.ai-card-heading p {
+    margin: 4px 0 0;
+
+    color: #777777;
+
+    font-size: 13px;
+}
+
+
+/* =========================================================
+   ALERT
+   ========================================================= */
+
+.ai-alert {
+    padding: 13px 15px;
+
+    margin-bottom: 20px;
+
+    border-radius: 12px;
+
+    background: #fff2f2;
+
+    border: 1px solid #ffd2d2;
+
+    color: #b7191f;
+
+    font-size: 13px;
+    font-weight: 600;
+}
+
+
+/* =========================================================
+   FORM
+   ========================================================= */
+
+.ai-form {
+    display: flex;
+    flex-direction: column;
+
+    gap: 21px;
+}
+
+.ai-form-group {
+    display: flex;
+    flex-direction: column;
+
+    gap: 8px;
+}
+
+.ai-form-group label {
+    font-size: 13px;
+    font-weight: 750;
+
+    color: #292929;
+}
+
+.ai-form-group small {
+    color: #888888;
+
+    font-size: 11px;
+
+    line-height: 1.5;
+}
+
+.ai-form textarea,
+.ai-form select {
+    width: 100%;
+
+    box-sizing: border-box;
+
+    border: 1px solid #dddddd;
+
+    border-radius: 13px;
+
+    background: #ffffff;
+
+    color: #222222;
+
+    font-family: inherit;
+
+    font-size: 14px;
+
+    outline: none;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.ai-form textarea {
+    resize: vertical;
+
+    min-height: 145px;
+
+    padding: 15px;
+}
+
+.ai-form select {
+    height: 48px;
+
+    padding: 0 13px;
+
+    cursor: pointer;
+}
+
+.ai-form textarea:focus,
+.ai-form select:focus {
+    border-color: #e31e24;
+
+    box-shadow:
+        0 0 0 3px rgba(227, 30, 36, 0.08);
+}
+
+.ai-form textarea::placeholder {
+    color: #aaaaaa;
+}
+
+.ai-options-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
+    gap: 13px;
+}
+
+
+/* =========================================================
+   GENERATE BUTTON
+   ========================================================= */
+
+.ai-generate-button {
+    width: 100%;
+
+    min-height: 52px;
+
+    border: none;
+
+    border-radius: 13px;
+
+    background: #e31e24;
+
+    color: #ffffff;
+
+    font-family: inherit;
+
+    font-size: 14px;
+    font-weight: 800;
+
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 9px;
+
+    transition:
+        transform 0.2s ease,
+        background 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.ai-generate-button:hover {
+    background: #c8171d;
+
+    transform: translateY(-1px);
+
+    box-shadow:
+        0 10px 22px rgba(227, 30, 36, 0.18);
+}
+
+.ai-generate-button span {
+    font-size: 17px;
+}
+
+
+/* =========================================================
+   RESULT
+   ========================================================= */
+
+.ai-result {
+    border: 1px solid #e7e7e7;
+
+    border-radius: 15px;
+
+    overflow: hidden;
+
+    background: #fafafa;
+}
+
+.ai-result-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 12px 14px;
+
+    background: #f5f5f5;
+
+    border-bottom: 1px solid #e7e7e7;
+}
+
+.ai-result-toolbar span {
+    color: #178447;
+
+    font-size: 10px;
+    font-weight: 850;
+
+    letter-spacing: 1px;
+}
+
+.ai-copy-button {
+    border: none;
+
+    background: #ffffff;
+
+    color: #444444;
+
+    border: 1px solid #dddddd;
+
+    border-radius: 8px;
+
+    padding: 6px 10px;
+
+    font-family: inherit;
+
+    font-size: 11px;
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+.ai-copy-button:hover {
+    border-color: #178447;
+
+    color: #178447;
+}
+
+.ai-generated-content {
+    padding: 20px;
+
+    white-space: pre-wrap;
+
+    font-size: 14px;
+
+    line-height: 1.75;
+
+    color: #303030;
+
+    min-height: 220px;
+
+    max-height: 480px;
+
+    overflow-y: auto;
+}
+
+.ai-result-actions {
+    display: flex;
+
+    gap: 10px;
+
+    padding: 15px;
+
+    border-top: 1px solid #e7e7e7;
+
+    background: #ffffff;
+}
+
+.ai-secondary-button,
+.ai-primary-button {
+    flex: 1;
+
+    min-height: 43px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 10px;
+
+    font-family: inherit;
+
+    font-size: 12px;
+    font-weight: 750;
+
+    text-decoration: none;
+
+    cursor: pointer;
+}
+
+.ai-secondary-button {
+    border: 1px solid #dddddd;
+
+    background: #ffffff;
+
+    color: #444444;
+}
+
+.ai-secondary-button:hover {
+    border-color: #178447;
+
+    color: #178447;
+}
+
+.ai-primary-button {
+    border: none;
+
+    background: #178447;
+
+    color: #ffffff;
+}
+
+.ai-primary-button:hover {
+    background: #126b39;
+}
+
+
+/* =========================================================
+   EMPTY RESULT
+   ========================================================= */
+
+.ai-empty-result {
+    min-height: 365px;
+
+    display: flex;
+    flex-direction: column;
+
+    align-items: center;
+    justify-content: center;
+
+    text-align: center;
+
+    padding: 30px;
+}
+
+.ai-empty-icon {
+    width: 68px;
+    height: 68px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 20px;
+
+    background: #fff1f1;
+
+    color: #e31e24;
+
+    font-size: 27px;
+
+    margin-bottom: 17px;
+}
+
+.ai-empty-result h3 {
+    margin: 0 0 8px;
+
+    color: #252525;
+
+    font-size: 16px;
+}
+
+.ai-empty-result p {
+    max-width: 330px;
+
+    margin: 0;
+
+    color: #888888;
+
+    font-size: 13px;
+
+    line-height: 1.65;
+}
+
+
+/* =========================================================
+   FEATURE CARDS
+   ========================================================= */
+
+.ai-features {
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
+    gap: 18px;
+
+    margin-top: 24px;
+}
+
+.ai-feature-card {
+    background: #ffffff;
+
+    border: 1px solid #eeeeee;
+
+    border-radius: 18px;
+
+    padding: 22px;
+
+    box-shadow:
+        0 7px 22px rgba(0, 0, 0, 0.04);
+}
+
+.ai-feature-icon {
+    width: 40px;
+    height: 40px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #e31e24;
+
+    color: #ffffff;
+
+    border-radius: 11px;
+
+    font-weight: 800;
+
+    margin-bottom: 15px;
+}
+
+.ai-feature-card h3 {
+    margin: 0 0 7px;
+
+    color: #202020;
+
+    font-size: 15px;
+}
+
+.ai-feature-card p {
+    margin: 0;
+
+    color: #777777;
+
+    font-size: 12px;
+
+    line-height: 1.65;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 1050px) {
+
+    .ai-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .ai-features {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+}
+
+
+@media (max-width: 720px) {
+
+    .ai-page {
+        padding: 20px 15px 40px;
+    }
+
+    .ai-header {
+        padding: 25px;
+    }
+
+    .ai-header-content {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .ai-header h1 {
+        font-size: 26px;
+    }
+
+    .ai-options-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .ai-features {
+        grid-template-columns: 1fr;
+    }
+
+    .ai-card {
+        padding: 21px;
+    }
+
+}

@@ -1,0 +1,656 @@
+```html
+{% extends "base.html" %}
+
+{% block title %}Client Management — RicozSocial{% endblock %}
+
+{% block extra_css %}
+<link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/admin.css') }}"
+>
+{% endblock %}
+
+{% block content %}
+
+<div class="admin-page">
+
+    <!-- =====================================================
+         PAGE HEADER
+         ===================================================== -->
+
+    <section class="admin-header">
+
+        <div class="admin-header-content">
+
+            <div class="admin-heading-area">
+
+                <div class="admin-eyebrow">
+                    CLIENT MANAGEMENT
+                </div>
+
+                <h1>
+                    Manage Clients
+                </h1>
+
+                <p>
+                    View, monitor and manage all RicozSocial
+                    client accounts from one place.
+                </p>
+
+            </div>
+
+
+            <div class="admin-header-actions">
+
+                <a
+                    href="{{ url_for('admin_dashboard') }}"
+                    class="admin-nav-button admin-nav-secondary"
+                >
+                    ← Dashboard
+                </a>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         CLIENT STATISTICS
+         ===================================================== -->
+
+    <section class="admin-stats-grid">
+
+
+        <!-- TOTAL -->
+
+        <div class="admin-stat-card">
+
+            <div class="admin-stat-icon green">
+                👥
+            </div>
+
+            <div class="admin-stat-content">
+
+                <span class="admin-stat-label">
+                    Total Clients
+                </span>
+
+                <strong>
+                    {{ total_clients }}
+                </strong>
+
+                <small>
+                    Registered clients
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <!-- ACTIVE -->
+
+        <div class="admin-stat-card">
+
+            <div class="admin-stat-icon green">
+                ✓
+            </div>
+
+            <div class="admin-stat-content">
+
+                <span class="admin-stat-label">
+                    Active Clients
+                </span>
+
+                <strong>
+                    {{ active_clients }}
+                </strong>
+
+                <small>
+                    Currently active
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <!-- INACTIVE -->
+
+        <div class="admin-stat-card">
+
+            <div class="admin-stat-icon warning">
+                !
+            </div>
+
+            <div class="admin-stat-content">
+
+                <span class="admin-stat-label">
+                    Inactive Clients
+                </span>
+
+                <strong>
+                    {{ inactive_clients }}
+                </strong>
+
+                <small>
+                    Require attention
+                </small>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         CLIENT MANAGEMENT PANEL
+         ===================================================== -->
+
+    <section class="admin-panel admin-client-management-panel">
+
+
+        <!-- =================================================
+             PANEL HEADER
+             ================================================= -->
+
+        <div class="admin-panel-header">
+
+            <div>
+
+                <span class="admin-panel-eyebrow">
+                    CLIENT DIRECTORY
+                </span>
+
+                <h2>
+                    All Clients
+                </h2>
+
+                <p>
+                    Search and manage registered client accounts.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             SEARCH + FILTERS
+             ================================================= -->
+
+        <form
+            method="GET"
+            action="{{ url_for('admin_clients') }}"
+            class="admin-client-filters"
+        >
+
+            <div class="admin-search-box">
+
+                <span class="admin-search-icon">
+                    ⌕
+                </span>
+
+                <input
+                    type="search"
+                    name="search"
+                    value="{{ search }}"
+                    placeholder="Search by client name or email..."
+                    autocomplete="off"
+                >
+
+            </div>
+
+
+            <div class="admin-filter-box">
+
+                <select
+                    name="status"
+                    onchange="this.form.submit()"
+                >
+
+                    <option
+                        value=""
+                        {% if not status %}selected{% endif %}
+                    >
+                        All Clients
+                    </option>
+
+                    <option
+                        value="active"
+                        {% if status == 'active' %}selected{% endif %}
+                    >
+                        Active
+                    </option>
+
+                    <option
+                        value="inactive"
+                        {% if status == 'inactive' %}selected{% endif %}
+                    >
+                        Inactive
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <button
+                type="submit"
+                class="admin-filter-button"
+            >
+                Search
+            </button>
+
+
+            {% if search or status %}
+
+            <a
+                href="{{ url_for('admin_clients') }}"
+                class="admin-clear-button"
+            >
+                Clear
+            </a>
+
+            {% endif %}
+
+        </form>
+
+
+        <!-- =================================================
+             CLIENT TABLE
+             ================================================= -->
+
+        {% if clients %}
+
+        <div class="admin-table-wrapper">
+
+            <table class="admin-table admin-client-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Client
+                        </th>
+
+                        <th>
+                            Role
+                        </th>
+
+                        <th>
+                            Brands
+                        </th>
+
+                        <th>
+                            Posts
+                        </th>
+
+                        <th>
+                            Status
+                        </th>
+
+                        <th>
+                            Last Activity
+                        </th>
+
+                        <th>
+                            Actions
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% for client in clients %}
+
+                    <tr>
+
+
+                        <!-- CLIENT -->
+
+                        <td>
+
+                            <div class="admin-client-cell">
+
+                                <div class="admin-avatar">
+
+                                    {% if client.name %}
+                                        {{ client.name[0]|upper }}
+                                    {% else %}
+                                        ?
+                                    {% endif %}
+
+                                </div>
+
+
+                                <div class="admin-client-details">
+
+                                    <strong>
+                                        {{ client.name }}
+                                    </strong>
+
+                                    <span>
+                                        {{ client.email }}
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+                        </td>
+
+
+                        <!-- ROLE -->
+
+                        <td>
+
+                            <span class="admin-role-badge">
+                                {{ client.role|capitalize }}
+                            </span>
+
+                        </td>
+
+
+                        <!-- BRANDS -->
+
+                        <td>
+
+                            <span class="admin-number-value">
+                                {{ client.brands_count }}
+                            </span>
+
+                        </td>
+
+
+                        <!-- POSTS -->
+
+                        <td>
+
+                            <span class="admin-number-value">
+                                {{ client.posts_count }}
+                            </span>
+
+                        </td>
+
+
+                        <!-- STATUS -->
+
+                        <td>
+
+                            {% if client.is_active %}
+
+                                <span class="admin-status active">
+                                    Active
+                                </span>
+
+                            {% else %}
+
+                                <span class="admin-status inactive">
+                                    Inactive
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <!-- LAST ACTIVITY -->
+
+                        <td>
+
+                            {% if client.last_activity %}
+
+                                <span class="admin-date-value">
+
+                                    {{ client.last_activity.strftime(
+                                        '%b %d, %Y'
+                                    ) }}
+
+                                </span>
+
+                            {% else %}
+
+                                <span class="admin-muted">
+                                    No activity
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <!-- ACTIONS -->
+
+                        <td>
+
+                            <div class="admin-client-actions">
+
+
+                                <!-- VIEW -->
+
+                                <a
+                                    href="{{ url_for(
+                                        'admin_client_details',
+                                        user_id=client.id
+                                    ) }}"
+                                    class="admin-table-action view"
+                                    title="View client"
+                                >
+                                    View
+                                </a>
+
+
+                                <!-- EDIT -->
+
+                                <a
+                                    href="{{ url_for(
+                                        'admin_edit_client',
+                                        user_id=client.id
+                                    ) }}"
+                                    class="admin-table-action edit"
+                                    title="Edit client"
+                                >
+                                    Edit
+                                </a>
+
+
+                                <!-- STATUS -->
+
+                                <form
+                                    method="POST"
+                                    action="{{ url_for(
+                                        'admin_toggle_client_status',
+                                        user_id=client.id
+                                    ) }}"
+                                    class="admin-inline-form"
+                                >
+
+                                    <button
+                                        type="submit"
+                                        class="admin-table-action status"
+                                        title="Toggle client status"
+                                    >
+
+                                        {% if client.is_active %}
+                                            Disable
+                                        {% else %}
+                                            Activate
+                                        {% endif %}
+
+                                    </button>
+
+                                </form>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        <!-- =================================================
+             RESULT SUMMARY
+             ================================================= -->
+
+        <div class="admin-results-summary">
+
+            <span>
+
+                Showing
+                <strong>{{ clients|length }}</strong>
+                client{% if clients|length != 1 %}s{% endif %}
+
+            </span>
+
+            {% if search %}
+
+                <span>
+                    Search:
+                    <strong>{{ search }}</strong>
+                </span>
+
+            {% endif %}
+
+            {% if status %}
+
+                <span>
+                    Filter:
+                    <strong>{{ status|capitalize }}</strong>
+                </span>
+
+            {% endif %}
+
+        </div>
+
+
+        {% else %}
+
+
+        <!-- =================================================
+             EMPTY STATE
+             ================================================= -->
+
+        <div class="admin-empty-state admin-client-empty">
+
+            <div class="admin-empty-icon">
+                👥
+            </div>
+
+            <h3>
+                No clients found
+            </h3>
+
+            {% if search or status %}
+
+                <p>
+                    No client accounts match your current
+                    search or filter.
+                </p>
+
+                <a
+                    href="{{ url_for('admin_clients') }}"
+                    class="admin-primary-button"
+                >
+                    Clear Filters
+                </a>
+
+            {% else %}
+
+                <p>
+                    Client accounts will appear here after
+                    registration.
+                </p>
+
+            {% endif %}
+
+        </div>
+
+        {% endif %}
+
+    </section>
+
+
+    <!-- =====================================================
+         FOOTER SUMMARY
+         ===================================================== -->
+
+    <section class="admin-summary-bar">
+
+        <div class="admin-summary-heading">
+
+            <span>
+                RicozSocial Administration
+            </span>
+
+            <strong>
+                Client Management
+            </strong>
+
+        </div>
+
+
+        <div class="admin-summary-items">
+
+
+            <div class="admin-summary-item">
+
+                <span>
+                    Total
+                </span>
+
+                <strong>
+                    {{ total_clients }}
+                </strong>
+
+            </div>
+
+
+            <div class="admin-summary-item">
+
+                <span>
+                    Active
+                </span>
+
+                <strong>
+                    {{ active_clients }}
+                </strong>
+
+            </div>
+
+
+            <div class="admin-summary-item">
+
+                <span>
+                    Inactive
+                </span>
+
+                <strong>
+                    {{ inactive_clients }}
+                </strong>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</div>
+
+{% endblock %}
+```

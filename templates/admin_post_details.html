@@ -1,0 +1,1184 @@
+{% extends "base.html" %}
+
+{% block title %}
+Post Details — RicozSocial
+{% endblock %}
+
+{% block extra_css %}
+
+<link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/admin.css') }}"
+>
+
+<style>
+
+    .admin-post-details {
+        max-width: 1500px;
+        margin: 0 auto;
+    }
+
+    .post-details-header {
+
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+
+    .post-details-header h1 {
+
+        margin: 0;
+
+        color: #111827;
+
+        font-size: 27px;
+    }
+
+    .post-details-header p {
+
+        margin: 6px 0 0;
+
+        color: #6b7280;
+    }
+
+    .post-header-actions {
+
+        display: flex;
+        align-items: center;
+
+        gap: 9px;
+
+        flex-wrap: wrap;
+    }
+
+    .post-action {
+
+        min-height: 40px;
+
+        padding: 0 15px;
+
+        border-radius: 9px;
+
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+
+        background: #f3f4f6;
+
+        color: #374151;
+
+        text-decoration: none;
+
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+    .post-action:hover {
+        background: #e5e7eb;
+    }
+
+    .post-content-box {
+
+        padding: 22px;
+
+        border-radius: 12px;
+
+        background: #fafafa;
+
+        border: 1px solid #eef0f2;
+
+        color: #1f2937;
+
+        line-height: 1.8;
+
+        white-space: pre-wrap;
+
+        word-break: break-word;
+    }
+
+    .post-media-box {
+
+        margin-top: 18px;
+
+        padding: 15px;
+
+        border-radius: 10px;
+
+        background: #f9fafb;
+
+        border: 1px solid #eef0f2;
+    }
+
+    .post-media-box a {
+
+        color: #e31e24;
+
+        font-weight: 700;
+
+        word-break: break-all;
+
+        text-decoration: none;
+    }
+
+    .post-media-box a:hover {
+        text-decoration: underline;
+    }
+
+    .post-info-grid {
+
+        display: grid;
+
+        grid-template-columns:
+            repeat(4, 1fr);
+
+        gap: 15px;
+    }
+
+    .post-info-item {
+
+        padding: 15px;
+
+        border: 1px solid #eef0f2;
+
+        border-radius: 11px;
+
+        background: #fafafa;
+    }
+
+    .post-info-item span {
+
+        display: block;
+
+        margin-bottom: 6px;
+
+        color: #6b7280;
+
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .post-info-item strong {
+
+        color: #111827;
+
+        font-size: 14px;
+
+        word-break: break-word;
+    }
+
+    .post-status {
+
+        display: inline-flex;
+
+        padding: 5px 10px;
+
+        border-radius: 999px;
+
+        font-size: 12px;
+
+        font-weight: 700;
+    }
+
+    .status-draft {
+        background: #f3f4f6;
+        color: #4b5563;
+    }
+
+    .status-scheduled {
+        background: #eff6ff;
+        color: #1d4ed8;
+    }
+
+    .status-published {
+        background: #ecfdf5;
+        color: #047857;
+    }
+
+    .status-other {
+        background: #fff7ed;
+        color: #c2410c;
+    }
+
+    .platform-status {
+
+        display: inline-flex;
+
+        padding: 5px 9px;
+
+        border-radius: 999px;
+
+        background: #f3f4f6;
+
+        color: #374151;
+
+        font-size: 11px;
+
+        font-weight: 700;
+    }
+
+    .approval-status {
+
+        display: inline-flex;
+
+        padding: 5px 9px;
+
+        border-radius: 999px;
+
+        font-size: 11px;
+
+        font-weight: 700;
+    }
+
+    .approval-pending {
+        background: #fff7ed;
+        color: #c2410c;
+    }
+
+    .approval-approved {
+        background: #ecfdf5;
+        color: #047857;
+    }
+
+    .approval-rejected {
+        background: #fff1f2;
+        color: #be123c;
+    }
+
+    .approval-other {
+        background: #f3f4f6;
+        color: #4b5563;
+    }
+
+    .post-tag-list {
+
+        display: flex;
+
+        flex-wrap: wrap;
+
+        gap: 8px;
+    }
+
+    .post-tag {
+
+        padding: 6px 10px;
+
+        border-radius: 8px;
+
+        background: #fff1f2;
+
+        color: #be123c;
+
+        font-size: 12px;
+
+        font-weight: 700;
+    }
+
+    .post-activity-item {
+
+        display: flex;
+
+        gap: 12px;
+
+        padding: 15px 0;
+
+        border-bottom: 1px solid #eef0f2;
+    }
+
+    .post-activity-item:last-child {
+        border-bottom: 0;
+    }
+
+    .post-activity-dot {
+
+        width: 9px;
+        height: 9px;
+
+        margin-top: 6px;
+
+        border-radius: 50%;
+
+        background: #e31e24;
+
+        flex-shrink: 0;
+    }
+
+    .post-activity-content strong {
+
+        display: block;
+
+        color: #111827;
+
+        font-size: 13px;
+    }
+
+    .post-activity-content p {
+
+        margin: 4px 0;
+
+        color: #4b5563;
+
+        font-size: 13px;
+
+        line-height: 1.5;
+    }
+
+    .post-activity-content small {
+
+        color: #9ca3af;
+
+        font-size: 11px;
+    }
+
+    @media (max-width: 1000px) {
+
+        .post-info-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+    }
+
+    @media (max-width: 650px) {
+
+        .post-info-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .post-action {
+            width: 100%;
+        }
+
+    }
+
+</style>
+
+{% endblock %}
+
+
+{% block content %}
+
+<div class="admin-post-details">
+
+
+    <!-- =====================================================
+         HEADER
+         ===================================================== -->
+
+    <div class="admin-page-header">
+
+        <div class="post-details-header">
+
+            <div>
+
+                <div class="admin-breadcrumb">
+
+                    <a href="{{ url_for('admin_dashboard') }}">
+                        Administration
+                    </a>
+
+                    <span>/</span>
+
+                    <a href="{{ url_for('admin_posts') }}">
+                        Content
+                    </a>
+
+                    <span>/</span>
+
+                    <span>Post Details</span>
+
+                </div>
+
+
+                <h1>
+                    {{ post.title or "Untitled Post" }}
+                </h1>
+
+
+                <p>
+
+                    {{ post.brand_name or "Unknown Brand" }}
+
+                    ·
+
+                    {{ post.creator_name or "Unknown Creator" }}
+
+                </p>
+
+            </div>
+
+
+            <div class="post-header-actions">
+
+                <a
+                    href="{{ url_for('admin_posts') }}"
+                    class="post-action"
+                >
+                    ← Content
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         POST SUMMARY
+         ===================================================== -->
+
+    <div class="admin-card">
+
+        <div class="admin-card-header">
+
+            <div>
+
+                <h2>
+                    Post Overview
+                </h2>
+
+                <p>
+                    Administrative view of this client post.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="post-info-grid">
+
+            <div class="post-info-item">
+
+                <span>
+                    Status
+                </span>
+
+                <strong>
+
+                    {% set current_status =
+                        (post.status or "unknown")|lower
+                    %}
+
+                    {% if current_status == "draft" %}
+
+                        <span class="post-status status-draft">
+                            Draft
+                        </span>
+
+                    {% elif current_status == "scheduled" %}
+
+                        <span class="post-status status-scheduled">
+                            Scheduled
+                        </span>
+
+                    {% elif current_status == "published" %}
+
+                        <span class="post-status status-published">
+                            Published
+                        </span>
+
+                    {% else %}
+
+                        <span class="post-status status-other">
+                            {{ post.status or "Unknown" }}
+                        </span>
+
+                    {% endif %}
+
+                </strong>
+
+            </div>
+
+
+            <div class="post-info-item">
+
+                <span>
+                    Brand
+                </span>
+
+                <strong>
+                    {{ post.brand_name or "—" }}
+                </strong>
+
+            </div>
+
+
+            <div class="post-info-item">
+
+                <span>
+                    Created By
+                </span>
+
+                <strong>
+                    {{ post.creator_name or "—" }}
+                </strong>
+
+            </div>
+
+
+            <div class="post-info-item">
+
+                <span>
+                    Creator Email
+                </span>
+
+                <strong>
+                    {{ post.creator_email or "—" }}
+                </strong>
+
+            </div>
+
+
+            <div class="post-info-item">
+
+                <span>
+                    Category
+                </span>
+
+                <strong>
+                    {{ post.category_name or "Uncategorized" }}
+                </strong>
+
+            </div>
+
+
+            <div class="post-info-item">
+
+                <span>
+                    Created
+                </span>
+
+                <strong>
+
+                    {% if post.created_at %}
+
+                        {{ post.created_at.strftime(
+                            '%b %d, %Y %I:%M %p'
+                        ) }}
+
+                    {% else %}
+
+                        —
+
+                    {% endif %}
+
+                </strong>
+
+            </div>
+
+
+            <div class="post-info-item">
+
+                <span>
+                    Scheduled
+                </span>
+
+                <strong>
+
+                    {% if post.scheduled_at %}
+
+                        {{ post.scheduled_at.strftime(
+                            '%b %d, %Y %I:%M %p'
+                        ) }}
+
+                    {% else %}
+
+                        —
+
+                    {% endif %}
+
+                </strong>
+
+            </div>
+
+
+            <div class="post-info-item">
+
+                <span>
+                    Published
+                </span>
+
+                <strong>
+
+                    {% if post.published_at %}
+
+                        {{ post.published_at.strftime(
+                            '%b %d, %Y %I:%M %p'
+                        ) }}
+
+                    {% else %}
+
+                        —
+
+                    {% endif %}
+
+                </strong>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         CONTENT
+         ===================================================== -->
+
+    <div class="admin-card">
+
+        <div class="admin-card-header">
+
+            <div>
+
+                <h2>
+                    Post Content
+                </h2>
+
+                <p>
+                    Content submitted by the client.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="post-content-box">
+
+            {{ post.content or "No post content available." }}
+
+        </div>
+
+
+        {% if post.media_url %}
+
+            <div class="post-media-box">
+
+                <strong>
+                    Media:
+                </strong>
+
+                <a
+                    href="{{ post.media_url }}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    {{ post.media_url }}
+                </a>
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+
+    <!-- =====================================================
+         TAGS
+         ===================================================== -->
+
+    {% if post_tags %}
+
+        <div class="admin-card">
+
+            <div class="admin-card-header">
+
+                <div>
+
+                    <h2>
+                        Content Tags
+                    </h2>
+
+                </div>
+
+            </div>
+
+
+            <div class="post-tag-list">
+
+                {% for tag in post_tags %}
+
+                    <span class="post-tag">
+                        #{{ tag.name }}
+                    </span>
+
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+    {% endif %}
+
+
+    <!-- =====================================================
+         SOCIAL PLATFORMS
+         ===================================================== -->
+
+    <div class="admin-card">
+
+        <div class="admin-card-header">
+
+            <div>
+
+                <h2>
+                    Publishing Platforms
+                </h2>
+
+                <p>
+                    Social accounts associated with this post.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        {% if post_platforms %}
+
+            <div class="admin-table-wrapper">
+
+                <table class="admin-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Platform
+                            </th>
+
+                            <th>
+                                Account
+                            </th>
+
+                            <th>
+                                Connection
+                            </th>
+
+                            <th>
+                                Platform Status
+                            </th>
+
+                            <th>
+                                Published
+                            </th>
+
+                            <th>
+                                Error
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for item in post_platforms %}
+
+                            <tr>
+
+                                <td>
+                                    {{ item.platform or "Unknown" }}
+                                </td>
+
+                                <td>
+
+                                    {{ item.account_name
+                                       or item.username
+                                       or "—" }}
+
+                                </td>
+
+                                <td>
+
+                                    {% if item.is_connected %}
+
+                                        <span class="approval-status approval-approved">
+                                            Connected
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="approval-status approval-rejected">
+                                            Disconnected
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+                                <td>
+
+                                    <span class="platform-status">
+                                        {{ item.platform_status or "Pending" }}
+                                    </span>
+
+                                </td>
+
+                                <td>
+
+                                    {% if item.published_at %}
+
+                                        {{ item.published_at.strftime(
+                                            '%b %d, %Y %I:%M %p'
+                                        ) }}
+
+                                    {% else %}
+
+                                        —
+
+                                    {% endif %}
+
+                                </td>
+
+                                <td>
+
+                                    {% if item.error_message %}
+
+                                        <span style="color:#be123c;">
+                                            {{ item.error_message }}
+                                        </span>
+
+                                    {% else %}
+
+                                        —
+
+                                    {% endif %}
+
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        {% else %}
+
+            <div class="admin-empty-state">
+
+                <div class="admin-empty-icon">
+                    ◎
+                </div>
+
+                <h3>
+                    No publishing platforms
+                </h3>
+
+                <p>
+                    This post is not currently associated with any social accounts.
+                </p>
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+
+    <!-- =====================================================
+         APPROVAL HISTORY
+         ===================================================== -->
+
+    <div class="admin-card">
+
+        <div class="admin-card-header">
+
+            <div>
+
+                <h2>
+                    Approval History
+                </h2>
+
+                <p>
+                    Review history for this post.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        {% if post_approvals %}
+
+            <div class="admin-table-wrapper">
+
+                <table class="admin-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Status
+                            </th>
+
+                            <th>
+                                Submitted By
+                            </th>
+
+                            <th>
+                                Reviewer
+                            </th>
+
+                            <th>
+                                Comments
+                            </th>
+
+                            <th>
+                                Created
+                            </th>
+
+                            <th>
+                                Reviewed
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for approval in post_approvals %}
+
+                            <tr>
+
+                                <td>
+
+                                    {% set approval_status =
+                                        (approval.status or "unknown")|lower
+                                    %}
+
+                                    {% if approval_status == "pending" %}
+
+                                        <span class="approval-status approval-pending">
+                                            Pending
+                                        </span>
+
+                                    {% elif approval_status == "approved" %}
+
+                                        <span class="approval-status approval-approved">
+                                            Approved
+                                        </span>
+
+                                    {% elif approval_status == "rejected" %}
+
+                                        <span class="approval-status approval-rejected">
+                                            Rejected
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="approval-status approval-other">
+                                            {{ approval.status or "Unknown" }}
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <td>
+
+                                    {{ approval.submitter_name
+                                       or approval.submitter_email
+                                       or "—" }}
+
+                                </td>
+
+
+                                <td>
+
+                                    {{ approval.reviewer_name
+                                       or approval.reviewer_email
+                                       or "—" }}
+
+                                </td>
+
+
+                                <td>
+
+                                    {{ approval.comments or "—" }}
+
+                                </td>
+
+
+                                <td>
+
+                                    {% if approval.created_at %}
+
+                                        {{ approval.created_at.strftime(
+                                            '%b %d, %Y'
+                                        ) }}
+
+                                    {% else %}
+
+                                        —
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <td>
+
+                                    {% if approval.reviewed_at %}
+
+                                        {{ approval.reviewed_at.strftime(
+                                            '%b %d, %Y %I:%M %p'
+                                        ) }}
+
+                                    {% else %}
+
+                                        —
+
+                                    {% endif %}
+
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        {% else %}
+
+            <div class="admin-empty-state">
+
+                <div class="admin-empty-icon">
+                    ◎
+                </div>
+
+                <h3>
+                    No approval history
+                </h3>
+
+                <p>
+                    This post has not entered the approval workflow yet.
+                </p>
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+
+    <!-- =====================================================
+         ACTIVITY
+         ===================================================== -->
+
+    <div class="admin-card">
+
+        <div class="admin-card-header">
+
+            <div>
+
+                <h2>
+                    Post Activity
+                </h2>
+
+                <p>
+                    Recent administrative and system activity.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        {% if post_activity %}
+
+            <div>
+
+                {% for activity in post_activity %}
+
+                    <div class="post-activity-item">
+
+                        <div class="post-activity-dot"></div>
+
+
+                        <div class="post-activity-content">
+
+                            <strong>
+
+                                {{ activity.action
+                                   |replace('_', ' ')
+                                   |capitalize }}
+
+                            </strong>
+
+
+                            <p>
+
+                                {{ activity.description
+                                   or "Post activity recorded." }}
+
+                            </p>
+
+
+                            <small>
+
+                                {{ activity.user_name or "System" }}
+
+                                ·
+
+                                {% if activity.created_at %}
+
+                                    {{ activity.created_at.strftime(
+                                        '%b %d, %Y %I:%M %p'
+                                    ) }}
+
+                                {% endif %}
+
+                            </small>
+
+                        </div>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        {% else %}
+
+            <div class="admin-empty-state">
+
+                <div class="admin-empty-icon">
+                    ◎
+                </div>
+
+                <h3>
+                    No activity recorded
+                </h3>
+
+                <p>
+                    There is no activity history for this post yet.
+                </p>
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+{% endblock %}

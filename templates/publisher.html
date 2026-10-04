@@ -11,6 +11,78 @@ Publisher | RicozSocial
     href="{{ url_for('static', filename='css/publisher.css') }}"
 >
 
+<style>
+
+/* =========================================================
+   AI CONTENT CONTROLS
+   ========================================================= */
+
+.publisher-content-label-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 8px;
+}
+
+.publisher-content-label-row label {
+    margin-bottom: 0;
+}
+
+.publisher-ai-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    border: 1px solid #e31e24;
+    background: #fff;
+    color: #c8171d;
+    border-radius: 9px;
+    padding: 8px 13px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.publisher-ai-btn span {
+    font-size: 15px;
+}
+
+.publisher-ai-btn:hover {
+    background: #e31e24;
+    color: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 5px 14px rgba(227, 30, 36, 0.18);
+}
+
+.publisher-ai-status {
+    margin-top: 9px;
+    padding: 9px 12px;
+    border-radius: 8px;
+    background: #ecfdf3;
+    border: 1px solid #b7ebc6;
+    color: #16803a;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+@media (max-width: 600px) {
+
+    .publisher-content-label-row {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .publisher-ai-btn {
+        width: 100%;
+    }
+
+}
+
+</style>
+
 {% endblock %}
 
 
@@ -20,7 +92,7 @@ Publisher | RicozSocial
 
     <!-- =====================================================
          HEADER
-    ====================================================== -->
+         ===================================================== -->
 
     <div class="publisher-header">
 
@@ -48,8 +120,11 @@ Publisher | RicozSocial
                 class="publisher-primary-btn"
                 onclick="openCreatePostModal()"
             >
+
                 <span>＋</span>
+
                 Create Post
+
             </button>
 
         </div>
@@ -59,7 +134,7 @@ Publisher | RicozSocial
 
     <!-- =====================================================
          STATS
-    ====================================================== -->
+         ===================================================== -->
 
     <div class="publisher-stats">
 
@@ -70,6 +145,7 @@ Publisher | RicozSocial
             </div>
 
             <div>
+
                 <span class="publisher-stat-label">
                     Total Posts
                 </span>
@@ -77,6 +153,7 @@ Publisher | RicozSocial
                 <strong>
                     {{ stats.total or 0 }}
                 </strong>
+
             </div>
 
         </div>
@@ -89,6 +166,7 @@ Publisher | RicozSocial
             </div>
 
             <div>
+
                 <span class="publisher-stat-label">
                     Drafts
                 </span>
@@ -96,6 +174,7 @@ Publisher | RicozSocial
                 <strong>
                     {{ stats.drafts or 0 }}
                 </strong>
+
             </div>
 
         </div>
@@ -108,6 +187,7 @@ Publisher | RicozSocial
             </div>
 
             <div>
+
                 <span class="publisher-stat-label">
                     Awaiting Approval
                 </span>
@@ -115,6 +195,7 @@ Publisher | RicozSocial
                 <strong>
                     {{ stats.pending_approval or 0 }}
                 </strong>
+
             </div>
 
         </div>
@@ -127,6 +208,7 @@ Publisher | RicozSocial
             </div>
 
             <div>
+
                 <span class="publisher-stat-label">
                     Approved
                 </span>
@@ -134,6 +216,7 @@ Publisher | RicozSocial
                 <strong>
                     {{ stats.approved or 0 }}
                 </strong>
+
             </div>
 
         </div>
@@ -146,6 +229,7 @@ Publisher | RicozSocial
             </div>
 
             <div>
+
                 <span class="publisher-stat-label">
                     Scheduled
                 </span>
@@ -166,6 +250,7 @@ Publisher | RicozSocial
             </div>
 
             <div>
+
                 <span class="publisher-stat-label">
                     Published
                 </span>
@@ -183,7 +268,7 @@ Publisher | RicozSocial
 
     <!-- =====================================================
          FILTERS
-    ====================================================== -->
+         ===================================================== -->
 
     <div class="publisher-filter-card">
 
@@ -229,7 +314,9 @@ Publisher | RicozSocial
                                 selected
                             {% endif %}
                         >
+
                             {{ brand.name }}
+
                         </option>
 
                     {% endfor %}
@@ -259,7 +346,9 @@ Publisher | RicozSocial
                                 selected
                             {% endif %}
                         >
+
                             {{ status_value|replace('_', ' ')|title }}
+
                         </option>
 
                     {% endfor %}
@@ -294,7 +383,7 @@ Publisher | RicozSocial
 
     <!-- =====================================================
          POSTS TABLE
-    ====================================================== -->
+         ===================================================== -->
 
     <div class="publisher-table-card">
 
@@ -313,7 +402,10 @@ Publisher | RicozSocial
             </div>
 
             <span class="publisher-result-count">
-                {{ posts|length }} result{% if posts|length != 1 %}s{% endif %}
+
+                {{ posts|length }}
+                result{% if posts|length != 1 %}s{% endif %}
+
             </span>
 
         </div>
@@ -381,7 +473,10 @@ Publisher | RicozSocial
                                 </div>
 
                                 <small>
-                                    By {{ post.creator_name or "Unknown User" }}
+
+                                    By
+                                    {{ post.creator_name or "Unknown User" }}
+
                                 </small>
 
                             </div>
@@ -410,9 +505,13 @@ Publisher | RicozSocial
                             >
 
                                 {% if post.status == "pending_approval" %}
+
                                     Awaiting Approval
+
                                 {% else %}
+
                                     {{ post.status|replace('_', ' ')|title }}
+
                                 {% endif %}
 
                             </span>
@@ -429,7 +528,9 @@ Publisher | RicozSocial
                                     {{ post.scheduled_at.strftime("%d %b %Y") }}
 
                                     <span>
+
                                         {{ post.scheduled_at.strftime("%I:%M %p") }}
+
                                     </span>
 
                                 </div>
@@ -441,7 +542,9 @@ Publisher | RicozSocial
                                     Published
 
                                     <span>
+
                                         {{ post.published_at.strftime("%d %b %Y") }}
+
                                     </span>
 
                                 </div>
@@ -474,6 +577,7 @@ Publisher | RicozSocial
                                     <small class="publisher-published-count">
 
                                         {{ post.published_platform_count }}
+
                                         published
 
                                     </small>
@@ -640,15 +744,17 @@ Publisher | RicozSocial
 
 <!-- =========================================================
      CREATE POST MODAL
-========================================================== -->
+     ========================================================= -->
 
 <div
     id="createPostModal"
     class="publisher-modal"
 >
 
-    <div class="publisher-modal-overlay"
-         onclick="closeCreatePostModal()">
+    <div
+        class="publisher-modal-overlay"
+        onclick="closeCreatePostModal()"
+    >
     </div>
 
 
@@ -667,6 +773,7 @@ Publisher | RicozSocial
                 </h2>
 
             </div>
+
 
             <button
                 type="button"
@@ -708,7 +815,9 @@ Publisher | RicozSocial
                             {% if brand.is_active %}
 
                                 <option value="{{ brand.id }}">
+
                                     {{ brand.name }}
+
                                 </option>
 
                             {% endif %}
@@ -738,18 +847,53 @@ Publisher | RicozSocial
             </div>
 
 
+            <!-- =================================================
+                 CONTENT + AI
+                 ================================================= -->
+
             <div class="publisher-form-field">
 
-                <label>
-                    Content
-                </label>
+                <div class="publisher-content-label-row">
+
+                    <label>
+                        Content
+                    </label>
+
+                    <button
+                        type="button"
+                        class="publisher-ai-btn"
+                        onclick="useAIContentInPublisher()"
+                    >
+
+                        <span>
+                            ✦
+                        </span>
+
+                        Use AI Content
+
+                    </button>
+
+                </div>
+
 
                 <textarea
+                    id="publisherContent"
                     name="content"
                     rows="7"
                     required
                     placeholder="Write your social media content..."
                 ></textarea>
+
+
+                <div
+                    id="publisherAIStatus"
+                    class="publisher-ai-status"
+                    style="display: none;"
+                >
+
+                    ✦ AI-generated content loaded successfully.
+
+                </div>
 
             </div>
 
@@ -817,6 +961,7 @@ Publisher | RicozSocial
                     Social Accounts
                 </label>
 
+
                 <div class="publisher-account-grid">
 
                     {% if connected_accounts %}
@@ -838,9 +983,13 @@ Publisher | RicozSocial
                                     </strong>
 
                                     <small>
+
                                         {{ account.account_name }}
+
                                         ·
+
                                         {{ account.brand_name }}
+
                                     </small>
 
                                 </span>
@@ -874,6 +1023,7 @@ Publisher | RicozSocial
                     Cancel
                 </button>
 
+
                 <button
                     type="submit"
                     class="publisher-primary-btn"
@@ -892,7 +1042,7 @@ Publisher | RicozSocial
 
 <!-- =========================================================
      DETAILS MODAL
-========================================================== -->
+     ========================================================= -->
 
 <div
     id="postDetailsModal"
@@ -902,7 +1052,8 @@ Publisher | RicozSocial
     <div
         class="publisher-modal-overlay"
         onclick="closePostDetails()"
-    ></div>
+    >
+    </div>
 
 
     <div class="publisher-modal-box publisher-details-box">
@@ -921,6 +1072,7 @@ Publisher | RicozSocial
 
             </div>
 
+
             <button
                 type="button"
                 class="publisher-modal-close"
@@ -936,9 +1088,7 @@ Publisher | RicozSocial
             id="postDetailsContent"
             class="publisher-details-content"
         >
-
             Loading...
-
         </div>
 
     </div>
@@ -952,5 +1102,65 @@ Publisher | RicozSocial
 {% block extra_js %}
 
 <script src="{{ url_for('static', filename='js/publisher.js') }}"></script>
+
+
+<script>
+
+/* =========================================================
+   RICOZ AI → PUBLISHER
+   ========================================================= */
+
+function useAIContentInPublisher() {
+
+    const contentField =
+        document.getElementById("publisherContent");
+
+    const status =
+        document.getElementById("publisherAIStatus");
+
+
+    if (!contentField) {
+        return;
+    }
+
+
+    const aiContent =
+        localStorage.getItem(
+            "ricoz_ai_generated_content"
+        );
+
+
+    if (!aiContent) {
+
+        alert(
+            "No AI-generated content found. Please generate content from Ricoz AI first."
+        );
+
+        return;
+    }
+
+
+    contentField.value = aiContent;
+
+
+    contentField.focus();
+
+
+    if (status) {
+
+        status.style.display = "block";
+
+
+        setTimeout(function () {
+
+            status.style.display = "none";
+
+        }, 4000);
+
+    }
+
+}
+
+</script>
 
 {% endblock %}

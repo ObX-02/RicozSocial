@@ -1,0 +1,668 @@
+{% extends "base.html" %}
+
+{% block title %}
+Admin Brands — RicozSocial
+{% endblock %}
+
+{% block extra_css %}
+
+<link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/admin.css') }}"
+>
+
+<style>
+
+    .admin-brands-page {
+        max-width: 1500px;
+        margin: 0 auto;
+    }
+
+    .brands-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-bottom: 24px;
+    }
+
+    .brands-filters {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        flex: 1;
+    }
+
+    .brands-search {
+        min-width: 280px;
+        flex: 1;
+    }
+
+    .brands-search input,
+    .brands-filter select {
+        width: 100%;
+        min-height: 42px;
+        box-sizing: border-box;
+        border: 1px solid #d1d5db;
+        border-radius: 10px;
+        padding: 0 13px;
+        background: #ffffff;
+        color: #111827;
+        outline: none;
+    }
+
+    .brands-search input:focus,
+    .brands-filter select:focus {
+        border-color: #e31e24;
+        box-shadow: 0 0 0 3px rgba(227, 30, 36, 0.08);
+    }
+
+    .brands-filter {
+        min-width: 150px;
+    }
+
+    .filter-button {
+        min-height: 42px;
+        padding: 0 17px;
+        border: 0;
+        border-radius: 10px;
+        background: #e31e24;
+        color: #ffffff;
+        cursor: pointer;
+        font-weight: 700;
+    }
+
+    .filter-button:hover {
+        background: #c8171d;
+    }
+
+    .clear-filter {
+        min-height: 42px;
+        display: inline-flex;
+        align-items: center;
+        padding: 0 15px;
+        border-radius: 10px;
+        background: #f3f4f6;
+        color: #374151;
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+    .clear-filter:hover {
+        background: #e5e7eb;
+    }
+
+    .brand-name-cell {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .brand-mini-logo {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #fff1f2;
+        color: #e31e24;
+        font-weight: 800;
+        flex-shrink: 0;
+    }
+
+    .brand-name-info strong {
+        display: block;
+        color: #111827;
+    }
+
+    .brand-name-info small {
+        display: block;
+        margin-top: 3px;
+        color: #6b7280;
+        max-width: 260px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .owner-info strong {
+        display: block;
+    }
+
+    .owner-info small {
+        display: block;
+        color: #6b7280;
+        margin-top: 3px;
+    }
+
+    .brand-number {
+        font-weight: 700;
+        color: #111827;
+    }
+
+    .view-brand-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 34px;
+        padding: 0 12px;
+        border-radius: 8px;
+        background: #f3f4f6;
+        color: #374151;
+        text-decoration: none;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .view-brand-button:hover {
+        background: #e5e7eb;
+    }
+
+    .brand-status-active {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 10px;
+        border-radius: 999px;
+        background: #ecfdf5;
+        color: #047857;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .brand-status-inactive {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 10px;
+        border-radius: 999px;
+        background: #fff1f2;
+        color: #be123c;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    @media (max-width: 700px) {
+
+        .brands-search {
+            min-width: 100%;
+        }
+
+        .brands-filter {
+            min-width: 100%;
+        }
+
+        .filter-button,
+        .clear-filter {
+            width: 100%;
+            justify-content: center;
+        }
+
+    }
+
+</style>
+
+{% endblock %}
+
+
+{% block content %}
+
+<div class="admin-brands-page">
+
+    <!-- =====================================================
+         HEADER
+    ====================================================== -->
+
+    <div class="admin-page-header">
+
+        <div>
+
+            <div class="admin-breadcrumb">
+
+                <a href="{{ url_for('admin_dashboard') }}">
+                    Administration
+                </a>
+
+                <span>/</span>
+
+                <span>Brands</span>
+
+            </div>
+
+            <h1>
+                Brand Management
+            </h1>
+
+            <p>
+                Monitor and manage all client brand workspaces.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         STATS
+    ====================================================== -->
+
+    <div class="admin-stats-grid">
+
+        <div class="admin-stat-card">
+
+            <div class="admin-stat-label">
+                Total Brands
+            </div>
+
+            <div class="admin-stat-value">
+                {{ total_brands }}
+            </div>
+
+            <div class="admin-stat-meta">
+                All workspaces
+            </div>
+
+        </div>
+
+
+        <div class="admin-stat-card">
+
+            <div class="admin-stat-label">
+                Active
+            </div>
+
+            <div class="admin-stat-value">
+                {{ active_brands }}
+            </div>
+
+            <div class="admin-stat-meta">
+                Active workspaces
+            </div>
+
+        </div>
+
+
+        <div class="admin-stat-card">
+
+            <div class="admin-stat-label">
+                Inactive
+            </div>
+
+            <div class="admin-stat-value">
+                {{ inactive_brands }}
+            </div>
+
+            <div class="admin-stat-meta">
+                Disabled workspaces
+            </div>
+
+        </div>
+
+
+        <div class="admin-stat-card">
+
+            <div class="admin-stat-label">
+                Social Accounts
+            </div>
+
+            <div class="admin-stat-value">
+                {{ total_social_accounts }}
+            </div>
+
+            <div class="admin-stat-meta">
+                Connected profiles
+            </div>
+
+        </div>
+
+
+        <div class="admin-stat-card">
+
+            <div class="admin-stat-label">
+                Connected
+            </div>
+
+            <div class="admin-stat-value">
+                {{ connected_social_accounts }}
+            </div>
+
+            <div class="admin-stat-meta">
+                Active connections
+            </div>
+
+        </div>
+
+
+        <div class="admin-stat-card">
+
+            <div class="admin-stat-label">
+                Posts
+            </div>
+
+            <div class="admin-stat-value">
+                {{ total_posts }}
+            </div>
+
+            <div class="admin-stat-meta">
+                Across all brands
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         FILTERS
+    ====================================================== -->
+
+    <div class="admin-card">
+
+        <form
+            method="GET"
+            action="{{ url_for('admin_brands') }}"
+            class="brands-toolbar"
+        >
+
+            <div class="brands-filters">
+
+                <div class="brands-search">
+
+                    <input
+                        type="search"
+                        name="search"
+                        value="{{ search }}"
+                        placeholder="Search brands, owners or emails..."
+                    >
+
+                </div>
+
+
+                <div class="brands-filter">
+
+                    <select name="status">
+
+                        <option value="">
+                            All Statuses
+                        </option>
+
+                        <option
+                            value="active"
+                            {% if status == "active" %}selected{% endif %}
+                        >
+                            Active
+                        </option>
+
+                        <option
+                            value="inactive"
+                            {% if status == "inactive" %}selected{% endif %}
+                        >
+                            Inactive
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <button
+                    type="submit"
+                    class="filter-button"
+                >
+                    Filter
+                </button>
+
+                {% if search or status %}
+
+                    <a
+                        href="{{ url_for('admin_brands') }}"
+                        class="clear-filter"
+                    >
+                        Clear
+                    </a>
+
+                {% endif %}
+
+            </div>
+
+        </form>
+
+    </div>
+
+
+    <!-- =====================================================
+         BRANDS TABLE
+    ====================================================== -->
+
+    <div class="admin-card">
+
+        <div class="admin-card-header">
+
+            <div>
+
+                <h2>
+                    All Brands
+                </h2>
+
+                <p>
+                    {{ brands_list|length }} brand(s) currently shown.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        {% if brands_list %}
+
+            <div class="admin-table-wrapper">
+
+                <table class="admin-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Brand
+                            </th>
+
+                            <th>
+                                Owner
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+
+                            <th>
+                                Social
+                            </th>
+
+                            <th>
+                                Posts
+                            </th>
+
+                            <th>
+                                Members
+                            </th>
+
+                            <th>
+                                Created
+                            </th>
+
+                            <th>
+                                Action
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for brand in brands_list %}
+
+                            <tr>
+
+                                <td>
+
+                                    <div class="brand-name-cell">
+
+                                        <div class="brand-mini-logo">
+
+                                            {% if brand.name %}
+                                                {{ brand.name[0]|upper }}
+                                            {% else %}
+                                                B
+                                            {% endif %}
+
+                                        </div>
+
+
+                                        <div class="brand-name-info">
+
+                                            <strong>
+                                                {{ brand.name }}
+                                            </strong>
+
+                                            {% if brand.website_url %}
+
+                                                <small>
+                                                    {{ brand.website_url }}
+                                                </small>
+
+                                            {% elif brand.description %}
+
+                                                <small>
+                                                    {{ brand.description }}
+                                                </small>
+
+                                            {% else %}
+
+                                                <small>
+                                                    No description
+                                                </small>
+
+                                            {% endif %}
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+
+                                <td>
+
+                                    <div class="owner-info">
+
+                                        <strong>
+                                            {{ brand.owner_name or "Unknown" }}
+                                        </strong>
+
+                                        <small>
+                                            {{ brand.owner_email or "—" }}
+                                        </small>
+
+                                    </div>
+
+                                </td>
+
+
+                                <td>
+
+                                    {% if brand.is_active %}
+
+                                        <span class="brand-status-active">
+                                            Active
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="brand-status-inactive">
+                                            Inactive
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <td>
+
+                                    <span class="brand-number">
+                                        {{ brand.connected_accounts_count }}
+                                    </span>
+
+                                    /
+                                    {{ brand.social_accounts_count }}
+
+                                </td>
+
+
+                                <td>
+                                    <span class="brand-number">
+                                        {{ brand.posts_count }}
+                                    </span>
+                                </td>
+
+
+                                <td>
+                                    <span class="brand-number">
+                                        {{ brand.members_count }}
+                                    </span>
+                                </td>
+
+
+                                <td>
+
+                                    {{ brand.created_at.strftime("%b %d, %Y") if brand.created_at else "—" }}
+
+                                </td>
+
+
+                                <td>
+
+                                    <a
+                                        href="{{ url_for('admin_brand_details', brand_id=brand.id) }}"
+                                        class="view-brand-button"
+                                    >
+                                        View
+                                    </a>
+
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        {% else %}
+
+            <div class="admin-empty-state">
+
+                <strong>
+                    No brands found
+                </strong>
+
+                <p>
+                    Try changing your search or status filter.
+                </p>
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,1414 @@
+```html
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard — RicozSocial{% endblock %}
+
+{% block extra_css %}
+<link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/admin.css') }}"
+>
+{% endblock %}
+
+{% block content %}
+
+<div class="admin-page">
+
+    <!-- =====================================================
+         ADMIN HEADER
+         ===================================================== -->
+
+    <section class="admin-header">
+
+        <div class="admin-header-content">
+
+            <div class="admin-heading-area">
+
+                <div class="admin-eyebrow">
+                    ADMINISTRATION
+                </div>
+
+                <h1>
+                    Admin Dashboard
+                </h1>
+
+                <p>
+                    Manage clients, monitor platform activity,
+                    and control the RicozSocial workspace.
+                </p>
+
+            </div>
+
+
+            <!-- TOP NAVIGATION -->
+
+            <nav class="admin-header-actions"
+                 aria-label="Admin navigation">
+
+                <a
+                    href="{{ url_for('dashboard') }}"
+                    class="admin-nav-button admin-nav-secondary"
+                >
+                    <span class="admin-nav-icon">⌂</span>
+                    <span>Client View</span>
+                </a>
+
+
+                <a
+                    href="{{ url_for('admin_clients') }}"
+                    class="admin-nav-button admin-nav-primary"
+                >
+                    <span class="admin-nav-icon">♙</span>
+                    <span>Manage Clients</span>
+                </a>
+
+
+                <a
+                    href="{{ url_for('admin_brands') }}"
+                    class="admin-nav-button admin-nav-primary"
+                >
+                    <span class="admin-nav-icon">◈</span>
+                    <span>Manage Brands</span>
+                </a>
+
+
+                <a
+                    href="{{ url_for('admin_social_accounts') }}"
+                    class="admin-nav-button admin-nav-primary"
+                >
+                    <span class="admin-nav-icon">◎</span>
+                    <span>Social Accounts</span>
+                </a>
+
+
+                <a
+                    href="{{ url_for('admin_posts') }}"
+                    class="admin-nav-button admin-nav-primary"
+                >
+                    <span class="admin-nav-icon">✎</span>
+                    <span>Content</span>
+                </a>
+
+
+                <a
+                    href="{{ url_for('admin_campaigns') }}"
+                    class="admin-nav-button admin-nav-primary"
+                >
+                    <span class="admin-nav-icon">◇</span>
+                    <span>Campaigns</span>
+                </a>
+
+            </nav>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         STATISTICS
+         ===================================================== -->
+
+    <section class="admin-stats-grid">
+
+
+        <!-- TOTAL CLIENTS -->
+
+        <div class="admin-stat-card">
+
+            <div class="admin-stat-icon green">
+                👥
+            </div>
+
+            <div class="admin-stat-content">
+
+                <span class="admin-stat-label">
+                    Total Clients
+                </span>
+
+                <strong>
+                    {{ total_clients }}
+                </strong>
+
+                <small>
+                    {{ total_users }} total accounts
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <!-- ACTIVE CLIENTS -->
+
+        <div class="admin-stat-card">
+
+            <div class="admin-stat-icon green">
+                ✓
+            </div>
+
+            <div class="admin-stat-content">
+
+                <span class="admin-stat-label">
+                    Active Clients
+                </span>
+
+                <strong>
+                    {{ active_clients }}
+                </strong>
+
+                <small>
+                    Currently active
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <!-- INACTIVE CLIENTS -->
+
+        <div class="admin-stat-card">
+
+            <div class="admin-stat-icon warning">
+                !
+            </div>
+
+            <div class="admin-stat-content">
+
+                <span class="admin-stat-label">
+                    Inactive Clients
+                </span>
+
+                <strong>
+                    {{ inactive_clients }}
+                </strong>
+
+                <small>
+                    Require attention
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <!-- ACTIVE BRANDS -->
+
+        <div class="admin-stat-card">
+
+            <div class="admin-stat-icon green">
+                ◈
+            </div>
+
+            <div class="admin-stat-content">
+
+                <span class="admin-stat-label">
+                    Active Brands
+                </span>
+
+                <strong>
+                    {{ total_brands }}
+                </strong>
+
+                <small>
+                    Client workspaces
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <!-- SOCIAL ACCOUNTS -->
+
+        <div class="admin-stat-card">
+
+            <div class="admin-stat-icon green">
+                ◎
+            </div>
+
+            <div class="admin-stat-content">
+
+                <span class="admin-stat-label">
+                    Social Accounts
+                </span>
+
+                <strong>
+                    {{ total_social_accounts }}
+                </strong>
+
+                <small>
+                    {{ connected_accounts }} connected
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <!-- TOTAL POSTS -->
+
+        <div class="admin-stat-card">
+
+            <div class="admin-stat-icon green">
+                ✎
+            </div>
+
+            <div class="admin-stat-content">
+
+                <span class="admin-stat-label">
+                    Total Posts
+                </span>
+
+                <strong>
+                    {{ total_posts }}
+                </strong>
+
+                <small>
+                    {{ published_posts }} published
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <!-- SCHEDULED POSTS -->
+
+        <div class="admin-stat-card">
+
+            <div class="admin-stat-icon green">
+                ◷
+            </div>
+
+            <div class="admin-stat-content">
+
+                <span class="admin-stat-label">
+                    Scheduled Posts
+                </span>
+
+                <strong>
+                    {{ scheduled_posts }}
+                </strong>
+
+                <small>
+                    {{ draft_posts }} drafts
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <!-- PENDING APPROVALS -->
+
+        <div class="admin-stat-card">
+
+            <div class="admin-stat-icon warning">
+                ✓
+            </div>
+
+            <div class="admin-stat-content">
+
+                <span class="admin-stat-label">
+                    Pending Approvals
+                </span>
+
+                <strong>
+                    {{ pending_approvals }}
+                </strong>
+
+                <small>
+                    Waiting for review
+                </small>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         MAIN ADMIN GRID
+         ===================================================== -->
+
+    <section class="admin-main-grid">
+
+
+        <!-- =================================================
+             RECENT CLIENTS
+             ================================================= -->
+
+        <div class="admin-panel admin-panel-large">
+
+            <div class="admin-panel-header">
+
+                <div>
+
+                    <span class="admin-panel-eyebrow">
+                        CLIENT MANAGEMENT
+                    </span>
+
+                    <h2>
+                        Recent Clients
+                    </h2>
+
+                    <p>
+                        Recently registered client accounts.
+                    </p>
+
+                </div>
+
+
+                <a
+                    href="{{ url_for('admin_clients') }}"
+                    class="admin-panel-link"
+                >
+                    View All Clients →
+                </a>
+
+            </div>
+
+
+            {% if recent_clients %}
+
+            <div class="admin-table-wrapper">
+
+                <table class="admin-table">
+
+                    <thead>
+
+                        <tr>
+                            <th>Client</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Registered</th>
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for client in recent_clients %}
+
+                        <tr>
+
+                            <td>
+
+                                <div class="admin-client-cell">
+
+                                    <div class="admin-avatar">
+                                        {{ client.name[0]|upper }}
+                                    </div>
+
+                                    <div class="admin-client-details">
+
+                                        <strong>
+                                            {{ client.name }}
+                                        </strong>
+
+                                        <span>
+                                            {{ client.email }}
+                                        </span>
+
+                                    </div>
+
+                                </div>
+
+                            </td>
+
+
+                            <td>
+
+                                <span class="admin-role-badge">
+                                    {{ client.role|capitalize }}
+                                </span>
+
+                            </td>
+
+
+                            <td>
+
+                                {% if client.is_active %}
+
+                                    <span class="admin-status active">
+                                        Active
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="admin-status inactive">
+                                        Inactive
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <td>
+
+                                {% if client.created_at %}
+
+                                    {{ client.created_at.strftime('%b %d, %Y') }}
+
+                                {% else %}
+
+                                    —
+
+                                {% endif %}
+
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            {% else %}
+
+            <div class="admin-empty-state">
+
+                <div class="admin-empty-icon">
+                    👥
+                </div>
+
+                <h3>
+                    No clients yet
+                </h3>
+
+                <p>
+                    Client accounts will appear here after registration.
+                </p>
+
+            </div>
+
+            {% endif %}
+
+        </div>
+
+
+        <!-- =================================================
+             SYSTEM OVERVIEW
+             ================================================= -->
+
+        <div class="admin-panel">
+
+            <div class="admin-panel-header">
+
+                <div>
+
+                    <span class="admin-panel-eyebrow">
+                        PLATFORM
+                    </span>
+
+                    <h2>
+                        System Overview
+                    </h2>
+
+                </div>
+
+            </div>
+
+
+            <div class="admin-overview-list">
+
+
+                <div class="admin-overview-item">
+
+                    <div>
+
+                        <span>
+                            Active Brands
+                        </span>
+
+                        <small>
+                            Client workspaces
+                        </small>
+
+                    </div>
+
+                    <strong>
+                        {{ total_brands }}
+                    </strong>
+
+                </div>
+
+
+                <div class="admin-overview-item">
+
+                    <div>
+
+                        <span>
+                            Social Accounts
+                        </span>
+
+                        <small>
+                            Connected platforms
+                        </small>
+
+                    </div>
+
+                    <strong>
+                        {{ connected_accounts }}
+                    </strong>
+
+                </div>
+
+
+                <div class="admin-overview-item">
+
+                    <div>
+
+                        <span>
+                            Total Posts
+                        </span>
+
+                        <small>
+                            All client content
+                        </small>
+
+                    </div>
+
+                    <strong>
+                        {{ total_posts }}
+                    </strong>
+
+                </div>
+
+
+                <div class="admin-overview-item">
+
+                    <div>
+
+                        <span>
+                            Published
+                        </span>
+
+                        <small>
+                            Successfully published
+                        </small>
+
+                    </div>
+
+                    <strong>
+                        {{ published_posts }}
+                    </strong>
+
+                </div>
+
+
+                <div class="admin-overview-item">
+
+                    <div>
+
+                        <span>
+                            Scheduled
+                        </span>
+
+                        <small>
+                            Upcoming content
+                        </small>
+
+                    </div>
+
+                    <strong>
+                        {{ scheduled_posts }}
+                    </strong>
+
+                </div>
+
+
+                <div class="admin-overview-item">
+
+                    <div>
+
+                        <span>
+                            Community Items
+                        </span>
+
+                        <small>
+                            Pending engagement
+                        </small>
+
+                    </div>
+
+                    <strong>
+                        {{ community_items }}
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             RECENT CLIENT ACTIVITY
+             ================================================= -->
+
+        <div class="admin-panel">
+
+            <div class="admin-panel-header">
+
+                <div>
+
+                    <span class="admin-panel-eyebrow">
+                        MONITORING
+                    </span>
+
+                    <h2>
+                        Recent Client Activity
+                    </h2>
+
+                </div>
+
+
+                <a
+                    href="{{ url_for('admin_clients') }}"
+                    class="admin-panel-link"
+                >
+                    View Clients →
+                </a>
+
+            </div>
+
+
+            {% if recent_activity %}
+
+            <div class="admin-activity-list">
+
+                {% for activity in recent_activity %}
+
+                <div class="admin-activity-item">
+
+                    <div class="admin-activity-icon">
+                        •
+                    </div>
+
+
+                    <div class="admin-activity-content">
+
+                        <strong>
+
+                            {% if activity.user_name %}
+                                {{ activity.user_name }}
+                            {% else %}
+                                Client
+                            {% endif %}
+
+                        </strong>
+
+
+                        <p>
+
+                            {% if activity.description %}
+
+                                {{ activity.description }}
+
+                            {% elif activity.action %}
+
+                                {{ activity.action|replace('_', ' ')|capitalize }}
+
+                            {% else %}
+
+                                Activity recorded
+
+                            {% endif %}
+
+                        </p>
+
+
+                        <small>
+
+                            {% if activity.created_at %}
+
+                                {{ activity.created_at.strftime('%b %d, %Y %I:%M %p') }}
+
+                            {% endif %}
+
+                        </small>
+
+                    </div>
+
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+            {% else %}
+
+            <div class="admin-empty-small">
+                No client activity available yet.
+            </div>
+
+            {% endif %}
+
+        </div>
+
+
+        <!-- =================================================
+             RECENT CONTENT
+             ================================================= -->
+
+        <div class="admin-panel admin-panel-large">
+
+            <div class="admin-panel-header">
+
+                <div>
+
+                    <span class="admin-panel-eyebrow">
+                        CONTENT
+                    </span>
+
+                    <h2>
+                        Recent Content
+                    </h2>
+
+                    <p>
+                        Latest posts created by clients.
+                    </p>
+
+                </div>
+
+
+                <a
+                    href="{{ url_for('publisher') }}"
+                    class="admin-panel-link"
+                >
+                    View Publisher →
+                </a>
+
+            </div>
+
+
+            {% if recent_posts %}
+
+            <div class="admin-table-wrapper">
+
+                <table class="admin-table">
+
+                    <thead>
+
+                        <tr>
+                            <th>Post</th>
+                            <th>Brand</th>
+                            <th>Created By</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for post in recent_posts %}
+
+                        <tr>
+
+                            <td>
+
+                                <div class="admin-post-cell">
+
+                                    <strong>
+                                        {{ post.title or 'Untitled Post' }}
+                                    </strong>
+
+                                    <span>
+                                        #{{ post.id }}
+                                    </span>
+
+                                </div>
+
+                            </td>
+
+
+                            <td>
+                                {{ post.brand_name or '—' }}
+                            </td>
+
+
+                            <td>
+                                {{ post.creator_name or '—' }}
+                            </td>
+
+
+                            <td>
+
+                                {% if post.status %}
+
+                                    <span
+                                        class="admin-content-status {{ post.status|lower }}"
+                                    >
+                                        {{ post.status|replace('_', ' ')|capitalize }}
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="admin-content-status">
+                                        Unknown
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <td>
+
+                                {% if post.created_at %}
+
+                                    {{ post.created_at.strftime('%b %d, %Y') }}
+
+                                {% else %}
+
+                                    —
+
+                                {% endif %}
+
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            {% else %}
+
+            <div class="admin-empty-state">
+
+                <div class="admin-empty-icon">
+                    ✎
+                </div>
+
+                <h3>
+                    No content yet
+                </h3>
+
+                <p>
+                    Client posts will appear here.
+                </p>
+
+            </div>
+
+            {% endif %}
+
+        </div>
+
+
+        <!-- =================================================
+             APPROVAL ACTIVITY
+             ================================================= -->
+
+        <div class="admin-panel admin-workflow-panel">
+
+            <div class="admin-panel-header">
+
+                <div>
+
+                    <span class="admin-panel-eyebrow">
+                        WORKFLOW
+                    </span>
+
+                    <h2>
+                        Approval Activity
+                    </h2>
+
+                </div>
+
+
+                <a
+                    href="{{ url_for('approvals') }}"
+                    class="admin-panel-link"
+                >
+                    View Approvals →
+                </a>
+
+            </div>
+
+
+            {% if recent_approvals %}
+
+            <div class="admin-approval-list">
+
+                {% for approval in recent_approvals %}
+
+                <div class="admin-approval-item">
+
+                    <div class="admin-approval-icon">
+                        ✓
+                    </div>
+
+
+                    <div class="admin-approval-content">
+
+                        <strong>
+                            {{ approval.post_title or 'Untitled Post' }}
+                        </strong>
+
+                        <span>
+                            Submitted by
+                            {{ approval.submitted_by_name or 'Unknown User' }}
+                        </span>
+
+                        <small>
+
+                            {% if approval.created_at %}
+                                {{ approval.created_at.strftime('%b %d, %Y') }}
+                            {% endif %}
+
+                        </small>
+
+                    </div>
+
+
+                    <div class="admin-approval-status">
+
+                        {% if approval.status == 'pending' %}
+
+                            <span class="admin-status pending">
+                                Pending
+                            </span>
+
+                        {% elif approval.status == 'approved' %}
+
+                            <span class="admin-status active">
+                                Approved
+                            </span>
+
+                        {% elif approval.status == 'rejected' %}
+
+                            <span class="admin-status inactive">
+                                Rejected
+                            </span>
+
+                        {% else %}
+
+                            <span class="admin-status">
+                                {{ approval.status|capitalize }}
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+            {% else %}
+
+            <div class="admin-empty-small">
+                No approval activity available.
+            </div>
+
+            {% endif %}
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         ADMINISTRATION / QUICK ACTIONS
+         ===================================================== -->
+
+    <section class="admin-panel admin-quick-actions">
+
+        <div class="admin-panel-header">
+
+            <div>
+
+                <span class="admin-panel-eyebrow">
+                    ADMINISTRATION
+                </span>
+
+                <h2>
+                    Quick Actions
+                </h2>
+
+                <p>
+                    Manage important areas of the platform.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="admin-action-grid">
+
+
+            <!-- CLIENTS -->
+
+            <a
+                href="{{ url_for('admin_clients') }}"
+                class="admin-action-card"
+            >
+
+                <div class="admin-action-icon green">
+                    👥
+                </div>
+
+                <div class="admin-action-content">
+
+                    <strong>
+                        Manage Clients
+                    </strong>
+
+                    <span>
+                        View and manage all client accounts.
+                    </span>
+
+                </div>
+
+                <b class="admin-action-arrow">
+                    →
+                </b>
+
+            </a>
+
+
+            <!-- SOCIAL ACCOUNTS -->
+
+            <a
+                href="{{ url_for('admin_social_accounts') }}"
+                class="admin-action-card"
+            >
+
+                <div class="admin-action-icon green">
+                    ◎
+                </div>
+
+                <div class="admin-action-content">
+
+                    <strong>
+                        Social Accounts
+                    </strong>
+
+                    <span>
+                        Monitor client social media connections.
+                    </span>
+
+                </div>
+
+                <b class="admin-action-arrow">
+                    →
+                </b>
+
+            </a>
+
+
+            <!-- CONTENT MANAGEMENT -->
+
+            <a
+                href="{{ url_for('admin_posts') }}"
+                class="admin-action-card"
+            >
+
+                <div class="admin-action-icon green">
+                    ✎
+                </div>
+
+                <div class="admin-action-content">
+
+                    <strong>
+                        Content Management
+                    </strong>
+
+                    <span>
+                        Monitor client posts, schedules and approvals.
+                    </span>
+
+                </div>
+
+                <b class="admin-action-arrow">
+                    →
+                </b>
+
+            </a>
+
+
+            <!-- CAMPAIGNS -->
+
+            <a
+                href="{{ url_for('admin_campaigns') }}"
+                class="admin-action-card"
+            >
+
+                <div class="admin-action-icon green">
+                    ◈
+                </div>
+
+                <div class="admin-action-content">
+
+                    <strong>
+                        Campaign Management
+                    </strong>
+
+                    <span>
+                        Create and monitor client marketing campaigns.
+                    </span>
+
+                </div>
+
+                <b class="admin-action-arrow">
+                    →
+                </b>
+
+            </a>
+
+
+            <!-- BRANDS -->
+
+            <a
+                href="{{ url_for('admin_brands') }}"
+                class="admin-action-card"
+            >
+
+                <div class="admin-action-icon green">
+                    ◈
+                </div>
+
+                <div class="admin-action-content">
+
+                    <strong>
+                        Manage Brands
+                    </strong>
+
+                    <span>
+                        Review client brands and workspaces.
+                    </span>
+
+                </div>
+
+                <b class="admin-action-arrow">
+                    →
+                </b>
+
+            </a>
+
+
+            <!-- ANALYTICS -->
+
+            <a
+                href="{{ url_for('analytics') }}"
+                class="admin-action-card"
+            >
+
+                <div class="admin-action-icon green">
+                    ▥
+                </div>
+
+                <div class="admin-action-content">
+
+                    <strong>
+                        Analytics
+                    </strong>
+
+                    <span>
+                        Monitor platform performance data.
+                    </span>
+
+                </div>
+
+                <b class="admin-action-arrow">
+                    →
+                </b>
+
+            </a>
+
+
+            <!-- REPORTS -->
+
+            <a
+                href="{{ url_for('reports') }}"
+                class="admin-action-card"
+            >
+
+                <div class="admin-action-icon green">
+                    ▤
+                </div>
+
+                <div class="admin-action-content">
+
+                    <strong>
+                        Reports
+                    </strong>
+
+                    <span>
+                        Review generated reports.
+                    </span>
+
+                </div>
+
+                <b class="admin-action-arrow">
+                    →
+                </b>
+
+            </a>
+
+
+            <!-- CONTENT -->
+
+            <a
+                href="{{ url_for('publisher') }}"
+                class="admin-action-card"
+            >
+
+                <div class="admin-action-icon green">
+                    ✎
+                </div>
+
+                <div class="admin-action-content">
+
+                    <strong>
+                        Content
+                    </strong>
+
+                    <span>
+                        Review and manage client content.
+                    </span>
+
+                </div>
+
+                <b class="admin-action-arrow">
+                    →
+                </b>
+
+            </a>
+
+
+            <!-- NOTIFICATIONS -->
+
+            <a
+                href="{{ url_for('notifications') }}"
+                class="admin-action-card"
+            >
+
+                <div class="admin-action-icon green">
+                    ♢
+                </div>
+
+                <div class="admin-action-content">
+
+                    <strong>
+                        Notifications
+                    </strong>
+
+                    <span>
+                        Review administrator notifications.
+                    </span>
+
+                </div>
+
+                <b class="admin-action-arrow">
+                    →
+                </b>
+
+            </a>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         ADMIN FOOTER SUMMARY
+         ===================================================== -->
+
+    <section class="admin-summary-bar">
+
+        <div class="admin-summary-heading">
+
+            <span>
+                RicozSocial Administration
+            </span>
+
+            <strong>
+                Platform Control Center
+            </strong>
+
+        </div>
+
+
+        <div class="admin-summary-items">
+
+
+            <div class="admin-summary-item">
+
+                <span>
+                    Clients
+                </span>
+
+                <strong>
+                    {{ total_clients }}
+                </strong>
+
+            </div>
+
+
+            <div class="admin-summary-item">
+
+                <span>
+                    Brands
+                </span>
+
+                <strong>
+                    {{ total_brands }}
+                </strong>
+
+            </div>
+
+
+            <div class="admin-summary-item">
+
+                <span>
+                    Posts
+                </span>
+
+                <strong>
+                    {{ total_posts }}
+                </strong>
+
+            </div>
+
+
+            <div class="admin-summary-item">
+
+                <span>
+                    Approvals
+                </span>
+
+                <strong>
+                    {{ pending_approvals }}
+                </strong>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</div>
+
+{% endblock %}
+```

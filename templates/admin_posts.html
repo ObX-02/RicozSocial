@@ -1,0 +1,764 @@
+{% extends "base.html" %}
+
+{% block title %}
+Admin Content Management — RicozSocial
+{% endblock %}
+
+{% block extra_css %}
+
+<link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/admin.css') }}"
+>
+
+<style>
+
+    .admin-posts-page {
+        max-width: 1500px;
+        margin: 0 auto;
+    }
+
+    .posts-toolbar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .posts-search {
+        flex: 1;
+        min-width: 280px;
+    }
+
+    .posts-search input,
+    .posts-filter select {
+
+        width: 100%;
+        min-height: 42px;
+        box-sizing: border-box;
+
+        border: 1px solid #d1d5db;
+        border-radius: 10px;
+
+        padding: 0 13px;
+
+        background: #ffffff;
+        color: #111827;
+
+        outline: none;
+    }
+
+    .posts-search input:focus,
+    .posts-filter select:focus {
+
+        border-color: #e31e24;
+
+        box-shadow:
+            0 0 0 3px
+            rgba(227, 30, 36, 0.08);
+    }
+
+    .posts-filter {
+        min-width: 170px;
+    }
+
+    .posts-filter-button {
+
+        min-height: 42px;
+
+        padding: 0 18px;
+
+        border: 0;
+        border-radius: 10px;
+
+        background: #e31e24;
+        color: #ffffff;
+
+        cursor: pointer;
+
+        font-weight: 700;
+    }
+
+    .posts-filter-button:hover {
+        background: #c8171d;
+    }
+
+    .posts-clear-button {
+
+        min-height: 42px;
+
+        display: inline-flex;
+        align-items: center;
+
+        padding: 0 15px;
+
+        border-radius: 10px;
+
+        background: #f3f4f6;
+        color: #374151;
+
+        text-decoration: none;
+
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+    .posts-clear-button:hover {
+        background: #e5e7eb;
+    }
+
+    .post-title-cell {
+        min-width: 240px;
+        max-width: 380px;
+    }
+
+    .post-title-cell strong {
+        display: block;
+        color: #111827;
+    }
+
+    .post-title-cell small {
+        display: block;
+        margin-top: 5px;
+        color: #6b7280;
+        line-height: 1.5;
+    }
+
+    .post-brand-cell strong {
+        display: block;
+        color: #111827;
+    }
+
+    .post-brand-cell small {
+        display: block;
+        margin-top: 4px;
+        color: #6b7280;
+    }
+
+    .post-creator-cell strong {
+        display: block;
+        color: #111827;
+    }
+
+    .post-creator-cell small {
+        display: block;
+        margin-top: 4px;
+        color: #6b7280;
+    }
+
+    .post-status {
+
+        display: inline-flex;
+        align-items: center;
+
+        padding: 5px 10px;
+
+        border-radius: 999px;
+
+        font-size: 12px;
+        font-weight: 700;
+
+        white-space: nowrap;
+    }
+
+    .post-status-draft {
+        background: #f3f4f6;
+        color: #4b5563;
+    }
+
+    .post-status-scheduled {
+        background: #eff6ff;
+        color: #1d4ed8;
+    }
+
+    .post-status-published {
+        background: #ecfdf5;
+        color: #047857;
+    }
+
+    .post-status-other {
+        background: #fff7ed;
+        color: #c2410c;
+    }
+
+    .post-category {
+
+        display: inline-flex;
+
+        padding: 4px 9px;
+
+        border-radius: 7px;
+
+        background: #f9fafb;
+
+        border: 1px solid #eef0f2;
+
+        color: #4b5563;
+
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    .post-view-button {
+
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+
+        min-height: 34px;
+
+        padding: 0 12px;
+
+        border-radius: 8px;
+
+        background: #f3f4f6;
+        color: #374151;
+
+        text-decoration: none;
+
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .post-view-button:hover {
+        background: #e5e7eb;
+    }
+
+    @media (max-width: 750px) {
+
+        .posts-search {
+            min-width: 100%;
+        }
+
+        .posts-filter {
+            min-width: 100%;
+        }
+
+        .posts-filter-button,
+        .posts-clear-button {
+            width: 100%;
+            justify-content: center;
+        }
+
+    }
+
+</style>
+
+{% endblock %}
+
+
+{% block content %}
+
+<div class="admin-posts-page">
+
+
+    <!-- =====================================================
+         HEADER
+         ===================================================== -->
+
+    <div class="admin-page-header">
+
+        <div>
+
+            <div class="admin-breadcrumb">
+
+                <a href="{{ url_for('admin_dashboard') }}">
+                    Administration
+                </a>
+
+                <span>/</span>
+
+                <span>Content</span>
+
+            </div>
+
+            <h1>
+                Content & Post Management
+            </h1>
+
+            <p>
+                Monitor content created across all client brands.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         STATS
+         ===================================================== -->
+
+    <div class="admin-stats-grid">
+
+        <div class="admin-stat-card">
+
+            <div class="admin-stat-label">
+                Total Posts
+            </div>
+
+            <div class="admin-stat-value">
+                {{ total_posts }}
+            </div>
+
+            <div class="admin-stat-meta">
+                All client content
+            </div>
+
+        </div>
+
+
+        <div class="admin-stat-card">
+
+            <div class="admin-stat-label">
+                Drafts
+            </div>
+
+            <div class="admin-stat-value">
+                {{ draft_posts }}
+            </div>
+
+            <div class="admin-stat-meta">
+                Unpublished content
+            </div>
+
+        </div>
+
+
+        <div class="admin-stat-card">
+
+            <div class="admin-stat-label">
+                Scheduled
+            </div>
+
+            <div class="admin-stat-value">
+                {{ scheduled_posts }}
+            </div>
+
+            <div class="admin-stat-meta">
+                Upcoming content
+            </div>
+
+        </div>
+
+
+        <div class="admin-stat-card">
+
+            <div class="admin-stat-label">
+                Published
+            </div>
+
+            <div class="admin-stat-value">
+                {{ published_posts }}
+            </div>
+
+            <div class="admin-stat-meta">
+                Live content
+            </div>
+
+        </div>
+
+
+        <div class="admin-stat-card">
+
+            <div class="admin-stat-label">
+                Pending Approvals
+            </div>
+
+            <div class="admin-stat-value">
+                {{ pending_approvals }}
+            </div>
+
+            <div class="admin-stat-meta">
+                Awaiting review
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         FILTERS
+         ===================================================== -->
+
+    <div class="admin-card">
+
+        <form
+            method="GET"
+            action="{{ url_for('admin_posts') }}"
+            class="posts-toolbar"
+        >
+
+            <div class="posts-search">
+
+                <input
+                    type="search"
+                    name="search"
+                    value="{{ search }}"
+                    placeholder="Search posts, brands or creators..."
+                >
+
+            </div>
+
+
+            <div class="posts-filter">
+
+                <select name="brand_id">
+
+                    <option value="">
+                        All Brands
+                    </option>
+
+                    {% for brand in brands_for_filter %}
+
+                        <option
+                            value="{{ brand.id }}"
+                            {% if brand_id == brand.id|string %}
+                                selected
+                            {% endif %}
+                        >
+                            {{ brand.name }}
+                        </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <div class="posts-filter">
+
+                <select name="status">
+
+                    <option value="">
+                        All Statuses
+                    </option>
+
+                    <option
+                        value="draft"
+                        {% if status == "draft" %}
+                            selected
+                        {% endif %}
+                    >
+                        Draft
+                    </option>
+
+                    <option
+                        value="scheduled"
+                        {% if status == "scheduled" %}
+                            selected
+                        {% endif %}
+                    >
+                        Scheduled
+                    </option>
+
+                    <option
+                        value="published"
+                        {% if status == "published" %}
+                            selected
+                        {% endif %}
+                    >
+                        Published
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <button
+                type="submit"
+                class="posts-filter-button"
+            >
+                Filter
+            </button>
+
+
+            {% if search or brand_id or status %}
+
+                <a
+                    href="{{ url_for('admin_posts') }}"
+                    class="posts-clear-button"
+                >
+                    Clear
+                </a>
+
+            {% endif %}
+
+        </form>
+
+    </div>
+
+
+    <!-- =====================================================
+         POSTS TABLE
+         ===================================================== -->
+
+    <div class="admin-card">
+
+        <div class="admin-card-header">
+
+            <div>
+
+                <h2>
+                    Client Content
+                </h2>
+
+                <p>
+                    {{ posts_list|length }} post(s) currently shown.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        {% if posts_list %}
+
+            <div class="admin-table-wrapper">
+
+                <table class="admin-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Post
+                            </th>
+
+                            <th>
+                                Brand
+                            </th>
+
+                            <th>
+                                Creator
+                            </th>
+
+                            <th>
+                                Category
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+
+                            <th>
+                                Schedule
+                            </th>
+
+                            <th>
+                                Action
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for post in posts_list %}
+
+                            <tr>
+
+                                <td>
+
+                                    <div class="post-title-cell">
+
+                                        <strong>
+
+                                            {{ post.title
+                                               or "Untitled Post" }}
+
+                                        </strong>
+
+                                        <small>
+
+                                            {% if post.content %}
+
+                                                {{ post.content[:110] }}
+
+                                                {% if post.content|length > 110 %}
+                                                    ...
+                                                {% endif %}
+
+                                            {% else %}
+
+                                                No content preview available.
+
+                                            {% endif %}
+
+                                        </small>
+
+                                    </div>
+
+                                </td>
+
+
+                                <td>
+
+                                    <div class="post-brand-cell">
+
+                                        <strong>
+                                            {{ post.brand_name or "Unknown Brand" }}
+                                        </strong>
+
+                                        <small>
+
+                                            {% if post.brand_is_active %}
+                                                Active
+                                            {% else %}
+                                                Inactive
+                                            {% endif %}
+
+                                        </small>
+
+                                    </div>
+
+                                </td>
+
+
+                                <td>
+
+                                    <div class="post-creator-cell">
+
+                                        <strong>
+                                            {{ post.creator_name or "Unknown" }}
+                                        </strong>
+
+                                        <small>
+                                            {{ post.creator_email or "—" }}
+                                        </small>
+
+                                    </div>
+
+                                </td>
+
+
+                                <td>
+
+                                    {% if post.category_name %}
+
+                                        <span class="post-category">
+                                            {{ post.category_name }}
+                                        </span>
+
+                                    {% else %}
+
+                                        <span style="color:#9ca3af;">
+                                            —
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <td>
+
+                                    {% set post_status =
+                                        (post.status or "unknown")|lower
+                                    %}
+
+
+                                    {% if post_status == "draft" %}
+
+                                        <span class="post-status post-status-draft">
+                                            Draft
+                                        </span>
+
+                                    {% elif post_status == "scheduled" %}
+
+                                        <span class="post-status post-status-scheduled">
+                                            Scheduled
+                                        </span>
+
+                                    {% elif post_status == "published" %}
+
+                                        <span class="post-status post-status-published">
+                                            Published
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="post-status post-status-other">
+                                            {{ post.status or "Unknown" }}
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <td>
+
+                                    {% if post.scheduled_at %}
+
+                                        {{ post.scheduled_at.strftime(
+                                            '%b %d, %Y %I:%M %p'
+                                        ) }}
+
+                                    {% elif post.published_at %}
+
+                                        {{ post.published_at.strftime(
+                                            '%b %d, %Y'
+                                        ) }}
+
+                                    {% else %}
+
+                                        —
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <td>
+
+                                    <a
+                                        href="{{ url_for('admin_post_details', post_id=post.id) }}"
+                                        class="post-view-button"
+                                    >
+                                        View
+                                    </a>
+
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        {% else %}
+
+            <div class="admin-empty-state">
+
+                <div class="admin-empty-icon">
+                    ◎
+                </div>
+
+                <h3>
+                    No posts found
+                </h3>
+
+                <p>
+                    Try changing your search or filter options.
+                </p>
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+{% endblock %}

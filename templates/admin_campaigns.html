@@ -1,0 +1,854 @@
+{% extends "base.html" %}
+
+{% block title %}
+Campaign Management — RicozSocial
+{% endblock %}
+
+{% block extra_css %}
+
+<link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/admin.css') }}"
+>
+
+<style>
+
+    .admin-campaigns-page {
+        max-width: 1500px;
+        margin: 0 auto;
+    }
+
+    .campaign-header-actions {
+
+        display: flex;
+        gap: 10px;
+
+        flex-wrap: wrap;
+    }
+
+    .campaign-primary-button {
+
+        min-height: 42px;
+
+        padding: 0 17px;
+
+        border-radius: 9px;
+
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+
+        background: #e31e24;
+        color: #ffffff;
+
+        text-decoration: none;
+
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+    .campaign-primary-button:hover {
+        background: #c8171d;
+    }
+
+    .campaign-toolbar {
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 10px;
+
+        flex-wrap: wrap;
+    }
+
+    .campaign-search {
+
+        flex: 1;
+
+        min-width: 280px;
+    }
+
+    .campaign-search input,
+    .campaign-filter select {
+
+        width: 100%;
+
+        min-height: 42px;
+
+        box-sizing: border-box;
+
+        border: 1px solid #d1d5db;
+
+        border-radius: 10px;
+
+        padding: 0 13px;
+
+        background: #ffffff;
+
+        color: #111827;
+
+        outline: none;
+    }
+
+    .campaign-search input:focus,
+    .campaign-filter select:focus {
+
+        border-color: #e31e24;
+
+        box-shadow:
+            0 0 0 3px
+            rgba(227, 30, 36, 0.08);
+    }
+
+    .campaign-filter {
+        min-width: 170px;
+    }
+
+    .campaign-filter-button {
+
+        min-height: 42px;
+
+        padding: 0 18px;
+
+        border: 0;
+
+        border-radius: 10px;
+
+        background: #e31e24;
+
+        color: #ffffff;
+
+        cursor: pointer;
+
+        font-weight: 700;
+    }
+
+    .campaign-clear-button {
+
+        min-height: 42px;
+
+        display: inline-flex;
+
+        align-items: center;
+
+        padding: 0 15px;
+
+        border-radius: 10px;
+
+        background: #f3f4f6;
+
+        color: #374151;
+
+        text-decoration: none;
+
+        font-size: 13px;
+
+        font-weight: 700;
+    }
+
+    .campaign-name-cell {
+        min-width: 230px;
+    }
+
+    .campaign-name-cell strong {
+
+        display: block;
+
+        color: #111827;
+    }
+
+    .campaign-name-cell small {
+
+        display: block;
+
+        margin-top: 4px;
+
+        color: #6b7280;
+
+        line-height: 1.5;
+    }
+
+    .campaign-brand-cell strong {
+
+        display: block;
+
+        color: #111827;
+    }
+
+    .campaign-brand-cell small {
+
+        display: block;
+
+        margin-top: 4px;
+
+        color: #6b7280;
+    }
+
+    .campaign-status {
+
+        display: inline-flex;
+
+        padding: 5px 10px;
+
+        border-radius: 999px;
+
+        font-size: 12px;
+
+        font-weight: 700;
+    }
+
+    .campaign-draft {
+
+        background: #f3f4f6;
+
+        color: #4b5563;
+    }
+
+    .campaign-active {
+
+        background: #ecfdf5;
+
+        color: #047857;
+    }
+
+    .campaign-paused {
+
+        background: #fff7ed;
+
+        color: #c2410c;
+    }
+
+    .campaign-completed {
+
+        background: #eff6ff;
+
+        color: #1d4ed8;
+    }
+
+    .campaign-other {
+
+        background: #f3f4f6;
+
+        color: #4b5563;
+    }
+
+    .campaign-view-button {
+
+        display: inline-flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        min-height: 34px;
+
+        padding: 0 12px;
+
+        border-radius: 8px;
+
+        background: #f3f4f6;
+
+        color: #374151;
+
+        text-decoration: none;
+
+        font-size: 12px;
+
+        font-weight: 700;
+    }
+
+    .campaign-view-button:hover {
+        background: #e5e7eb;
+    }
+
+    @media (max-width: 750px) {
+
+        .campaign-search {
+            min-width: 100%;
+        }
+
+        .campaign-filter {
+            min-width: 100%;
+        }
+
+        .campaign-filter-button,
+        .campaign-clear-button,
+        .campaign-primary-button {
+            width: 100%;
+            justify-content: center;
+        }
+
+    }
+
+</style>
+
+{% endblock %}
+
+
+{% block content %}
+
+<div class="admin-campaigns-page">
+
+
+    <!-- =====================================================
+         HEADER
+         ===================================================== -->
+
+    <div class="admin-page-header">
+
+        <div>
+
+            <div class="admin-breadcrumb">
+
+                <a href="{{ url_for('admin_dashboard') }}">
+                    Administration
+                </a>
+
+                <span>/</span>
+
+                <span>Campaigns</span>
+
+            </div>
+
+            <h1>
+                Campaign Management
+            </h1>
+
+            <p>
+                Create, monitor and manage campaigns across client brands.
+            </p>
+
+        </div>
+
+
+        <div class="campaign-header-actions">
+
+            <a
+                href="{{ url_for('admin_create_campaign') }}"
+                class="campaign-primary-button"
+            >
+                + Create Campaign
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         STATS
+         ===================================================== -->
+
+    <div class="admin-stats-grid">
+
+        <div class="admin-stat-card">
+
+            <div class="admin-stat-label">
+                Total Campaigns
+            </div>
+
+            <div class="admin-stat-value">
+                {{ total_campaigns }}
+            </div>
+
+            <div class="admin-stat-meta">
+                All campaigns
+            </div>
+
+        </div>
+
+
+        <div class="admin-stat-card">
+
+            <div class="admin-stat-label">
+                Active
+            </div>
+
+            <div class="admin-stat-value">
+                {{ active_campaigns }}
+            </div>
+
+            <div class="admin-stat-meta">
+                Running campaigns
+            </div>
+
+        </div>
+
+
+        <div class="admin-stat-card">
+
+            <div class="admin-stat-label">
+                Draft
+            </div>
+
+            <div class="admin-stat-value">
+                {{ draft_campaigns }}
+            </div>
+
+            <div class="admin-stat-meta">
+                Not started
+            </div>
+
+        </div>
+
+
+        <div class="admin-stat-card">
+
+            <div class="admin-stat-label">
+                Completed
+            </div>
+
+            <div class="admin-stat-value">
+                {{ completed_campaigns }}
+            </div>
+
+            <div class="admin-stat-meta">
+                Finished campaigns
+            </div>
+
+        </div>
+
+
+        <div class="admin-stat-card">
+
+            <div class="admin-stat-label">
+                Campaign Posts
+            </div>
+
+            <div class="admin-stat-value">
+                {{ total_campaign_posts }}
+            </div>
+
+            <div class="admin-stat-meta">
+                Linked content
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         FILTERS
+         ===================================================== -->
+
+    <div class="admin-card">
+
+        <form
+            method="GET"
+            action="{{ url_for('admin_campaigns') }}"
+            class="campaign-toolbar"
+        >
+
+            <div class="campaign-search">
+
+                <input
+                    type="search"
+                    name="search"
+                    value="{{ search }}"
+                    placeholder="Search campaigns, brands or creators..."
+                >
+
+            </div>
+
+
+            <div class="campaign-filter">
+
+                <select name="brand_id">
+
+                    <option value="">
+                        All Brands
+                    </option>
+
+                    {% for brand in brands_for_filter %}
+
+                        <option
+                            value="{{ brand.id }}"
+                            {% if brand_id == brand.id|string %}
+                                selected
+                            {% endif %}
+                        >
+                            {{ brand.name }}
+                        </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <div class="campaign-filter">
+
+                <select name="status">
+
+                    <option value="">
+                        All Statuses
+                    </option>
+
+                    <option
+                        value="draft"
+                        {% if status == "draft" %}
+                            selected
+                        {% endif %}
+                    >
+                        Draft
+                    </option>
+
+                    <option
+                        value="active"
+                        {% if status == "active" %}
+                            selected
+                        {% endif %}
+                    >
+                        Active
+                    </option>
+
+                    <option
+                        value="paused"
+                        {% if status == "paused" %}
+                            selected
+                        {% endif %}
+                    >
+                        Paused
+                    </option>
+
+                    <option
+                        value="completed"
+                        {% if status == "completed" %}
+                            selected
+                        {% endif %}
+                    >
+                        Completed
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <button
+                type="submit"
+                class="campaign-filter-button"
+            >
+                Filter
+            </button>
+
+
+            {% if search or brand_id or status %}
+
+                <a
+                    href="{{ url_for('admin_campaigns') }}"
+                    class="campaign-clear-button"
+                >
+                    Clear
+                </a>
+
+            {% endif %}
+
+        </form>
+
+    </div>
+
+
+    <!-- =====================================================
+         CAMPAIGNS TABLE
+         ===================================================== -->
+
+    <div class="admin-card">
+
+        <div class="admin-card-header">
+
+            <div>
+
+                <h2>
+                    Campaigns
+                </h2>
+
+                <p>
+                    {{ campaigns|length }} campaign(s) currently shown.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        {% if campaigns %}
+
+            <div class="admin-table-wrapper">
+
+                <table class="admin-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Campaign
+                            </th>
+
+                            <th>
+                                Brand
+                            </th>
+
+                            <th>
+                                Goal
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+
+                            <th>
+                                Posts
+                            </th>
+
+                            <th>
+                                Dates
+                            </th>
+
+                            <th>
+                                Action
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for campaign in campaigns %}
+
+                            <tr>
+
+                                <td>
+
+                                    <div class="campaign-name-cell">
+
+                                        <strong>
+                                            {{ campaign.name }}
+                                        </strong>
+
+                                        <small>
+
+                                            {% if campaign.description %}
+
+                                                {{ campaign.description[:100] }}
+
+                                                {% if campaign.description|length > 100 %}
+                                                    ...
+                                                {% endif %}
+
+                                            {% else %}
+
+                                                No description.
+
+                                            {% endif %}
+
+                                        </small>
+
+                                    </div>
+
+                                </td>
+
+
+                                <td>
+
+                                    <div class="campaign-brand-cell">
+
+                                        <strong>
+                                            {{ campaign.brand_name or "Unknown Brand" }}
+                                        </strong>
+
+                                        <small>
+
+                                            {% if campaign.brand_is_active %}
+                                                Active
+                                            {% else %}
+                                                Inactive
+                                            {% endif %}
+
+                                        </small>
+
+                                    </div>
+
+                                </td>
+
+
+                                <td>
+
+                                    {% if campaign.goal_type %}
+
+                                        <strong>
+                                            {{ campaign.goal_type }}
+                                        </strong>
+
+                                        {% if campaign.target_value is not none %}
+
+                                            <small>
+                                                Target:
+                                                {{ campaign.target_value }}
+                                            </small>
+
+                                        {% endif %}
+
+                                    {% else %}
+
+                                        —
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <td>
+
+                                    {% set campaign_status =
+                                        (campaign.status or "unknown")|lower
+                                    %}
+
+
+                                    {% if campaign_status == "draft" %}
+
+                                        <span class="campaign-status campaign-draft">
+                                            Draft
+                                        </span>
+
+                                    {% elif campaign_status == "active" %}
+
+                                        <span class="campaign-status campaign-active">
+                                            Active
+                                        </span>
+
+                                    {% elif campaign_status == "paused" %}
+
+                                        <span class="campaign-status campaign-paused">
+                                            Paused
+                                        </span>
+
+                                    {% elif campaign_status == "completed" %}
+
+                                        <span class="campaign-status campaign-completed">
+                                            Completed
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="campaign-status campaign-other">
+                                            {{ campaign.status or "Unknown" }}
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <td>
+
+                                    <strong>
+                                        {{ campaign.posts_count }}
+                                    </strong>
+
+                                    <small style="display:block;color:#6b7280;">
+
+                                        {{ campaign.published_posts_count }}
+                                        published
+
+                                        ·
+
+                                        {{ campaign.scheduled_posts_count }}
+                                        scheduled
+
+                                    </small>
+
+                                </td>
+
+
+                                <td>
+
+                                    {% if campaign.start_date %}
+
+                                        {{ campaign.start_date.strftime(
+                                            '%b %d, %Y'
+                                        ) }}
+
+                                    {% else %}
+
+                                        No start date
+
+                                    {% endif %}
+
+                                    <br>
+
+                                    <small style="color:#6b7280;">
+
+                                        {% if campaign.end_date %}
+
+                                            to
+                                            {{ campaign.end_date.strftime(
+                                                '%b %d, %Y'
+                                            ) }}
+
+                                        {% else %}
+
+                                            No end date
+
+                                        {% endif %}
+
+                                    </small>
+
+                                </td>
+
+
+                                <td>
+
+                                    <a
+                                        href="{{ url_for(
+                                            'admin_campaign_details',
+                                            campaign_id=campaign.id
+                                        ) }}"
+                                        class="campaign-view-button"
+                                    >
+                                        View
+                                    </a>
+
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        {% else %}
+
+            <div class="admin-empty-state">
+
+                <div class="admin-empty-icon">
+                    ◎
+                </div>
+
+                <h3>
+                    No campaigns found
+                </h3>
+
+                <p>
+                    Create your first campaign or change the filters.
+                </p>
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,822 @@
+{% extends "base.html" %}
+
+{% block title %}Team Management | RicozSocial{% endblock %}
+
+{% block content %}
+
+<div class="team-page">
+
+    <div class="team-header">
+
+        <div>
+            <span class="team-eyebrow">WORKSPACE</span>
+
+            <h1>Team Management</h1>
+
+            <p>
+                Manage team members, roles and brand access
+                from one central workspace.
+            </p>
+        </div>
+
+        <div class="team-header-actions">
+            <button
+                type="button"
+                class="team-primary-btn"
+                onclick="openTeamModal()"
+            >
+                + Add Team Member
+            </button>
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         STATISTICS
+    ====================================================== -->
+
+    <div class="team-stats">
+
+        <div class="team-stat-card">
+
+            <div class="team-stat-icon">
+                👥
+            </div>
+
+            <div>
+                <span>Total Members</span>
+                <strong>{{ total_members }}</strong>
+            </div>
+
+        </div>
+
+
+        <div class="team-stat-card">
+
+            <div class="team-stat-icon">
+                ✓
+            </div>
+
+            <div>
+                <span>Active Members</span>
+                <strong>{{ active_members }}</strong>
+            </div>
+
+        </div>
+
+
+        <div class="team-stat-card">
+
+            <div class="team-stat-icon">
+                ◷
+            </div>
+
+            <div>
+                <span>Inactive</span>
+                <strong>{{ inactive_members }}</strong>
+            </div>
+
+        </div>
+
+
+        <div class="team-stat-card">
+
+            <div class="team-stat-icon">
+                🛡
+            </div>
+
+            <div>
+                <span>Administrators</span>
+                <strong>{{ admin_members }}</strong>
+            </div>
+
+        </div>
+
+
+        <div class="team-stat-card">
+
+            <div class="team-stat-icon">
+                ◆
+            </div>
+
+            <div>
+                <span>Managers</span>
+                <strong>{{ manager_members }}</strong>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         ROLE INFORMATION
+    ====================================================== -->
+
+    <div class="team-role-panel">
+
+        <div class="team-role-panel-header">
+
+            <div>
+                <h2>Role-Based Access</h2>
+
+                <p>
+                    System roles determine what each team member
+                    can access across RicozSocial.
+                </p>
+            </div>
+
+        </div>
+
+
+        <div class="role-grid">
+
+            <div class="role-card role-admin">
+                <div class="role-badge">ADMIN</div>
+                <h3>Administrator</h3>
+                <p>
+                    Full system access including team,
+                    brands, settings and permissions.
+                </p>
+            </div>
+
+
+            <div class="role-card">
+                <div class="role-badge">MANAGER</div>
+                <h3>Manager</h3>
+                <p>
+                    Manages brands, team members,
+                    content, approvals and analytics.
+                </p>
+            </div>
+
+
+            <div class="role-card">
+                <div class="role-badge">PUBLISHER</div>
+                <h3>Publisher</h3>
+                <p>
+                    Creates, schedules and publishes
+                    social media content.
+                </p>
+            </div>
+
+
+            <div class="role-card">
+                <div class="role-badge">ANALYST</div>
+                <h3>Analyst</h3>
+                <p>
+                    Focused on analytics, reports
+                    and performance insights.
+                </p>
+            </div>
+
+
+            <div class="role-card">
+                <div class="role-badge">MEMBER</div>
+                <h3>Member</h3>
+                <p>
+                    Works with assigned content,
+                    brands and collaboration tasks.
+                </p>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         TEAM TABLE
+    ====================================================== -->
+
+    <div class="team-card">
+
+        <div class="team-card-header">
+
+            <div>
+                <h2>Team Members</h2>
+
+                <p>
+                    Manage roles, account status and
+                    brand assignments.
+                </p>
+            </div>
+
+            <div class="team-member-count">
+                {{ total_members }} members
+            </div>
+
+        </div>
+
+
+        <div class="team-table-wrapper">
+
+            <table class="team-table">
+
+                <thead>
+
+                    <tr>
+                        <th>Member</th>
+                        <th>System Role</th>
+                        <th>Status</th>
+                        <th>Brand Access</th>
+                        <th>Joined</th>
+                        <th>Actions</th>
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                {% for member in members %}
+
+                    <tr>
+
+                        <td>
+
+                            <div class="member-cell">
+
+                                <div class="member-avatar">
+                                    {{ member.name[:1]|upper }}
+                                </div>
+
+                                <div>
+
+                                    <strong>
+                                        {{ member.name }}
+                                    </strong>
+
+                                    <span>
+                                        {{ member.email }}
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+                        </td>
+
+
+                        <td>
+
+                            {% if member.role == "admin" %}
+
+                                <span class="role-pill admin">
+                                    Administrator
+                                </span>
+
+                            {% elif member.role == "manager" %}
+
+                                <span class="role-pill manager">
+                                    Manager
+                                </span>
+
+                            {% elif member.role == "publisher" %}
+
+                                <span class="role-pill publisher">
+                                    Publisher
+                                </span>
+
+                            {% elif member.role == "analyst" %}
+
+                                <span class="role-pill analyst">
+                                    Analyst
+                                </span>
+
+                            {% else %}
+
+                                <span class="role-pill member">
+                                    Member
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <td>
+
+                            {% if member.is_active %}
+
+                                <span class="status-pill active">
+                                    <span></span>
+                                    Active
+                                </span>
+
+                            {% else %}
+
+                                <span class="status-pill inactive">
+                                    <span></span>
+                                    Inactive
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <td>
+
+                            <a
+                                href="{{ url_for(
+                                    'team_member_brands',
+                                    user_id=member.id
+                                ) }}"
+                                class="brand-access-link"
+                            >
+                                Manage Access →
+                            </a>
+
+                        </td>
+
+
+                        <td>
+
+                            <span class="joined-date">
+                                {{ member.created_at.strftime('%b %d, %Y') if member.created_at else '—' }}
+                            </span>
+
+                        </td>
+
+
+                        <td>
+
+                            <div class="team-actions">
+
+                                {% if current_user.id != member.id %}
+
+                                    {% if member.role != "admin" or current_user.role == "admin" %}
+
+                                        <button
+                                            type="button"
+                                            class="action-btn"
+                                            onclick="openRoleModal(
+                                                {{ member.id }},
+                                                {{ member.name|tojson }},
+                                                {{ member.role|tojson }}
+                                            )"
+                                        >
+                                            Role
+                                        </button>
+
+                                    {% endif %}
+
+
+                                    <form
+                                        method="POST"
+                                        action="{{ url_for(
+                                            'toggle_team_member',
+                                            user_id=member.id
+                                        ) }}"
+                                    >
+
+                                        {% if member.is_active %}
+
+                                            <button
+                                                type="submit"
+                                                class="action-btn danger"
+                                                onclick="return confirm(
+                                                    'Deactivate {{ member.name }}?'
+                                                )"
+                                            >
+                                                Deactivate
+                                            </button>
+
+                                        {% else %}
+
+                                            <button
+                                                type="submit"
+                                                class="action-btn success"
+                                            >
+                                                Activate
+                                            </button>
+
+                                        {% endif %}
+
+                                    </form>
+
+                                {% else %}
+
+                                    <span class="self-label">
+                                        Your Account
+                                    </span>
+
+                                {% endif %}
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                {% else %}
+
+                    <tr>
+
+                        <td
+                            colspan="6"
+                            class="empty-team"
+                        >
+                            <div>
+                                <strong>No team members found.</strong>
+                                <span>
+                                    Add your first team member to get started.
+                                </span>
+                            </div>
+                        </td>
+
+                    </tr>
+
+                {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     ADD MEMBER MODAL
+========================================================= -->
+
+<div
+    id="teamMemberModal"
+    class="team-modal"
+>
+
+    <div
+        class="team-modal-backdrop"
+        onclick="closeTeamModal()"
+    ></div>
+
+
+    <div class="team-modal-box">
+
+        <div class="team-modal-header">
+
+            <div>
+                <span class="team-eyebrow">
+                    TEAM MANAGEMENT
+                </span>
+
+                <h2>Add Team Member</h2>
+
+                <p>
+                    Create a new RicozSocial account.
+                </p>
+            </div>
+
+            <button
+                type="button"
+                class="modal-close"
+                onclick="closeTeamModal()"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <form
+            method="POST"
+            action="{{ url_for('create_team_member') }}"
+            class="team-form"
+        >
+
+            <div class="form-grid">
+
+                <div class="form-group">
+
+                    <label>
+                        Full Name
+                    </label>
+
+                    <input
+                        type="text"
+                        name="name"
+                        placeholder="Enter full name"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>
+                        Email Address
+                    </label>
+
+                    <input
+                        type="email"
+                        name="email"
+                        placeholder="member@company.com"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>
+                        Temporary Password
+                    </label>
+
+                    <input
+                        type="password"
+                        name="password"
+                        minlength="8"
+                        placeholder="Minimum 8 characters"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>
+                        System Role
+                    </label>
+
+                    <select
+                        name="role"
+                        required
+                    >
+
+                        {% for role, label in system_roles.items() %}
+
+                            {% if current_user.role == "admin" or role in ["publisher", "analyst", "member"] %}
+
+                                <option
+                                    value="{{ role }}"
+                                >
+                                    {{ label }}
+                                </option>
+
+                            {% endif %}
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+            </div>
+
+
+            <div class="form-note">
+
+                <strong>Security:</strong>
+
+                Passwords are securely hashed and never stored
+                as plain text.
+
+            </div>
+
+
+            <div class="team-modal-footer">
+
+                <button
+                    type="button"
+                    class="team-secondary-btn"
+                    onclick="closeTeamModal()"
+                >
+                    Cancel
+                </button>
+
+                <button
+                    type="submit"
+                    class="team-primary-btn"
+                >
+                    Create Member
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     ROLE MODAL
+========================================================= -->
+
+<div
+    id="roleModal"
+    class="team-modal"
+>
+
+    <div
+        class="team-modal-backdrop"
+        onclick="closeRoleModal()"
+    ></div>
+
+
+    <div class="team-modal-box small">
+
+        <div class="team-modal-header">
+
+            <div>
+
+                <span class="team-eyebrow">
+                    ACCESS CONTROL
+                </span>
+
+                <h2>Change System Role</h2>
+
+                <p id="roleMemberName">
+                    Update team member permissions.
+                </p>
+
+            </div>
+
+            <button
+                type="button"
+                class="modal-close"
+                onclick="closeRoleModal()"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <form
+            id="roleForm"
+            method="POST"
+            class="team-form"
+        >
+
+            <div class="form-group">
+
+                <label>
+                    System Role
+                </label>
+
+                <select
+                    id="roleSelect"
+                    name="role"
+                    required
+                >
+
+                    {% for role, label in system_roles.items() %}
+
+                        {% if current_user.role == "admin" or role in ["publisher", "analyst", "member"] %}
+
+                            <option value="{{ role }}">
+                                {{ label }}
+                            </option>
+
+                        {% endif %}
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <div class="team-modal-footer">
+
+                <button
+                    type="button"
+                    class="team-secondary-btn"
+                    onclick="closeRoleModal()"
+                >
+                    Cancel
+                </button>
+
+                <button
+                    type="submit"
+                    class="team-primary-btn"
+                >
+                    Save Role
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<script>
+
+function openTeamModal() {
+    const modal = document.getElementById(
+        "teamMemberModal"
+    );
+
+    if (modal) {
+        modal.classList.add("open");
+        document.body.classList.add("modal-open");
+    }
+}
+
+
+function closeTeamModal() {
+    const modal = document.getElementById(
+        "teamMemberModal"
+    );
+
+    if (modal) {
+        modal.classList.remove("open");
+        document.body.classList.remove("modal-open");
+    }
+}
+
+
+function openRoleModal(userId, userName, currentRole) {
+
+    const modal = document.getElementById(
+        "roleModal"
+    );
+
+    const form = document.getElementById(
+        "roleForm"
+    );
+
+    const select = document.getElementById(
+        "roleSelect"
+    );
+
+    const nameElement = document.getElementById(
+        "roleMemberName"
+    );
+
+    if (!modal || !form || !select) {
+        return;
+    }
+
+    form.action =
+        "/team/members/" +
+        userId +
+        "/role";
+
+    select.value = currentRole;
+
+    if (nameElement) {
+        nameElement.textContent =
+            "Update the role for " +
+            userName +
+            ".";
+    }
+
+    modal.classList.add("open");
+
+    document.body.classList.add(
+        "modal-open"
+    );
+}
+
+
+function closeRoleModal() {
+
+    const modal = document.getElementById(
+        "roleModal"
+    );
+
+    if (modal) {
+
+        modal.classList.remove(
+            "open"
+        );
+
+        document.body.classList.remove(
+            "modal-open"
+        );
+    }
+}
+
+
+document.addEventListener(
+    "keydown",
+    function(event) {
+
+        if (event.key === "Escape") {
+
+            closeTeamModal();
+            closeRoleModal();
+
+        }
+
+    }
+);
+
+</script>
+
+{% endblock %}

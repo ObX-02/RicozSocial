@@ -1,0 +1,970 @@
+{% extends "base.html" %}
+
+{% block title %}
+Brand Details — RicozSocial
+{% endblock %}
+
+{% block extra_css %}
+
+<link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/admin.css') }}"
+>
+
+<style>
+
+    .brand-details-page {
+        max-width: 1500px;
+        margin: 0 auto;
+    }
+
+    .brand-details-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 24px;
+        flex-wrap: wrap;
+    }
+
+    .brand-heading {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .brand-large-logo {
+        width: 68px;
+        height: 68px;
+        border-radius: 16px;
+        background: #fff1f2;
+        color: #e31e24;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 25px;
+        font-weight: 800;
+        flex-shrink: 0;
+    }
+
+    .brand-heading h1 {
+        margin: 0;
+        font-size: 28px;
+        color: #111827;
+    }
+
+    .brand-heading p {
+        margin: 5px 0 0;
+        color: #6b7280;
+    }
+
+    .brand-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .brand-action {
+        min-height: 40px;
+        padding: 0 15px;
+        border-radius: 9px;
+        border: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+    .brand-action-secondary {
+        background: #f3f4f6;
+        color: #374151;
+    }
+
+    .brand-action-secondary:hover {
+        background: #e5e7eb;
+    }
+
+    .brand-action-danger {
+        background: #fff1f2;
+        color: #be123c;
+    }
+
+    .brand-action-danger:hover {
+        background: #ffe4e6;
+    }
+
+    .brand-action-success {
+        background: #ecfdf5;
+        color: #047857;
+    }
+
+    .brand-action-success:hover {
+        background: #d1fae5;
+    }
+
+    .brand-status-active,
+    .brand-status-inactive {
+        display: inline-flex;
+        padding: 5px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .brand-status-active {
+        background: #ecfdf5;
+        color: #047857;
+    }
+
+    .brand-status-inactive {
+        background: #fff1f2;
+        color: #be123c;
+    }
+
+    .brand-info-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 18px;
+    }
+
+    .brand-info-item {
+        padding: 16px;
+        border: 1px solid #eef0f2;
+        border-radius: 12px;
+        background: #fafafa;
+    }
+
+    .brand-info-label {
+        display: block;
+        color: #6b7280;
+        font-size: 12px;
+        margin-bottom: 7px;
+        font-weight: 600;
+    }
+
+    .brand-info-item strong {
+        color: #111827;
+        font-size: 14px;
+        word-break: break-word;
+    }
+
+    .brand-description {
+        margin-top: 18px;
+        color: #4b5563;
+        line-height: 1.7;
+    }
+
+    .brand-description strong {
+        display: block;
+        color: #111827;
+        margin-bottom: 6px;
+    }
+
+    .status-dot {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .admin-table-subtext {
+        margin-top: 4px;
+        color: #6b7280;
+        font-size: 12px;
+    }
+
+    @media (max-width: 1000px) {
+        .brand-info-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 650px) {
+        .brand-info-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .brand-heading {
+            align-items: flex-start;
+        }
+
+        .brand-large-logo {
+            width: 55px;
+            height: 55px;
+        }
+
+        .brand-actions {
+            width: 100%;
+        }
+
+        .brand-action {
+            width: 100%;
+        }
+    }
+
+</style>
+
+{% endblock %}
+
+
+{% block content %}
+
+<div class="brand-details-page">
+
+    <!-- =====================================================
+         HEADER
+    ====================================================== -->
+
+    <div class="admin-page-header">
+
+        <div class="brand-details-header">
+
+            <div class="brand-heading">
+
+                <div class="brand-large-logo">
+
+                    {% if brand.name %}
+                        {{ brand.name[0]|upper }}
+                    {% else %}
+                        B
+                    {% endif %}
+
+                </div>
+
+
+                <div>
+
+                    <div class="admin-breadcrumb">
+
+                        <a href="{{ url_for('admin_dashboard') }}">
+                            Administration
+                        </a>
+
+                        <span>/</span>
+
+                        <a href="{{ url_for('admin_brands') }}">
+                            Brands
+                        </a>
+
+                        <span>/</span>
+
+                        <span>Details</span>
+
+                    </div>
+
+                    <h1>
+                        {{ brand.name }}
+                    </h1>
+
+                    <p>
+                        {% if brand.website_url %}
+                            {{ brand.website_url }}
+                        {% else %}
+                            Client brand workspace
+                        {% endif %}
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="brand-actions">
+
+                <a
+                    href="{{ url_for('admin_brands') }}"
+                    class="brand-action brand-action-secondary"
+                >
+                    ← Brands
+                </a>
+
+
+                {% if brand.is_active %}
+
+                    <form
+                        method="POST"
+                        action="{{ url_for('admin_toggle_brand_status', brand_id=brand.id) }}"
+                        onsubmit="return confirm('Deactivate this brand?');"
+                    >
+
+                        <button
+                            type="submit"
+                            class="brand-action brand-action-danger"
+                        >
+                            Deactivate
+                        </button>
+
+                    </form>
+
+                {% else %}
+
+                    <form
+                        method="POST"
+                        action="{{ url_for('admin_toggle_brand_status', brand_id=brand.id) }}"
+                        onsubmit="return confirm('Activate this brand?');"
+                    >
+
+                        <button
+                            type="submit"
+                            class="brand-action brand-action-success"
+                        >
+                            Activate
+                        </button>
+
+                    </form>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         BRAND SUMMARY
+    ====================================================== -->
+
+    <div class="admin-card">
+
+        <div class="brand-info-grid">
+
+            <div class="brand-info-item">
+
+                <span class="brand-info-label">
+                    Owner
+                </span>
+
+                <strong>
+                    {{ brand.owner_name or "Unknown" }}
+                </strong>
+
+            </div>
+
+
+            <div class="brand-info-item">
+
+                <span class="brand-info-label">
+                    Owner Email
+                </span>
+
+                <strong>
+                    {{ brand.owner_email or "—" }}
+                </strong>
+
+            </div>
+
+
+            <div class="brand-info-item">
+
+                <span class="brand-info-label">
+                    Status
+                </span>
+
+                <strong>
+
+                    {% if brand.is_active %}
+
+                        <span class="brand-status-active">
+                            Active
+                        </span>
+
+                    {% else %}
+
+                        <span class="brand-status-inactive">
+                            Inactive
+                        </span>
+
+                    {% endif %}
+
+                </strong>
+
+            </div>
+
+
+            <div class="brand-info-item">
+
+                <span class="brand-info-label">
+                    Created
+                </span>
+
+                <strong>
+                    {{ brand.created_at.strftime("%b %d, %Y") if brand.created_at else "—" }}
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        {% if brand.description %}
+
+            <div class="brand-description">
+
+                <strong>
+                    Description
+                </strong>
+
+                {{ brand.description }}
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+
+    <!-- =====================================================
+         BRAND STATS
+    ====================================================== -->
+
+    <div class="admin-stats-grid">
+
+        <div class="admin-stat-card">
+
+            <div class="admin-stat-label">
+                Total Posts
+            </div>
+
+            <div class="admin-stat-value">
+                {{ total_brand_posts }}
+            </div>
+
+            <div class="admin-stat-meta">
+                All content
+            </div>
+
+        </div>
+
+
+        <div class="admin-stat-card">
+
+            <div class="admin-stat-label">
+                Published
+            </div>
+
+            <div class="admin-stat-value">
+                {{ published_brand_posts }}
+            </div>
+
+            <div class="admin-stat-meta">
+                Published posts
+            </div>
+
+        </div>
+
+
+        <div class="admin-stat-card">
+
+            <div class="admin-stat-label">
+                Scheduled
+            </div>
+
+            <div class="admin-stat-value">
+                {{ scheduled_brand_posts }}
+            </div>
+
+            <div class="admin-stat-meta">
+                Upcoming posts
+            </div>
+
+        </div>
+
+
+        <div class="admin-stat-card">
+
+            <div class="admin-stat-label">
+                Drafts
+            </div>
+
+            <div class="admin-stat-value">
+                {{ draft_brand_posts }}
+            </div>
+
+            <div class="admin-stat-meta">
+                Draft content
+            </div>
+
+        </div>
+
+
+        <div class="admin-stat-card">
+
+            <div class="admin-stat-label">
+                Social Accounts
+            </div>
+
+            <div class="admin-stat-value">
+                {{ brand_social_accounts|length }}
+            </div>
+
+            <div class="admin-stat-meta">
+                Connected profiles
+            </div>
+
+        </div>
+
+
+        <div class="admin-stat-card">
+
+            <div class="admin-stat-label">
+                Team Members
+            </div>
+
+            <div class="admin-stat-value">
+                {{ brand_members_list|length }}
+            </div>
+
+            <div class="admin-stat-meta">
+                Workspace members
+            </div>
+
+        </div>
+
+
+        <div class="admin-stat-card">
+
+            <div class="admin-stat-label">
+                Community
+            </div>
+
+            <div class="admin-stat-value">
+                {{ pending_community }}
+            </div>
+
+            <div class="admin-stat-meta">
+                Pending items
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         SOCIAL ACCOUNTS
+    ====================================================== -->
+
+    <div class="admin-card">
+
+        <div class="admin-card-header">
+
+            <div>
+
+                <h2>
+                    Social Accounts
+                </h2>
+
+                <p>
+                    Social profiles connected to this brand.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        {% if brand_social_accounts %}
+
+            <div class="admin-table-wrapper">
+
+                <table class="admin-table">
+
+                    <thead>
+
+                        <tr>
+                            <th>Platform</th>
+                            <th>Account</th>
+                            <th>Username</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        {% for account in brand_social_accounts %}
+
+                            <tr>
+
+                                <td>
+                                    <strong>
+                                        {{ account.platform }}
+                                    </strong>
+                                </td>
+
+                                <td>
+                                    {{ account.account_name or "—" }}
+                                </td>
+
+                                <td>
+                                    {{ account.username or "—" }}
+                                </td>
+
+                                <td>
+
+                                    {% if account.is_connected %}
+
+                                        <span class="brand-status-active">
+                                            Connected
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="brand-status-inactive">
+                                            Disconnected
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+                                <td>
+                                    {{ account.created_at.strftime("%b %d, %Y") if account.created_at else "—" }}
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        {% else %}
+
+            <div class="admin-empty-state">
+
+                <strong>
+                    No social accounts
+                </strong>
+
+                <p>
+                    No social profiles have been connected to this brand.
+                </p>
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+
+    <!-- =====================================================
+         MEMBERS
+    ====================================================== -->
+
+    <div class="admin-card">
+
+        <div class="admin-card-header">
+
+            <div>
+
+                <h2>
+                    Brand Members
+                </h2>
+
+                <p>
+                    Users who have access to this workspace.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        {% if brand_members_list %}
+
+            <div class="admin-table-wrapper">
+
+                <table class="admin-table">
+
+                    <thead>
+
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Joined</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        {% for member in brand_members_list %}
+
+                            <tr>
+
+                                <td>
+                                    <strong>
+                                        {{ member.name }}
+                                    </strong>
+                                </td>
+
+                                <td>
+                                    {{ member.email }}
+                                </td>
+
+                                <td>
+                                    {{ member.role|capitalize }}
+                                </td>
+
+                                <td>
+
+                                    {% if member.is_active %}
+
+                                        <span class="brand-status-active">
+                                            Active
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="brand-status-inactive">
+                                            Inactive
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+                                <td>
+                                    {{ member.created_at.strftime("%b %d, %Y") if member.created_at else "—" }}
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        {% else %}
+
+            <div class="admin-empty-state">
+
+                <strong>
+                    No members
+                </strong>
+
+                <p>
+                    This brand does not have additional members.
+                </p>
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+
+    <!-- =====================================================
+         RECENT POSTS
+    ====================================================== -->
+
+    <div class="admin-card">
+
+        <div class="admin-card-header">
+
+            <div>
+
+                <h2>
+                    Recent Posts
+                </h2>
+
+                <p>
+                    Latest content published or created for this brand.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        {% if brand_posts %}
+
+            <div class="admin-table-wrapper">
+
+                <table class="admin-table">
+
+                    <thead>
+
+                        <tr>
+                            <th>Title</th>
+                            <th>Creator</th>
+                            <th>Status</th>
+                            <th>Scheduled</th>
+                            <th>Created</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        {% for post in brand_posts %}
+
+                            <tr>
+
+                                <td>
+
+                                    <strong>
+                                        {{ post.title or "Untitled Post" }}
+                                    </strong>
+
+                                    {% if post.content %}
+
+                                        <div class="admin-table-subtext">
+
+                                            {{ post.content[:100] }}
+
+                                            {% if post.content|length > 100 %}
+                                                ...
+                                            {% endif %}
+
+                                        </div>
+
+                                    {% endif %}
+
+                                </td>
+
+                                <td>
+                                    {{ post.creator_name or "Unknown" }}
+                                </td>
+
+                                <td>
+
+                                    <span class="admin-status-badge status-{{ post.status|lower|replace(' ', '-') }}">
+                                        {{ post.status|capitalize }}
+                                    </span>
+
+                                </td>
+
+                                <td>
+                                    {{ post.scheduled_at.strftime("%b %d, %Y %H:%M") if post.scheduled_at else "—" }}
+                                </td>
+
+                                <td>
+                                    {{ post.created_at.strftime("%b %d, %Y") if post.created_at else "—" }}
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        {% else %}
+
+            <div class="admin-empty-state">
+
+                <strong>
+                    No posts
+                </strong>
+
+                <p>
+                    This brand does not have any posts yet.
+                </p>
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+
+    <!-- =====================================================
+         ACTIVITY
+    ====================================================== -->
+
+    <div class="admin-card">
+
+        <div class="admin-card-header">
+
+            <div>
+
+                <h2>
+                    Brand Activity
+                </h2>
+
+                <p>
+                    Recent actions related to this brand.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        {% if brand_activity %}
+
+            <div class="admin-activity-list">
+
+                {% for activity in brand_activity %}
+
+                    <div class="admin-activity-item">
+
+                        <div class="admin-activity-dot"></div>
+
+                        <div class="admin-activity-content">
+
+                            <strong>
+                                {{ activity.action|replace('_', ' ')|capitalize }}
+                            </strong>
+
+                            <p>
+                                {{ activity.description or "No description available." }}
+                            </p>
+
+                            <small>
+
+                                {{ activity.user_name or "System" }}
+
+                                ·
+
+                                {{ activity.created_at.strftime("%b %d, %Y %H:%M") if activity.created_at else "—" }}
+
+                            </small>
+
+                        </div>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        {% else %}
+
+            <div class="admin-empty-state">
+
+                <strong>
+                    No activity
+                </strong>
+
+                <p>
+                    No activity has been recorded for this brand.
+                </p>
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+{% endblock %}

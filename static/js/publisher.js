@@ -9,19 +9,32 @@ document.addEventListener("DOMContentLoaded", () => {
        ELEMENTS
     ===================================================== */
 
-    const createModal = document.getElementById("createPostModal");
-    const detailsModal = document.getElementById("postDetailsModal");
+    const createModal =
+        document.getElementById("createPostModal");
 
-    const openCreateBtn = document.getElementById("openCreatePost");
-    const closeCreateBtn = document.getElementById("closeCreatePost");
+    const detailsModal =
+        document.getElementById("postDetailsModal");
 
-    const closeDetailsBtn = document.getElementById("closePostDetails");
+    const openCreateBtn =
+        document.getElementById("openCreatePost");
 
-    const brandSelect = document.getElementById("publisherBrand");
-    const statusSelect = document.getElementById("publisherStatus");
-    const scheduleField = document.getElementById("scheduleField");
+    const closeCreateBtn =
+        document.getElementById("closeCreatePost");
 
-    const detailsContent = document.getElementById("postDetailsContent");
+    const closeDetailsBtn =
+        document.getElementById("closePostDetails");
+
+    const brandSelect =
+        document.getElementById("publisherBrand");
+
+    const statusSelect =
+        document.getElementById("publisherStatus");
+
+    const scheduleField =
+        document.getElementById("scheduleField");
+
+    const detailsContent =
+        document.getElementById("postDetailsContent");
 
 
     /* =====================================================
@@ -35,6 +48,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         modal.classList.add("active");
+
         document.body.style.overflow = "hidden";
     }
 
@@ -53,6 +67,7 @@ document.addEventListener("DOMContentLoaded", () => {
         ) {
             document.body.style.overflow = "";
         }
+
     }
 
 
@@ -60,24 +75,64 @@ document.addEventListener("DOMContentLoaded", () => {
        CREATE POST MODAL
     ===================================================== */
 
-    if (openCreateBtn) {
+    function openCreatePostModal() {
 
-        openCreateBtn.addEventListener("click", () => {
-
-            openModal(createModal);
-
-        });
+        openModal(createModal);
 
     }
 
 
+    function closeCreatePostModal() {
+
+        closeModal(createModal);
+
+    }
+
+
+    /*
+       Make functions globally available because
+       publisher.html uses onclick="..."
+    */
+
+    window.openCreatePostModal =
+        openCreatePostModal;
+
+    window.closeCreatePostModal =
+        closeCreatePostModal;
+
+
+    /* =====================================================
+       OPEN CREATE BUTTON
+    ===================================================== */
+
+    if (openCreateBtn) {
+
+        openCreateBtn.addEventListener(
+            "click",
+            () => {
+
+                openCreatePostModal();
+
+            }
+        );
+
+    }
+
+
+    /* =====================================================
+       CLOSE CREATE BUTTON
+    ===================================================== */
+
     if (closeCreateBtn) {
 
-        closeCreateBtn.addEventListener("click", () => {
+        closeCreateBtn.addEventListener(
+            "click",
+            () => {
 
-            closeModal(createModal);
+                closeCreatePostModal();
 
-        });
+            }
+        );
 
     }
 
@@ -86,13 +141,27 @@ document.addEventListener("DOMContentLoaded", () => {
        DETAILS MODAL
     ===================================================== */
 
+    function closePostDetails() {
+
+        closeModal(detailsModal);
+
+    }
+
+
+    window.closePostDetails =
+        closePostDetails;
+
+
     if (closeDetailsBtn) {
 
-        closeDetailsBtn.addEventListener("click", () => {
+        closeDetailsBtn.addEventListener(
+            "click",
+            () => {
 
-            closeModal(detailsModal);
+                closePostDetails();
 
-        });
+            }
+        );
 
     }
 
@@ -101,39 +170,53 @@ document.addEventListener("DOMContentLoaded", () => {
        CLOSE WHEN CLICKING OUTSIDE
     ===================================================== */
 
-    [createModal, detailsModal].forEach((modal) => {
+    [createModal, detailsModal].forEach(
+        (modal) => {
 
-        if (!modal) {
-            return;
-        }
-
-        modal.addEventListener("click", (event) => {
-
-            if (event.target === modal) {
-
-                closeModal(modal);
-
+            if (!modal) {
+                return;
             }
 
-        });
+            modal.addEventListener(
+                "click",
+                (event) => {
 
-    });
+                    if (
+                        event.target === modal ||
+                        event.target.classList.contains(
+                            "publisher-modal-overlay"
+                        )
+                    ) {
+
+                        closeModal(modal);
+
+                    }
+
+                }
+            );
+
+        }
+    );
 
 
     /* =====================================================
        ESCAPE KEY
     ===================================================== */
 
-    document.addEventListener("keydown", (event) => {
+    document.addEventListener(
+        "keydown",
+        (event) => {
 
-        if (event.key !== "Escape") {
-            return;
+            if (event.key !== "Escape") {
+                return;
+            }
+
+            closeModal(createModal);
+
+            closeModal(detailsModal);
+
         }
-
-        closeModal(createModal);
-        closeModal(detailsModal);
-
-    });
+    );
 
 
     /* =====================================================
@@ -146,7 +229,9 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        const status = statusSelect.value;
+        const status =
+            statusSelect.value;
+
 
         if (status === "scheduled") {
 
@@ -188,6 +273,135 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     /* =====================================================
+       AI → PUBLISHER
+    ===================================================== */
+
+    function loadAIContentIntoPublisher() {
+
+        const aiContent =
+            localStorage.getItem(
+                "ricoz_ai_generated_content"
+            );
+
+        if (!aiContent) {
+            return false;
+        }
+
+
+        const contentField =
+            document.getElementById(
+                "publisherContent"
+            );
+
+
+        if (!contentField) {
+            return false;
+        }
+
+
+        contentField.value =
+            aiContent;
+
+
+        contentField.dispatchEvent(
+            new Event(
+                "input",
+                {
+                    bubbles: true
+                }
+            )
+        );
+
+
+        contentField.focus();
+
+
+        const status =
+            document.getElementById(
+                "publisherAIStatus"
+            );
+
+
+        if (status) {
+
+            status.style.display =
+                "block";
+
+        }
+
+
+        /*
+           Remove the saved content after
+           successfully loading it.
+
+           This prevents the same AI content
+           from appearing again on a later
+           manual Create Post.
+        */
+
+        localStorage.removeItem(
+            "ricoz_ai_generated_content"
+        );
+
+
+        return true;
+
+    }
+
+
+    /* =====================================================
+       AUTO OPEN CREATE POST FROM AI
+    ===================================================== */
+
+    function handleAIUseInPost() {
+
+        const aiContent =
+            localStorage.getItem(
+                "ricoz_ai_generated_content"
+            );
+
+
+        if (!aiContent) {
+            return;
+        }
+
+
+        /*
+           Give the page a moment to finish
+           rendering the modal.
+        */
+
+        setTimeout(
+            () => {
+
+                const opened =
+                    openCreatePostModal();
+
+
+                /*
+                   openCreatePostModal() does not
+                   return anything, so directly
+                   load the AI content.
+                */
+
+                loadAIContentIntoPublisher();
+
+            },
+            250
+        );
+
+    }
+
+
+    /*
+       Check whether the user arrived from
+       Ricoz AI.
+    */
+
+    handleAIUseInPost();
+
+
+    /* =====================================================
        LOAD POST DETAILS
     ===================================================== */
 
@@ -196,6 +410,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!detailsContent) {
             return;
         }
+
 
         detailsContent.innerHTML = `
             <div style="
@@ -207,28 +422,38 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
         `;
 
+
         openModal(detailsModal);
+
 
         try {
 
-            const response = await fetch(
-                `/publisher/${postId}/details`,
-                {
-                    headers: {
-                        "Accept": "application/json"
+            const response =
+                await fetch(
+                    `/publisher/${postId}/details`,
+                    {
+                        headers: {
+                            "Accept": "application/json"
+                        }
                     }
-                }
-            );
+                );
+
 
             if (!response.ok) {
+
                 throw new Error(
                     `Request failed: ${response.status}`
                 );
+
             }
 
-            const data = await response.json();
+
+            const data =
+                await response.json();
+
 
             renderPostDetails(data);
+
 
         } catch (error) {
 
@@ -236,6 +461,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 "Unable to load post details:",
                 error
             );
+
 
             detailsContent.innerHTML = `
                 <div style="
@@ -254,97 +480,126 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     /* =====================================================
+       GLOBAL VIEW POST DETAILS
+    ===================================================== */
+
+    window.viewPostDetails =
+        loadPostDetails;
+
+
+    /* =====================================================
        RENDER DETAILS
     ===================================================== */
 
     function renderPostDetails(data) {
 
-        const post = data.post || {};
-        const platforms = data.platforms || [];
+        const post =
+            data.post || {};
+
+        const platforms =
+            data.platforms || [];
+
 
         const statusClass =
             `publisher-status publisher-status-${escapeHtml(
                 post.status || "draft"
             )}`;
 
+
         let platformHtml = "";
+
 
         if (platforms.length) {
 
-            platformHtml = platforms.map((item) => {
+            platformHtml =
+                platforms.map(
+                    (item) => {
 
-                return `
-                    <div class="publisher-platform-detail">
+                        return `
+                            <div class="publisher-platform-detail">
 
-                        <h4>
-                            ${escapeHtml(
-                                item.platform || "Platform"
-                            )}
+                                <h4>
 
-                            ${
-                                item.account_name
-                                    ? ` — ${escapeHtml(
+                                    ${escapeHtml(
+                                        item.platform ||
+                                        "Platform"
+                                    )}
+
+                                    ${
                                         item.account_name
-                                    )}`
-                                    : ""
-                            }
-                        </h4>
+                                            ? ` — ${escapeHtml(
+                                                item.account_name
+                                            )}`
+                                            : ""
+                                    }
 
-                        <div class="publisher-detail-row">
+                                </h4>
 
-                            <div class="publisher-detail-label">
-                                Username
-                            </div>
 
-                            <div class="publisher-detail-value">
-                                ${escapeHtml(
-                                    item.username || "—"
-                                )}
-                            </div>
+                                <div class="publisher-detail-row">
 
-                        </div>
+                                    <div class="publisher-detail-label">
+                                        Username
+                                    </div>
 
-                        <div class="publisher-detail-row">
+                                    <div class="publisher-detail-value">
 
-                            <div class="publisher-detail-label">
-                                Platform Status
-                            </div>
-
-                            <div class="publisher-detail-value">
-                                ${escapeHtml(
-                                    item.platform_status || "pending"
-                                )}
-                            </div>
-
-                        </div>
-
-                        ${
-                            item.error_message
-                                ? `
-                                    <div class="publisher-detail-row">
-
-                                        <div class="publisher-detail-label">
-                                            Error
-                                        </div>
-
-                                        <div
-                                            class="publisher-detail-value"
-                                            style="color:#c62828;"
-                                        >
-                                            ${escapeHtml(
-                                                item.error_message
-                                            )}
-                                        </div>
+                                        ${escapeHtml(
+                                            item.username ||
+                                            "—"
+                                        )}
 
                                     </div>
-                                `
-                                : ""
-                        }
 
-                    </div>
-                `;
+                                </div>
 
-            }).join("");
+
+                                <div class="publisher-detail-row">
+
+                                    <div class="publisher-detail-label">
+                                        Platform Status
+                                    </div>
+
+                                    <div class="publisher-detail-value">
+
+                                        ${escapeHtml(
+                                            item.platform_status ||
+                                            "pending"
+                                        )}
+
+                                    </div>
+
+                                </div>
+
+
+                                ${
+                                    item.error_message
+                                        ? `
+                                            <div class="publisher-detail-row">
+
+                                                <div class="publisher-detail-label">
+                                                    Error
+                                                </div>
+
+                                                <div
+                                                    class="publisher-detail-value"
+                                                    style="color:#c62828;"
+                                                >
+                                                    ${escapeHtml(
+                                                        item.error_message
+                                                    )}
+                                                </div>
+
+                                            </div>
+                                        `
+                                        : ""
+                                }
+
+                            </div>
+                        `;
+
+                    }
+                ).join("");
 
         } else {
 
@@ -372,9 +627,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 </div>
 
                 <div class="publisher-detail-value">
+
                     ${escapeHtml(
-                        post.title || "Untitled post"
+                        post.title ||
+                        "Untitled post"
                     )}
+
                 </div>
 
             </div>
@@ -387,9 +645,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 </div>
 
                 <div class="publisher-detail-value">
+
                     ${escapeHtml(
-                        post.brand_name || "—"
+                        post.brand_name ||
+                        "—"
                     )}
+
                 </div>
 
             </div>
@@ -402,11 +663,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 </div>
 
                 <div class="publisher-detail-value">
+
                     <span class="${statusClass}">
+
                         ${escapeHtml(
-                            formatStatus(post.status)
+                            formatStatus(
+                                post.status
+                            )
                         )}
+
                     </span>
+
                 </div>
 
             </div>
@@ -419,9 +686,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 </div>
 
                 <div class="publisher-detail-value">
+
                     ${escapeHtml(
-                        post.content || "—"
-                    ).replace(/\n/g, "<br>")}
+                        post.content ||
+                        "—"
+                    ).replace(
+                        /\n/g,
+                        "<br>"
+                    )}
+
                 </div>
 
             </div>
@@ -434,7 +707,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 </div>
 
                 <div class="publisher-detail-value">
-                    ${formatDate(post.scheduled_at)}
+
+                    ${formatDate(
+                        post.scheduled_at
+                    )}
+
                 </div>
 
             </div>
@@ -447,7 +724,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 </div>
 
                 <div class="publisher-detail-value">
-                    ${formatDate(post.published_at)}
+
+                    ${formatDate(
+                        post.published_at
+                    )}
+
                 </div>
 
             </div>
@@ -466,6 +747,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 ${platformHtml}
 
             </div>
+
         `;
 
     }
@@ -475,122 +757,154 @@ document.addEventListener("DOMContentLoaded", () => {
        DETAILS BUTTONS
     ===================================================== */
 
-    document.addEventListener("click", (event) => {
+    document.addEventListener(
+        "click",
+        (event) => {
 
-        const button =
-            event.target.closest(
-                "[data-post-details]"
+            const button =
+                event.target.closest(
+                    "[data-post-details]"
+                );
+
+
+            if (!button) {
+                return;
+            }
+
+
+            const postId =
+                button.getAttribute(
+                    "data-post-details"
+                );
+
+
+            if (!postId) {
+                return;
+            }
+
+
+            loadPostDetails(
+                postId
             );
 
-        if (!button) {
-            return;
         }
-
-        const postId =
-            button.getAttribute(
-                "data-post-details"
-            );
-
-        if (!postId) {
-            return;
-        }
-
-        loadPostDetails(postId);
-
-    });
+    );
 
 
     /* =====================================================
        CONFIRM DELETE
     ===================================================== */
 
-    document.addEventListener("submit", (event) => {
+    document.addEventListener(
+        "submit",
+        (event) => {
 
-        const form =
-            event.target.closest(
-                "form[data-confirm-delete]"
-            );
+            const form =
+                event.target.closest(
+                    "form[data-confirm-delete]"
+                );
 
-        if (!form) {
-            return;
+
+            if (!form) {
+                return;
+            }
+
+
+            const confirmed =
+                window.confirm(
+                    "Are you sure you want to permanently delete this post?"
+                );
+
+
+            if (!confirmed) {
+
+                event.preventDefault();
+
+            }
+
         }
-
-        const confirmed = window.confirm(
-            "Are you sure you want to permanently delete this post?"
-        );
-
-        if (!confirmed) {
-
-            event.preventDefault();
-
-        }
-
-    });
+    );
 
 
     /* =====================================================
        CONFIRM APPROVAL
     ===================================================== */
 
-    document.addEventListener("submit", (event) => {
+    document.addEventListener(
+        "submit",
+        (event) => {
 
-        const form =
-            event.target.closest(
-                "form[data-confirm-approval]"
-            );
+            const form =
+                event.target.closest(
+                    "form[data-confirm-approval]"
+                );
 
-        if (!form) {
-            return;
+
+            if (!form) {
+                return;
+            }
+
+
+            const confirmed =
+                window.confirm(
+                    "Submit this post for content approval?"
+                );
+
+
+            if (!confirmed) {
+
+                event.preventDefault();
+
+            }
+
         }
-
-        const confirmed = window.confirm(
-            "Submit this post for content approval?"
-        );
-
-        if (!confirmed) {
-
-            event.preventDefault();
-
-        }
-
-    });
+    );
 
 
     /* =====================================================
        CONFIRM STATUS CHANGE
     ===================================================== */
 
-    document.addEventListener("submit", (event) => {
+    document.addEventListener(
+        "submit",
+        (event) => {
 
-        const form =
-            event.target.closest(
-                "form[data-confirm-status]"
-            );
+            const form =
+                event.target.closest(
+                    "form[data-confirm-status]"
+                );
 
-        if (!form) {
-            return;
+
+            if (!form) {
+                return;
+            }
+
+
+            const status =
+                form.getAttribute(
+                    "data-confirm-status"
+                );
+
+
+            if (!status) {
+                return;
+            }
+
+
+            const confirmed =
+                window.confirm(
+                    `Change this post status to "${formatStatus(status)}"?`
+                );
+
+
+            if (!confirmed) {
+
+                event.preventDefault();
+
+            }
+
         }
-
-        const status =
-            form.getAttribute(
-                "data-confirm-status"
-            );
-
-        if (!status) {
-            return;
-        }
-
-        const confirmed = window.confirm(
-            `Change this post status to "${formatStatus(status)}"?`
-        );
-
-        if (!confirmed) {
-
-            event.preventDefault();
-
-        }
-
-    });
+    );
 
 
     /* =====================================================
@@ -603,10 +917,13 @@ document.addEventListener("DOMContentLoaded", () => {
             return "Unknown";
         }
 
+
         return status
             .replaceAll("_", " ")
-            .replace(/\b\w/g, (char) =>
-                char.toUpperCase()
+            .replace(
+                /\b\w/g,
+                (char) =>
+                    char.toUpperCase()
             );
 
     }
@@ -622,11 +939,23 @@ document.addEventListener("DOMContentLoaded", () => {
             return "—";
         }
 
-        const date = new Date(value);
 
-        if (Number.isNaN(date.getTime())) {
-            return escapeHtml(value);
+        const date =
+            new Date(value);
+
+
+        if (
+            Number.isNaN(
+                date.getTime()
+            )
+        ) {
+
+            return escapeHtml(
+                value
+            );
+
         }
+
 
         return date.toLocaleString(
             undefined,
@@ -646,12 +975,17 @@ document.addEventListener("DOMContentLoaded", () => {
     function escapeHtml(value) {
 
         const div =
-            document.createElement("div");
+            document.createElement(
+                "div"
+            );
+
 
         div.textContent =
-            value === null || value === undefined
+            value === null ||
+            value === undefined
                 ? ""
                 : String(value);
+
 
         return div.innerHTML;
 

@@ -1,0 +1,1284 @@
+{% extends "base.html" %}
+
+{% block title %}
+Client Details — RicozSocial
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin_client_details.css') }}">
+
+<style>
+    .client-action-bar {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .client-action-form {
+        margin: 0;
+    }
+
+    .client-action-button {
+        min-height: 40px;
+        padding: 0 15px;
+        border: 0;
+        border-radius: 9px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 700;
+        transition: 0.2s ease;
+    }
+
+    .client-action-edit {
+        background: #f3f4f6;
+        color: #374151;
+    }
+
+    .client-action-edit:hover {
+        background: #e5e7eb;
+    }
+
+    .client-action-danger {
+        background: #fff1f2;
+        color: #be123c;
+    }
+
+    .client-action-danger:hover {
+        background: #ffe4e6;
+    }
+
+    .client-action-success {
+        background: #ecfdf5;
+        color: #047857;
+    }
+
+    .client-action-success:hover {
+        background: #d1fae5;
+    }
+
+    .security-panel {
+        margin-top: 24px;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 18px;
+        padding: 24px;
+    }
+
+    .security-panel-header {
+        margin-bottom: 20px;
+    }
+
+    .security-panel-header h2 {
+        margin: 0;
+        font-size: 19px;
+        color: #111827;
+    }
+
+    .security-panel-header p {
+        margin: 6px 0 0;
+        color: #6b7280;
+        font-size: 14px;
+    }
+
+    .password-reset-form {
+        display: grid;
+        grid-template-columns: 1fr 1fr auto;
+        gap: 14px;
+        align-items: end;
+    }
+
+    .password-field {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+    }
+
+    .password-field label {
+        font-size: 12px;
+        font-weight: 700;
+        color: #374151;
+    }
+
+    .password-field input {
+        width: 100%;
+        box-sizing: border-box;
+        min-height: 42px;
+        border: 1px solid #d1d5db;
+        border-radius: 9px;
+        padding: 0 12px;
+        outline: none;
+        font-size: 14px;
+    }
+
+    .password-field input:focus {
+        border-color: #e31e24;
+        box-shadow: 0 0 0 3px rgba(227, 30, 36, 0.08);
+    }
+
+    .reset-password-button {
+        min-height: 42px;
+        padding: 0 17px;
+        border: 0;
+        border-radius: 9px;
+        background: #e31e24;
+        color: #ffffff;
+        cursor: pointer;
+        font-weight: 700;
+    }
+
+    .reset-password-button:hover {
+        background: #c8171d;
+    }
+
+    .status-pill-active {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 10px;
+        border-radius: 999px;
+        background: #ecfdf5;
+        color: #047857;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .status-pill-inactive {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 10px;
+        border-radius: 999px;
+        background: #fff1f2;
+        color: #be123c;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .client-header-grid {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 24px;
+        flex-wrap: wrap;
+    }
+
+    @media (max-width: 850px) {
+        .password-reset-form {
+            grid-template-columns: 1fr;
+        }
+
+        .reset-password-button {
+            width: 100%;
+        }
+    }
+
+    @media (max-width: 650px) {
+        .client-action-bar {
+            width: 100%;
+            justify-content: flex-start;
+        }
+
+        .client-action-form,
+        .client-action-button {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+
+{% block content %}
+
+<div class="admin-page">
+
+    <!-- =====================================================
+         HEADER
+    ====================================================== -->
+
+    <div class="admin-page-header">
+
+        <div class="client-header-grid">
+
+            <div>
+
+                <div class="admin-breadcrumb">
+                    <a href="{{ url_for('admin_dashboard') }}">
+                        Administration
+                    </a>
+
+                    <span>/</span>
+
+                    <a href="{{ url_for('admin_clients') }}">
+                        Clients
+                    </a>
+
+                    <span>/</span>
+
+                    <span>Client Details</span>
+                </div>
+
+                <h1>
+                    {{ client.name }}
+                </h1>
+
+                <p>
+                    {{ client.email }}
+                </p>
+
+            </div>
+
+
+            <div class="client-action-bar">
+
+                <a
+                    href="{{ url_for('admin_clients') }}"
+                    class="client-action-button client-action-edit"
+                    style="display:inline-flex;align-items:center;text-decoration:none;"
+                >
+                    ← Clients
+                </a>
+
+                <a
+                    href="{{ url_for('admin_edit_client', user_id=client.id) }}"
+                    class="client-action-button client-action-edit"
+                    style="display:inline-flex;align-items:center;text-decoration:none;"
+                >
+                    Edit Client
+                </a>
+
+
+                <form
+                    method="POST"
+                    action="{{ url_for('admin_toggle_client_status', user_id=client.id) }}"
+                    class="client-action-form"
+                    onsubmit="return confirm(
+                        '{% if client.is_active %}Deactivate this client account?{% else %}Activate this client account?{% endif %}'
+                    );"
+                >
+
+                    {% if client.is_active %}
+
+                        <button
+                            type="submit"
+                            class="client-action-button client-action-danger"
+                        >
+                            Deactivate
+                        </button>
+
+                    {% else %}
+
+                        <button
+                            type="submit"
+                            class="client-action-button client-action-success"
+                        >
+                            Activate
+                        </button>
+
+                    {% endif %}
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         PROFILE CARD
+    ====================================================== -->
+
+    <div class="admin-card">
+
+        <div class="client-profile">
+
+            <div class="client-avatar">
+                {{ client.name[0]|upper }}
+            </div>
+
+            <div class="client-profile-info">
+
+                <h2>
+                    {{ client.name }}
+                </h2>
+
+                <p>
+                    {{ client.email }}
+                </p>
+
+                <div class="client-profile-meta">
+
+                    {% if client.is_active %}
+
+                        <span class="status-pill-active">
+                            ● Active
+                        </span>
+
+                    {% else %}
+
+                        <span class="status-pill-inactive">
+                            ● Inactive
+                        </span>
+
+                    {% endif %}
+
+                    <span>
+                        {{ client.role|capitalize }}
+                    </span>
+
+                    <span>
+                        Joined
+                        {{ client.created_at.strftime("%b %d, %Y") if client.created_at else "—" }}
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         STATISTICS
+    ====================================================== -->
+
+    <div class="admin-stats-grid">
+
+        <div class="admin-stat-card">
+
+            <div class="admin-stat-label">
+                Brands
+            </div>
+
+            <div class="admin-stat-value">
+                {{ brands_count }}
+            </div>
+
+            <div class="admin-stat-meta">
+                Client workspaces
+            </div>
+
+        </div>
+
+
+        <div class="admin-stat-card">
+
+            <div class="admin-stat-label">
+                Social Accounts
+            </div>
+
+            <div class="admin-stat-value">
+                {{ social_accounts_count }}
+            </div>
+
+            <div class="admin-stat-meta">
+                Connected profiles
+            </div>
+
+        </div>
+
+
+        <div class="admin-stat-card">
+
+            <div class="admin-stat-label">
+                Connected
+            </div>
+
+            <div class="admin-stat-value">
+                {{ connected_accounts_count }}
+            </div>
+
+            <div class="admin-stat-meta">
+                Active social accounts
+            </div>
+
+        </div>
+
+
+        <div class="admin-stat-card">
+
+            <div class="admin-stat-label">
+                Total Posts
+            </div>
+
+            <div class="admin-stat-value">
+                {{ total_posts }}
+            </div>
+
+            <div class="admin-stat-meta">
+                All client content
+            </div>
+
+        </div>
+
+
+        <div class="admin-stat-card">
+
+            <div class="admin-stat-label">
+                Published
+            </div>
+
+            <div class="admin-stat-value">
+                {{ published_posts }}
+            </div>
+
+            <div class="admin-stat-meta">
+                Published content
+            </div>
+
+        </div>
+
+
+        <div class="admin-stat-card">
+
+            <div class="admin-stat-label">
+                Scheduled
+            </div>
+
+            <div class="admin-stat-value">
+                {{ scheduled_posts }}
+            </div>
+
+            <div class="admin-stat-meta">
+                Upcoming content
+            </div>
+
+        </div>
+
+
+        <div class="admin-stat-card">
+
+            <div class="admin-stat-label">
+                Drafts
+            </div>
+
+            <div class="admin-stat-value">
+                {{ draft_posts }}
+            </div>
+
+            <div class="admin-stat-meta">
+                Unpublished drafts
+            </div>
+
+        </div>
+
+
+        <div class="admin-stat-card">
+
+            <div class="admin-stat-label">
+                Pending Approvals
+            </div>
+
+            <div class="admin-stat-value">
+                {{ pending_approvals }}
+            </div>
+
+            <div class="admin-stat-meta">
+                Awaiting review
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         ACCOUNT INFORMATION
+    ====================================================== -->
+
+    <div class="admin-card">
+
+        <div class="admin-card-header">
+
+            <div>
+
+                <h2>
+                    Account Information
+                </h2>
+
+                <p>
+                    Basic account and activity information.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="admin-info-grid">
+
+            <div class="admin-info-item">
+
+                <span class="admin-info-label">
+                    Full Name
+                </span>
+
+                <strong>
+                    {{ client.name }}
+                </strong>
+
+            </div>
+
+
+            <div class="admin-info-item">
+
+                <span class="admin-info-label">
+                    Email
+                </span>
+
+                <strong>
+                    {{ client.email }}
+                </strong>
+
+            </div>
+
+
+            <div class="admin-info-item">
+
+                <span class="admin-info-label">
+                    Role
+                </span>
+
+                <strong>
+                    {{ client.role|capitalize }}
+                </strong>
+
+            </div>
+
+
+            <div class="admin-info-item">
+
+                <span class="admin-info-label">
+                    Status
+                </span>
+
+                <strong>
+
+                    {% if client.is_active %}
+                        Active
+                    {% else %}
+                        Inactive
+                    {% endif %}
+
+                </strong>
+
+            </div>
+
+
+            <div class="admin-info-item">
+
+                <span class="admin-info-label">
+                    Created
+                </span>
+
+                <strong>
+                    {{ client.created_at.strftime("%b %d, %Y %H:%M") if client.created_at else "—" }}
+                </strong>
+
+            </div>
+
+
+            <div class="admin-info-item">
+
+                <span class="admin-info-label">
+                    Last Updated
+                </span>
+
+                <strong>
+                    {{ client.updated_at.strftime("%b %d, %Y %H:%M") if client.updated_at else "—" }}
+                </strong>
+
+            </div>
+
+
+            <div class="admin-info-item">
+
+                <span class="admin-info-label">
+                    Last Activity
+                </span>
+
+                <strong>
+                    {{ last_activity.strftime("%b %d, %Y %H:%M") if last_activity else "No activity" }}
+                </strong>
+
+            </div>
+
+
+            <div class="admin-info-item">
+
+                <span class="admin-info-label">
+                    Community Items
+                </span>
+
+                <strong>
+                    {{ community_items }}
+                </strong>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         SECURITY
+    ====================================================== -->
+
+    <div class="security-panel">
+
+        <div class="security-panel-header">
+
+            <h2>
+                Account Security
+            </h2>
+
+            <p>
+                Administrator password reset for this client account.
+            </p>
+
+        </div>
+
+
+        <form
+            method="POST"
+            action="{{ url_for('admin_reset_client_password', user_id=client.id) }}"
+            class="password-reset-form"
+            onsubmit="return confirm('Reset this client password?');"
+        >
+
+            <div class="password-field">
+
+                <label for="new_password">
+                    New Password
+                </label>
+
+                <input
+                    type="password"
+                    id="new_password"
+                    name="new_password"
+                    minlength="8"
+                    placeholder="Minimum 8 characters"
+                    required
+                >
+
+            </div>
+
+
+            <div class="password-field">
+
+                <label for="confirm_password">
+                    Confirm Password
+                </label>
+
+                <input
+                    type="password"
+                    id="confirm_password"
+                    name="confirm_password"
+                    minlength="8"
+                    placeholder="Repeat password"
+                    required
+                >
+
+            </div>
+
+
+            <button
+                type="submit"
+                class="reset-password-button"
+            >
+                Reset Password
+            </button>
+
+        </form>
+
+    </div>
+
+
+    <!-- =====================================================
+         BRANDS
+    ====================================================== -->
+
+    <div class="admin-card">
+
+        <div class="admin-card-header">
+
+            <div>
+
+                <h2>
+                    Client Brands
+                </h2>
+
+                <p>
+                    Brands and workspaces owned by this client.
+                </p>
+
+            </div>
+
+            <span class="admin-count-badge">
+                {{ client_brands|length }}
+            </span>
+
+        </div>
+
+
+        {% if client_brands %}
+
+            <div class="admin-table-wrapper">
+
+                <table class="admin-table">
+
+                    <thead>
+
+                        <tr>
+                            <th>Brand</th>
+                            <th>Status</th>
+                            <th>Social Accounts</th>
+                            <th>Posts</th>
+                            <th>Created</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        {% for brand in client_brands %}
+
+                            <tr>
+
+                                <td>
+
+                                    <strong>
+                                        {{ brand.name }}
+                                    </strong>
+
+                                    {% if brand.website_url %}
+
+                                        <div class="admin-table-subtext">
+                                            {{ brand.website_url }}
+                                        </div>
+
+                                    {% endif %}
+
+                                </td>
+
+                                <td>
+
+                                    {% if brand.is_active %}
+
+                                        <span class="status-pill-active">
+                                            Active
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="status-pill-inactive">
+                                            Inactive
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+                                <td>
+                                    {{ brand.social_accounts_count }}
+                                </td>
+
+                                <td>
+                                    {{ brand.posts_count }}
+                                </td>
+
+                                <td>
+                                    {{ brand.created_at.strftime("%b %d, %Y") if brand.created_at else "—" }}
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        {% else %}
+
+            <div class="admin-empty-state">
+                <strong>No brands yet</strong>
+                <p>
+                    This client has not created a brand workspace.
+                </p>
+            </div>
+
+        {% endif %}
+
+    </div>
+
+
+    <!-- =====================================================
+         SOCIAL ACCOUNTS
+    ====================================================== -->
+
+    <div class="admin-card">
+
+        <div class="admin-card-header">
+
+            <div>
+
+                <h2>
+                    Social Accounts
+                </h2>
+
+                <p>
+                    Social profiles connected by this client.
+                </p>
+
+            </div>
+
+            <span class="admin-count-badge">
+                {{ client_social_accounts|length }}
+            </span>
+
+        </div>
+
+
+        {% if client_social_accounts %}
+
+            <div class="admin-table-wrapper">
+
+                <table class="admin-table">
+
+                    <thead>
+
+                        <tr>
+                            <th>Platform</th>
+                            <th>Account</th>
+                            <th>Username</th>
+                            <th>Brand</th>
+                            <th>Status</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        {% for account in client_social_accounts %}
+
+                            <tr>
+
+                                <td>
+                                    <strong>
+                                        {{ account.platform }}
+                                    </strong>
+                                </td>
+
+                                <td>
+                                    {{ account.account_name or "—" }}
+                                </td>
+
+                                <td>
+                                    {{ account.username or "—" }}
+                                </td>
+
+                                <td>
+                                    {{ account.brand_name or "—" }}
+                                </td>
+
+                                <td>
+
+                                    {% if account.is_connected %}
+
+                                        <span class="status-pill-active">
+                                            Connected
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="status-pill-inactive">
+                                            Disconnected
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        {% else %}
+
+            <div class="admin-empty-state">
+                <strong>No social accounts</strong>
+                <p>
+                    This client has not connected any social accounts.
+                </p>
+            </div>
+
+        {% endif %}
+
+    </div>
+
+
+    <!-- =====================================================
+         RECENT POSTS
+    ====================================================== -->
+
+    <div class="admin-card">
+
+        <div class="admin-card-header">
+
+            <div>
+
+                <h2>
+                    Recent Posts
+                </h2>
+
+                <p>
+                    Latest content created by this client.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        {% if client_posts %}
+
+            <div class="admin-table-wrapper">
+
+                <table class="admin-table">
+
+                    <thead>
+
+                        <tr>
+                            <th>Title</th>
+                            <th>Brand</th>
+                            <th>Status</th>
+                            <th>Scheduled</th>
+                            <th>Created</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        {% for post in client_posts %}
+
+                            <tr>
+
+                                <td>
+
+                                    <strong>
+                                        {{ post.title or "Untitled Post" }}
+                                    </strong>
+
+                                    {% if post.content %}
+
+                                        <div class="admin-table-subtext">
+                                            {{ post.content[:90] }}
+                                            {% if post.content|length > 90 %}...{% endif %}
+                                        </div>
+
+                                    {% endif %}
+
+                                </td>
+
+                                <td>
+                                    {{ post.brand_name or "—" }}
+                                </td>
+
+                                <td>
+                                    <span class="admin-status-badge status-{{ post.status|lower|replace(' ', '-') }}">
+                                        {{ post.status|capitalize }}
+                                    </span>
+                                </td>
+
+                                <td>
+                                    {{ post.scheduled_at.strftime("%b %d, %Y %H:%M") if post.scheduled_at else "—" }}
+                                </td>
+
+                                <td>
+                                    {{ post.created_at.strftime("%b %d, %Y") if post.created_at else "—" }}
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        {% else %}
+
+            <div class="admin-empty-state">
+                <strong>No posts yet</strong>
+                <p>
+                    This client has not created any content.
+                </p>
+            </div>
+
+        {% endif %}
+
+    </div>
+
+
+    <!-- =====================================================
+         APPROVALS
+    ====================================================== -->
+
+    <div class="admin-card">
+
+        <div class="admin-card-header">
+
+            <div>
+
+                <h2>
+                    Approval Activity
+                </h2>
+
+                <p>
+                    Recent content approval activity for this client.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        {% if client_approvals %}
+
+            <div class="admin-table-wrapper">
+
+                <table class="admin-table">
+
+                    <thead>
+
+                        <tr>
+                            <th>Post</th>
+                            <th>Status</th>
+                            <th>Comments</th>
+                            <th>Created</th>
+                            <th>Reviewed</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        {% for approval in client_approvals %}
+
+                            <tr>
+
+                                <td>
+                                    {{ approval.post_title or "Untitled Post" }}
+                                </td>
+
+                                <td>
+                                    <span class="admin-status-badge status-{{ approval.status|lower }}">
+                                        {{ approval.status|capitalize }}
+                                    </span>
+                                </td>
+
+                                <td>
+                                    {{ approval.comments or "—" }}
+                                </td>
+
+                                <td>
+                                    {{ approval.created_at.strftime("%b %d, %Y") if approval.created_at else "—" }}
+                                </td>
+
+                                <td>
+                                    {{ approval.reviewed_at.strftime("%b %d, %Y") if approval.reviewed_at else "Pending" }}
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        {% else %}
+
+            <div class="admin-empty-state">
+                <strong>No approval activity</strong>
+                <p>
+                    No approval records are available for this client.
+                </p>
+            </div>
+
+        {% endif %}
+
+    </div>
+
+
+    <!-- =====================================================
+         NOTIFICATIONS
+    ====================================================== -->
+
+    <div class="admin-card">
+
+        <div class="admin-card-header">
+
+            <div>
+
+                <h2>
+                    Recent Notifications
+                </h2>
+
+                <p>
+                    Latest notifications sent to this client.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        {% if client_notifications %}
+
+            <div class="notification-list">
+
+                {% for notification in client_notifications %}
+
+                    <div class="notification-item">
+
+                        <div>
+
+                            <strong>
+                                {{ notification.title }}
+                            </strong>
+
+                            <p>
+                                {{ notification.message }}
+                            </p>
+
+                        </div>
+
+                        <div class="notification-time">
+
+                            {{ notification.created_at.strftime("%b %d, %Y %H:%M") if notification.created_at else "—" }}
+
+                            {% if not notification.is_read %}
+                                <span class="unread-dot"></span>
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        {% else %}
+
+            <div class="admin-empty-state">
+                <strong>No notifications</strong>
+                <p>
+                    This client has not received any notifications yet.
+                </p>
+            </div>
+
+        {% endif %}
+
+    </div>
+
+
+    <!-- =====================================================
+         ACTIVITY
+    ====================================================== -->
+
+    <div class="admin-card">
+
+        <div class="admin-card-header">
+
+            <div>
+
+                <h2>
+                    Recent Activity
+                </h2>
+
+                <p>
+                    Recent actions performed by this client.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        {% if client_activity %}
+
+            <div class="admin-activity-list">
+
+                {% for activity in client_activity %}
+
+                    <div class="admin-activity-item">
+
+                        <div class="admin-activity-dot"></div>
+
+                        <div class="admin-activity-content">
+
+                            <strong>
+                                {{ activity.action|replace('_', ' ')|capitalize }}
+                            </strong>
+
+                            <p>
+                                {{ activity.description or "No description available." }}
+                            </p>
+
+                            <small>
+
+                                {{ activity.created_at.strftime("%b %d, %Y %H:%M") if activity.created_at else "—" }}
+
+                                {% if activity.ip_address %}
+                                    · {{ activity.ip_address }}
+                                {% endif %}
+
+                            </small>
+
+                        </div>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        {% else %}
+
+            <div class="admin-empty-state">
+                <strong>No activity yet</strong>
+                <p>
+                    No activity has been recorded for this client.
+                </p>
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+{% endblock %}

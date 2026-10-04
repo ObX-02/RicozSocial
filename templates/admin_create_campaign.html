@@ -1,0 +1,478 @@
+{% extends "base.html" %}
+
+{% block title %}
+Create Campaign — RicozSocial
+{% endblock %}
+
+{% block extra_css %}
+
+<link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/admin.css') }}"
+>
+
+<style>
+
+    .create-campaign-page {
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+
+    .campaign-form-grid {
+
+        display: grid;
+
+        grid-template-columns:
+            repeat(2, 1fr);
+
+        gap: 18px;
+    }
+
+    .campaign-form-group {
+        margin-bottom: 18px;
+    }
+
+    .campaign-form-group.full {
+        grid-column: 1 / -1;
+    }
+
+    .campaign-form-group label {
+
+        display: block;
+
+        margin-bottom: 7px;
+
+        color: #374151;
+
+        font-size: 13px;
+
+        font-weight: 700;
+    }
+
+    .campaign-form-group input,
+    .campaign-form-group select,
+    .campaign-form-group textarea {
+
+        width: 100%;
+
+        box-sizing: border-box;
+
+        border: 1px solid #d1d5db;
+
+        border-radius: 10px;
+
+        padding: 11px 13px;
+
+        background: #ffffff;
+
+        color: #111827;
+
+        outline: none;
+
+        font-family: inherit;
+    }
+
+    .campaign-form-group textarea {
+
+        min-height: 130px;
+
+        resize: vertical;
+    }
+
+    .campaign-form-group input:focus,
+    .campaign-form-group select:focus,
+    .campaign-form-group textarea:focus {
+
+        border-color: #e31e24;
+
+        box-shadow:
+            0 0 0 3px
+            rgba(227, 30, 36, 0.08);
+    }
+
+    .campaign-form-help {
+
+        margin-top: 5px;
+
+        color: #9ca3af;
+
+        font-size: 11px;
+    }
+
+    .campaign-form-actions {
+
+        display: flex;
+
+        justify-content: flex-end;
+
+        gap: 10px;
+
+        margin-top: 8px;
+    }
+
+    .campaign-cancel {
+
+        min-height: 42px;
+
+        padding: 0 18px;
+
+        display: inline-flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        border-radius: 9px;
+
+        background: #f3f4f6;
+
+        color: #374151;
+
+        text-decoration: none;
+
+        font-size: 13px;
+
+        font-weight: 700;
+    }
+
+    .campaign-submit {
+
+        min-height: 42px;
+
+        padding: 0 20px;
+
+        border: 0;
+
+        border-radius: 9px;
+
+        background: #e31e24;
+
+        color: #ffffff;
+
+        cursor: pointer;
+
+        font-size: 13px;
+
+        font-weight: 700;
+    }
+
+    .campaign-submit:hover {
+        background: #c8171d;
+    }
+
+    @media (max-width: 700px) {
+
+        .campaign-form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .campaign-form-group.full {
+            grid-column: auto;
+        }
+
+        .campaign-form-actions {
+            flex-direction: column;
+        }
+
+        .campaign-cancel,
+        .campaign-submit {
+            width: 100%;
+        }
+
+    }
+
+</style>
+
+{% endblock %}
+
+
+{% block content %}
+
+<div class="create-campaign-page">
+
+
+    <div class="admin-page-header">
+
+        <div>
+
+            <div class="admin-breadcrumb">
+
+                <a href="{{ url_for('admin_dashboard') }}">
+                    Administration
+                </a>
+
+                <span>/</span>
+
+                <a href="{{ url_for('admin_campaigns') }}">
+                    Campaigns
+                </a>
+
+                <span>/</span>
+
+                <span>Create</span>
+
+            </div>
+
+            <h1>
+                Create Campaign
+            </h1>
+
+            <p>
+                Set up a new campaign for a client brand.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <div class="admin-card">
+
+        <form
+            method="POST"
+            action="{{ url_for('admin_create_campaign') }}"
+        >
+
+            <div class="campaign-form-grid">
+
+
+                <!-- BRAND -->
+
+                <div class="campaign-form-group">
+
+                    <label for="brand_id">
+                        Brand *
+                    </label>
+
+                    <select
+                        id="brand_id"
+                        name="brand_id"
+                        required
+                    >
+
+                        <option value="">
+                            Select Brand
+                        </option>
+
+                        {% for brand in brands %}
+
+                            <option
+                                value="{{ brand.id }}"
+                            >
+                                {{ brand.name }}
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+                <!-- STATUS -->
+
+                <div class="campaign-form-group">
+
+                    <label for="status">
+                        Campaign Status
+                    </label>
+
+                    <select
+                        id="status"
+                        name="status"
+                    >
+
+                        <option value="Draft">
+                            Draft
+                        </option>
+
+                        <option value="Active">
+                            Active
+                        </option>
+
+                        <option value="Paused">
+                            Paused
+                        </option>
+
+                        <option value="Completed">
+                            Completed
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- NAME -->
+
+                <div class="campaign-form-group full">
+
+                    <label for="name">
+                        Campaign Name *
+                    </label>
+
+                    <input
+                        type="text"
+                        id="name"
+                        name="name"
+                        maxlength="200"
+                        required
+                        placeholder="e.g. Summer Product Launch"
+                    >
+
+                </div>
+
+
+                <!-- DESCRIPTION -->
+
+                <div class="campaign-form-group full">
+
+                    <label for="description">
+                        Description
+                    </label>
+
+                    <textarea
+                        id="description"
+                        name="description"
+                        placeholder="Describe the campaign purpose, messaging and strategy..."
+                    ></textarea>
+
+                </div>
+
+
+                <!-- GOAL -->
+
+                <div class="campaign-form-group">
+
+                    <label for="goal_type">
+                        Campaign Goal
+                    </label>
+
+                    <select
+                        id="goal_type"
+                        name="goal_type"
+                    >
+
+                        <option value="">
+                            Select Goal
+                        </option>
+
+                        <option value="Awareness">
+                            Awareness
+                        </option>
+
+                        <option value="Engagement">
+                            Engagement
+                        </option>
+
+                        <option value="Traffic">
+                            Traffic
+                        </option>
+
+                        <option value="Leads">
+                            Leads
+                        </option>
+
+                        <option value="Conversions">
+                            Conversions
+                        </option>
+
+                        <option value="Followers">
+                            Followers
+                        </option>
+
+                        <option value="Sales">
+                            Sales
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- TARGET -->
+
+                <div class="campaign-form-group">
+
+                    <label for="target_value">
+                        Target Value
+                    </label>
+
+                    <input
+                        type="number"
+                        id="target_value"
+                        name="target_value"
+                        min="0"
+                        step="0.01"
+                        placeholder="e.g. 10000"
+                    >
+
+                    <div class="campaign-form-help">
+                        Optional numeric campaign target.
+                    </div>
+
+                </div>
+
+
+                <!-- START -->
+
+                <div class="campaign-form-group">
+
+                    <label for="start_date">
+                        Start Date
+                    </label>
+
+                    <input
+                        type="date"
+                        id="start_date"
+                        name="start_date"
+                    >
+
+                </div>
+
+
+                <!-- END -->
+
+                <div class="campaign-form-group">
+
+                    <label for="end_date">
+                        End Date
+                    </label>
+
+                    <input
+                        type="date"
+                        id="end_date"
+                        name="end_date"
+                    >
+
+                </div>
+
+            </div>
+
+
+            <div class="campaign-form-actions">
+
+                <a
+                    href="{{ url_for('admin_campaigns') }}"
+                    class="campaign-cancel"
+                >
+                    Cancel
+                </a>
+
+
+                <button
+                    type="submit"
+                    class="campaign-submit"
+                >
+                    Create Campaign
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}

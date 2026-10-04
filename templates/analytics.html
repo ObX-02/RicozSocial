@@ -1,3 +1,4 @@
+```html
 {% extends "base.html" %}
 
 {% block title %}
@@ -5,14 +6,11 @@ Insights | RicozSocial
 {% endblock %}
 
 {% block extra_css %}
-
 <link
     rel="stylesheet"
     href="{{ url_for('static', filename='css/analytics.css') }}"
 >
-
 {% endblock %}
-
 
 {% block content %}
 
@@ -62,6 +60,7 @@ Insights | RicozSocial
         <div class="analytics-section-heading">
 
             <div>
+
                 <span class="analytics-section-eyebrow">
                     REPORTING CONTROLS
                 </span>
@@ -69,6 +68,7 @@ Insights | RicozSocial
                 <h2>
                     Performance Filters
                 </h2>
+
             </div>
 
         </div>
@@ -125,31 +125,52 @@ Insights | RicozSocial
                         All Platforms
                     </option>
 
-                    <option value="Facebook" {% if selected_platform == "Facebook" %}selected{% endif %}>
+                    <option
+                        value="Facebook"
+                        {% if selected_platform == "Facebook" %}selected{% endif %}
+                    >
                         Facebook
                     </option>
 
-                    <option value="Instagram" {% if selected_platform == "Instagram" %}selected{% endif %}>
+                    <option
+                        value="Instagram"
+                        {% if selected_platform == "Instagram" %}selected{% endif %}
+                    >
                         Instagram
                     </option>
 
-                    <option value="LinkedIn" {% if selected_platform == "LinkedIn" %}selected{% endif %}>
+                    <option
+                        value="LinkedIn"
+                        {% if selected_platform == "LinkedIn" %}selected{% endif %}
+                    >
                         LinkedIn
                     </option>
 
-                    <option value="X" {% if selected_platform == "X" %}selected{% endif %}>
+                    <option
+                        value="X"
+                        {% if selected_platform == "X" %}selected{% endif %}
+                    >
                         X
                     </option>
 
-                    <option value="YouTube" {% if selected_platform == "YouTube" %}selected{% endif %}>
+                    <option
+                        value="YouTube"
+                        {% if selected_platform == "YouTube" %}selected{% endif %}
+                    >
                         YouTube
                     </option>
 
-                    <option value="TikTok" {% if selected_platform == "TikTok" %}selected{% endif %}>
+                    <option
+                        value="TikTok"
+                        {% if selected_platform == "TikTok" %}selected{% endif %}
+                    >
                         TikTok
                     </option>
 
-                    <option value="Pinterest" {% if selected_platform == "Pinterest" %}selected{% endif %}>
+                    <option
+                        value="Pinterest"
+                        {% if selected_platform == "Pinterest" %}selected{% endif %}
+                    >
                         Pinterest
                     </option>
 
@@ -232,7 +253,7 @@ Insights | RicozSocial
                 </span>
 
                 <strong class="analytics-kpi-value">
-                    {{ "{:,}".format(impressions) }}
+                    {{ "{:,}".format(impressions or 0) }}
                 </strong>
 
                 <span class="analytics-kpi-meta">
@@ -257,7 +278,7 @@ Insights | RicozSocial
                 </span>
 
                 <strong class="analytics-kpi-value">
-                    {{ "{:,}".format(reach) }}
+                    {{ "{:,}".format(reach or 0) }}
                 </strong>
 
                 <span class="analytics-kpi-meta">
@@ -282,11 +303,11 @@ Insights | RicozSocial
                 </span>
 
                 <strong class="analytics-kpi-value">
-                    {{ "{:,}".format(engagement) }}
+                    {{ "{:,}".format(engagement or 0) }}
                 </strong>
 
                 <span class="analytics-kpi-meta green-text">
-                    {{ engagement_rate }}% engagement rate
+                    {{ engagement_rate or 0 }}% engagement rate
                 </span>
 
             </div>
@@ -307,11 +328,11 @@ Insights | RicozSocial
                 </span>
 
                 <strong class="analytics-kpi-value">
-                    {{ "{:,}".format(clicks) }}
+                    {{ "{:,}".format(clicks or 0) }}
                 </strong>
 
                 <span class="analytics-kpi-meta green-text">
-                    {{ click_rate }}% click rate
+                    {{ click_rate or 0 }}% click rate
                 </span>
 
             </div>
@@ -332,7 +353,7 @@ Insights | RicozSocial
                 </span>
 
                 <strong class="analytics-kpi-value">
-                    {{ "{:,}".format(followers) }}
+                    {{ "{:,}".format(followers or 0) }}
                 </strong>
 
                 <span class="analytics-kpi-meta green-text">
@@ -377,9 +398,7 @@ Insights | RicozSocial
         </div>
 
         <div class="analytics-chart-wrapper">
-
             <canvas id="performanceChart"></canvas>
-
         </div>
 
     </section>
@@ -390,7 +409,6 @@ Insights | RicozSocial
     ====================================================== -->
 
     <div class="analytics-chart-grid">
-
 
         <!-- PLATFORM -->
 
@@ -413,9 +431,7 @@ Insights | RicozSocial
             </div>
 
             <div class="analytics-chart-wrapper analytics-chart-medium">
-
                 <canvas id="platformChart"></canvas>
-
             </div>
 
         </section>
@@ -442,9 +458,7 @@ Insights | RicozSocial
             </div>
 
             <div class="analytics-chart-wrapper analytics-chart-medium">
-
                 <canvas id="followerChart"></canvas>
-
             </div>
 
         </section>
@@ -510,7 +524,7 @@ Insights | RicozSocial
                             <div class="analytics-platform-name">
 
                                 <span class="analytics-platform-icon">
-                                    {{ row.platform[:1] }}
+                                    {{ row.platform[:1] if row.platform else "?" }}
                                 </span>
 
                                 <strong>
@@ -558,12 +572,20 @@ Insights | RicozSocial
         {% else %}
 
         <div class="analytics-empty">
-            <div class="analytics-empty-icon">◎</div>
-            <h3>No platform analytics yet</h3>
+
+            <div class="analytics-empty-icon">
+                ◎
+            </div>
+
+            <h3>
+                No platform analytics yet
+            </h3>
+
             <p>
                 Analytics will appear here once social performance
                 data is available.
             </p>
+
         </div>
 
         {% endif %}
@@ -780,9 +802,11 @@ Insights | RicozSocial
                         </td>
 
                         <td>
+
                             <span class="analytics-platform-pill">
                                 {{ row.platform }}
                             </span>
+
                         </td>
 
                         <td>
@@ -870,22 +894,37 @@ Insights | RicozSocial
 ========================================================= -->
 
 <script>
+
     window.RICOZ_ANALYTICS = {
-        dates: {{ chart_dates | tojson | safe }},
-        impressions: {{ chart_impressions | tojson | safe }},
-        reach: {{ chart_reach | tojson | safe }},
-        engagement: {{ chart_engagement | tojson | safe }},
-        clicks: {{ chart_clicks | tojson | safe }},
-        platformLabels: {{ platform_labels | tojson | safe }},
-        platformImpressions: {{ platform_impressions | tojson | safe }},
-        platformReach: {{ platform_reach | tojson | safe }},
-        followerDates: {{ follower_dates | tojson | safe }},
-        followerValues: {{ follower_values | tojson | safe }}
+
+        dates: {{ chart_dates | default([]) | tojson | safe }},
+
+        impressions: {{ chart_impressions | default([]) | tojson | safe }},
+
+        reach: {{ chart_reach | default([]) | tojson | safe }},
+
+        engagement: {{ chart_engagement | default([]) | tojson | safe }},
+
+        clicks: {{ chart_clicks | default([]) | tojson | safe }},
+
+        platformLabels: {{ platform_labels | default([]) | tojson | safe }},
+
+        platformImpressions: {{ platform_impressions | default([]) | tojson | safe }},
+
+        platformReach: {{ platform_reach | default([]) | tojson | safe }},
+
+        followerDates: {{ follower_dates | default([]) | tojson | safe }},
+
+        followerValues: {{ follower_values | default([]) | tojson | safe }}
+
     };
+
 </script>
+
 
 <script
     src="{{ url_for('static', filename='js/analytics.js') }}"
 ></script>
 
 {% endblock %}
+```
