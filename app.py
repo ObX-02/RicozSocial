@@ -5833,6 +5833,16 @@ def settings():
 
     user = get_current_user()
 
+    if not user:
+        flash(
+            "Unable to load your account.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("login")
+        )
+
     if request.method == "POST":
 
         name = request.form.get(
@@ -5921,6 +5931,19 @@ def settings():
                 "success"
             )
 
+        except Exception:
+
+            conn.rollback()
+
+            app.logger.exception(
+                "Failed to update account settings."
+            )
+
+            flash(
+                "Unable to update settings right now.",
+                "danger"
+            )
+
         finally:
             conn.close()
 
@@ -5928,11 +5951,55 @@ def settings():
             url_for("settings")
         )
 
+    # ---------------------------------------------------------
+    # GET CURRENT PROFILE
+    # ---------------------------------------------------------
+
+    conn = get_db_connection()
+
+    try:
+
+        with conn.cursor() as cur:
+
+            cur.execute("""
+                SELECT
+                    id,
+                    name,
+                    email,
+                    role,
+                    is_active,
+                    created_at,
+                    updated_at
+                FROM users
+                WHERE id = %s
+            """, (user["id"],))
+
+            profile = cur.fetchone()
+
+    finally:
+        conn.close()
+
+    if not profile:
+
+        flash(
+            "Account profile could not be found.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("login")
+        )
+
     return render_template(
         "settings.html",
-        user=user
+        user=profile,
+        profile=profile
     )
 
+
+# =========================================================
+# CHANGE PASSWORD
+# =========================================================
 
 @app.route(
     "/settings/password",
@@ -5942,6 +6009,17 @@ def settings():
 def change_password():
 
     user = get_current_user()
+
+    if not user:
+
+        flash(
+            "Unable to identify your account.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("login")
+        )
 
     current_password = request.form.get(
         "current_password",
@@ -5958,6 +6036,50 @@ def change_password():
         ""
     )
 
+    if not current_password:
+
+        flash(
+            "Please enter your current password.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("settings")
+        )
+
+    if not new_password:
+
+        flash(
+            "Please enter a new password.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("settings")
+        )
+
+    if len(new_password) < 8:
+
+        flash(
+            "New password must contain at least 8 characters.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("settings")
+        )
+
+    if new_password != confirm_password:
+
+        flash(
+            "New passwords do not match.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("settings")
+        )
+
     conn = get_db_connection()
 
     try:
@@ -5972,8 +6094,21 @@ def change_password():
 
             row = cur.fetchone()
 
-            if not row or not check_password_hash(
-                row["password_hash"],
+            if not row:
+
+                flash(
+                    "Account could not be found.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for("settings")
+                )
+
+            stored_password = row["password_hash"]
+
+            if not stored_password or not check_password_hash(
+                stored_password,
                 current_password
             ):
 
@@ -5986,30 +6121,8 @@ def change_password():
                     url_for("settings")
                 )
 
-            if len(new_password) < 8:
-
-                flash(
-                    "New password must contain at least 8 characters.",
-                    "danger"
-                )
-
-                return redirect(
-                    url_for("settings")
-                )
-
-            if new_password != confirm_password:
-
-                flash(
-                    "New passwords do not match.",
-                    "danger"
-                )
-
-                return redirect(
-                    url_for("settings")
-                )
-
             if check_password_hash(
-                row["password_hash"],
+                stored_password,
                 new_password
             ):
 
@@ -6047,14 +6160,25 @@ def change_password():
             "success"
         )
 
+    except Exception:
+
+        conn.rollback()
+
+        app.logger.exception(
+            "Failed to change account password."
+        )
+
+        flash(
+            "Unable to change password right now.",
+            "danger"
+        )
+
     finally:
         conn.close()
 
     return redirect(
         url_for("settings")
     )
-
-
 # =========================================================
 # HEALTH CHECK
 # =========================================================
