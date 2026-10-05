@@ -1,6 +1,7 @@
 /* =========================================================
    RICOZSOCIAL
    PUBLISHER JAVASCRIPT
+   PREMIUM CONTENT WORKSPACE
 ========================================================= */
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -24,21 +25,21 @@ document.addEventListener("DOMContentLoaded", () => {
     const closeDetailsBtn =
         document.getElementById("closePostDetails");
 
-    const brandSelect =
-        document.getElementById("publisherBrand");
-
     const statusSelect =
         document.getElementById("publisherStatus");
 
     const scheduleField =
         document.getElementById("scheduleField");
 
+    const scheduleInput =
+        document.getElementById("publisherSchedule");
+
     const detailsContent =
         document.getElementById("postDetailsContent");
 
 
     /* =====================================================
-       MODAL HELPERS
+       MODAL CONTROL
     ===================================================== */
 
     function openModal(modal) {
@@ -61,38 +62,37 @@ document.addEventListener("DOMContentLoaded", () => {
 
         modal.classList.remove("active");
 
-        if (
-            !createModal?.classList.contains("active") &&
-            !detailsModal?.classList.contains("active")
-        ) {
+        const createOpen =
+            createModal &&
+            createModal.classList.contains("active");
+
+        const detailsOpen =
+            detailsModal &&
+            detailsModal.classList.contains("active");
+
+        if (!createOpen && !detailsOpen) {
             document.body.style.overflow = "";
         }
-
     }
 
 
     /* =====================================================
-       CREATE POST MODAL
+       CREATE POST
     ===================================================== */
 
     function openCreatePostModal() {
 
         openModal(createModal);
 
+        updateScheduleVisibility();
     }
 
 
     function closeCreatePostModal() {
 
         closeModal(createModal);
-
     }
 
-
-    /*
-       Make functions globally available because
-       publisher.html uses onclick="..."
-    */
 
     window.openCreatePostModal =
         openCreatePostModal;
@@ -101,38 +101,38 @@ document.addEventListener("DOMContentLoaded", () => {
         closeCreatePostModal;
 
 
-    /* =====================================================
-       OPEN CREATE BUTTON
-    ===================================================== */
-
     if (openCreateBtn) {
 
         openCreateBtn.addEventListener(
             "click",
-            () => {
-
-                openCreatePostModal();
-
-            }
+            openCreatePostModal
         );
-
     }
 
-
-    /* =====================================================
-       CLOSE CREATE BUTTON
-    ===================================================== */
 
     if (closeCreateBtn) {
 
         closeCreateBtn.addEventListener(
             "click",
-            () => {
-
-                closeCreatePostModal();
-
-            }
+            closeCreatePostModal
         );
+    }
+
+
+    /* =====================================================
+       EDIT MODE
+    ===================================================== */
+
+    if (
+        createModal &&
+        createModal.dataset.editMode === "true"
+    ) {
+
+        setTimeout(() => {
+
+            openCreatePostModal();
+
+        }, 100);
 
     }
 
@@ -144,7 +144,6 @@ document.addEventListener("DOMContentLoaded", () => {
     function closePostDetails() {
 
         closeModal(detailsModal);
-
     }
 
 
@@ -156,18 +155,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
         closeDetailsBtn.addEventListener(
             "click",
-            () => {
-
-                closePostDetails();
-
-            }
+            closePostDetails
         );
-
     }
 
 
     /* =====================================================
-       CLOSE WHEN CLICKING OUTSIDE
+       OUTSIDE CLICK
     ===================================================== */
 
     [createModal, detailsModal].forEach(
@@ -191,16 +185,14 @@ document.addEventListener("DOMContentLoaded", () => {
                         closeModal(modal);
 
                     }
-
                 }
             );
-
         }
     );
 
 
     /* =====================================================
-       ESCAPE KEY
+       ESCAPE
     ===================================================== */
 
     document.addEventListener(
@@ -212,15 +204,13 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             closeModal(createModal);
-
             closeModal(detailsModal);
-
         }
     );
 
 
     /* =====================================================
-       SCHEDULE FIELD
+       SCHEDULE CONTROL
     ===================================================== */
 
     function updateScheduleVisibility() {
@@ -232,31 +222,22 @@ document.addEventListener("DOMContentLoaded", () => {
         const status =
             statusSelect.value;
 
-
         if (status === "scheduled") {
 
             scheduleField.style.display = "";
 
-            const input =
-                scheduleField.querySelector("input");
-
-            if (input) {
-                input.required = true;
+            if (scheduleInput) {
+                scheduleInput.required = true;
             }
 
         } else {
 
             scheduleField.style.display = "none";
 
-            const input =
-                scheduleField.querySelector("input");
-
-            if (input) {
-                input.required = false;
+            if (scheduleInput) {
+                scheduleInput.required = false;
             }
-
         }
-
     }
 
 
@@ -268,12 +249,155 @@ document.addEventListener("DOMContentLoaded", () => {
         );
 
         updateScheduleVisibility();
-
     }
 
 
     /* =====================================================
-       AI → PUBLISHER
+       FORM VALIDATION
+    ===================================================== */
+
+    const postForm =
+        document.getElementById("publisherPostForm");
+
+
+    if (postForm) {
+
+        postForm.addEventListener(
+            "submit",
+            (event) => {
+
+                const brand =
+                    document.getElementById(
+                        "publisherBrand"
+                    );
+
+                const title =
+                    document.getElementById(
+                        "publisherTitle"
+                    );
+
+                const content =
+                    document.getElementById(
+                        "publisherContent"
+                    );
+
+
+                if (
+                    !brand ||
+                    !brand.value
+                ) {
+
+                    event.preventDefault();
+
+                    alert(
+                        "Please select a brand."
+                    );
+
+                    brand?.focus();
+
+                    return;
+                }
+
+
+                if (
+                    !title ||
+                    !title.value.trim()
+                ) {
+
+                    event.preventDefault();
+
+                    alert(
+                        "Please enter a post title."
+                    );
+
+                    title?.focus();
+
+                    return;
+                }
+
+
+                if (
+                    !content ||
+                    !content.value.trim()
+                ) {
+
+                    event.preventDefault();
+
+                    alert(
+                        "Please enter post content."
+                    );
+
+                    content?.focus();
+
+                    return;
+                }
+
+
+                if (
+                    statusSelect &&
+                    statusSelect.value === "scheduled"
+                ) {
+
+                    if (
+                        !scheduleInput ||
+                        !scheduleInput.value
+                    ) {
+
+                        event.preventDefault();
+
+                        alert(
+                            "Please select a future schedule date and time."
+                        );
+
+                        scheduleInput?.focus();
+
+                        return;
+                    }
+
+
+                    const selectedDate =
+                        new Date(
+                            scheduleInput.value
+                        );
+
+                    if (
+                        Number.isNaN(
+                            selectedDate.getTime()
+                        )
+                    ) {
+
+                        event.preventDefault();
+
+                        alert(
+                            "Please select a valid schedule date and time."
+                        );
+
+                        return;
+                    }
+
+
+                    if (
+                        selectedDate <= new Date()
+                    ) {
+
+                        event.preventDefault();
+
+                        alert(
+                            "Scheduled time must be in the future."
+                        );
+
+                        scheduleInput?.focus();
+
+                        return;
+                    }
+                }
+            }
+        );
+    }
+
+
+    /* =====================================================
+       AI CONTENT
     ===================================================== */
 
     function loadAIContentIntoPublisher() {
@@ -326,18 +450,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
             status.style.display =
                 "block";
-
         }
 
-
-        /*
-           Remove the saved content after
-           successfully loading it.
-
-           This prevents the same AI content
-           from appearing again on a later
-           manual Create Post.
-        */
 
         localStorage.removeItem(
             "ricoz_ai_generated_content"
@@ -345,13 +459,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
         return true;
-
     }
 
-
-    /* =====================================================
-       AUTO OPEN CREATE POST FROM AI
-    ===================================================== */
 
     function handleAIUseInPost() {
 
@@ -366,43 +475,24 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
 
-        /*
-           Give the page a moment to finish
-           rendering the modal.
-        */
-
         setTimeout(
             () => {
 
-                const opened =
-                    openCreatePostModal();
-
-
-                /*
-                   openCreatePostModal() does not
-                   return anything, so directly
-                   load the AI content.
-                */
+                openCreatePostModal();
 
                 loadAIContentIntoPublisher();
 
             },
             250
         );
-
     }
 
-
-    /*
-       Check whether the user arrived from
-       Ricoz AI.
-    */
 
     handleAIUseInPost();
 
 
     /* =====================================================
-       LOAD POST DETAILS
+       DETAILS
     ===================================================== */
 
     async function loadPostDetails(postId) {
@@ -413,12 +503,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
         detailsContent.innerHTML = `
-            <div style="
-                padding:40px;
-                text-align:center;
-                color:#6b7280;
-            ">
-                Loading post details...
+            <div class="publisher-empty">
+                <div class="publisher-empty-icon">
+                    ...
+                </div>
+                <h3>
+                    Loading post details
+                </h3>
+                <p>
+                    Please wait while the content is loaded.
+                </p>
             </div>
         `;
 
@@ -444,7 +538,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 throw new Error(
                     `Request failed: ${response.status}`
                 );
-
             }
 
 
@@ -464,24 +557,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
             detailsContent.innerHTML = `
-                <div style="
-                    padding:30px;
-                    text-align:center;
-                    color:#c62828;
-                ">
-                    Unable to load post details.
-                    Please try again.
+                <div class="publisher-empty">
+
+                    <div class="publisher-empty-icon">
+                        !
+                    </div>
+
+                    <h3>
+                        Unable to load details
+                    </h3>
+
+                    <p>
+                        Please try again.
+                    </p>
+
                 </div>
             `;
-
         }
-
     }
 
-
-    /* =====================================================
-       GLOBAL VIEW POST DETAILS
-    ===================================================== */
 
     window.viewPostDetails =
         loadPostDetails;
@@ -500,9 +594,28 @@ document.addEventListener("DOMContentLoaded", () => {
             data.platforms || [];
 
 
+        const detailsTitle =
+            document.getElementById(
+                "detailsTitle"
+            );
+
+
+        if (detailsTitle) {
+
+            detailsTitle.textContent =
+                post.title ||
+                "Post Details";
+        }
+
+
+        const status =
+            post.status ||
+            "draft";
+
+
         const statusClass =
             `publisher-status publisher-status-${escapeHtml(
-                post.status || "draft"
+                status.replaceAll("_", "-")
             )}`;
 
 
@@ -512,109 +625,105 @@ document.addEventListener("DOMContentLoaded", () => {
         if (platforms.length) {
 
             platformHtml =
-                platforms.map(
-                    (item) => {
+                platforms
+                    .map(
+                        (item) => {
 
-                        return `
-                            <div class="publisher-platform-detail">
+                            return `
+                                <div class="publisher-platform-detail">
 
-                                <h4>
+                                    <h4>
+                                        ${escapeHtml(
+                                            item.platform ||
+                                            "Platform"
+                                        )}
 
-                                    ${escapeHtml(
-                                        item.platform ||
-                                        "Platform"
-                                    )}
+                                        ${
+                                            item.account_name
+                                                ? ` — ${escapeHtml(
+                                                    item.account_name
+                                                )}`
+                                                : ""
+                                        }
+                                    </h4>
+
+
+                                    <div class="publisher-detail-row">
+
+                                        <div class="publisher-detail-label">
+                                            Username
+                                        </div>
+
+                                        <div class="publisher-detail-value">
+                                            ${escapeHtml(
+                                                item.username ||
+                                                "—"
+                                            )}
+                                        </div>
+
+                                    </div>
+
+
+                                    <div class="publisher-detail-row">
+
+                                        <div class="publisher-detail-label">
+                                            Platform Status
+                                        </div>
+
+                                        <div class="publisher-detail-value">
+                                            ${escapeHtml(
+                                                item.platform_status ||
+                                                "pending"
+                                            )}
+                                        </div>
+
+                                    </div>
+
 
                                     ${
-                                        item.account_name
-                                            ? ` — ${escapeHtml(
-                                                item.account_name
-                                            )}`
+                                        item.error_message
+                                            ? `
+                                                <div class="publisher-detail-row">
+
+                                                    <div class="publisher-detail-label">
+                                                        Error
+                                                    </div>
+
+                                                    <div
+                                                        class="publisher-detail-value"
+                                                        style="color:#c91f2b;"
+                                                    >
+                                                        ${escapeHtml(
+                                                            item.error_message
+                                                        )}
+                                                    </div>
+
+                                                </div>
+                                            `
                                             : ""
                                     }
 
-                                </h4>
-
-
-                                <div class="publisher-detail-row">
-
-                                    <div class="publisher-detail-label">
-                                        Username
-                                    </div>
-
-                                    <div class="publisher-detail-value">
-
-                                        ${escapeHtml(
-                                            item.username ||
-                                            "—"
-                                        )}
-
-                                    </div>
-
                                 </div>
-
-
-                                <div class="publisher-detail-row">
-
-                                    <div class="publisher-detail-label">
-                                        Platform Status
-                                    </div>
-
-                                    <div class="publisher-detail-value">
-
-                                        ${escapeHtml(
-                                            item.platform_status ||
-                                            "pending"
-                                        )}
-
-                                    </div>
-
-                                </div>
-
-
-                                ${
-                                    item.error_message
-                                        ? `
-                                            <div class="publisher-detail-row">
-
-                                                <div class="publisher-detail-label">
-                                                    Error
-                                                </div>
-
-                                                <div
-                                                    class="publisher-detail-value"
-                                                    style="color:#c62828;"
-                                                >
-                                                    ${escapeHtml(
-                                                        item.error_message
-                                                    )}
-                                                </div>
-
-                                            </div>
-                                        `
-                                        : ""
-                                }
-
-                            </div>
-                        `;
-
-                    }
-                ).join("");
+                            `;
+                        }
+                    )
+                    .join("");
 
         } else {
 
             platformHtml = `
-                <div style="
-                    padding:20px;
-                    background:#fafafa;
-                    border-radius:10px;
-                    color:#6b7280;
-                    font-size:13px;
-                ">
-                    No social accounts are attached to this post.
+                <div class="publisher-no-accounts">
+
+                    <strong>
+                        No social accounts attached
+                    </strong>
+
+                    <span>
+                        This post has no connected platform accounts.
+                    </span>
+
                 </div>
             `;
-
         }
 
 
@@ -627,12 +736,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 </div>
 
                 <div class="publisher-detail-value">
-
                     ${escapeHtml(
                         post.title ||
                         "Untitled post"
                     )}
-
                 </div>
 
             </div>
@@ -645,12 +752,26 @@ document.addEventListener("DOMContentLoaded", () => {
                 </div>
 
                 <div class="publisher-detail-value">
-
                     ${escapeHtml(
                         post.brand_name ||
                         "—"
                     )}
+                </div>
 
+            </div>
+
+
+            <div class="publisher-detail-row">
+
+                <div class="publisher-detail-label">
+                    Created By
+                </div>
+
+                <div class="publisher-detail-value">
+                    ${escapeHtml(
+                        post.creator_name ||
+                        "—"
+                    )}
                 </div>
 
             </div>
@@ -665,13 +786,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 <div class="publisher-detail-value">
 
                     <span class="${statusClass}">
-
                         ${escapeHtml(
-                            formatStatus(
-                                post.status
-                            )
+                            formatStatus(status)
                         )}
-
                     </span>
 
                 </div>
@@ -686,7 +803,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 </div>
 
                 <div class="publisher-detail-value">
-
                     ${escapeHtml(
                         post.content ||
                         "—"
@@ -694,7 +810,6 @@ document.addEventListener("DOMContentLoaded", () => {
                         /\n/g,
                         "<br>"
                     )}
-
                 </div>
 
             </div>
@@ -707,11 +822,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 </div>
 
                 <div class="publisher-detail-value">
-
                     ${formatDate(
                         post.scheduled_at
                     )}
-
                 </div>
 
             </div>
@@ -724,11 +837,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 </div>
 
                 <div class="publisher-detail-value">
-
                     ${formatDate(
                         post.published_at
                     )}
-
                 </div>
 
             </div>
@@ -736,63 +847,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
             <div style="margin-top:22px;">
 
-                <div style="
-                    font-size:13px;
-                    font-weight:800;
-                    margin-bottom:10px;
-                ">
+                <div
+                    style="
+                        font-size:13px;
+                        font-weight:900;
+                        color:#17191d;
+                        margin-bottom:10px;
+                    "
+                >
                     Connected Platforms
                 </div>
 
                 ${platformHtml}
 
             </div>
-
         `;
-
     }
 
 
     /* =====================================================
-       DETAILS BUTTONS
-    ===================================================== */
-
-    document.addEventListener(
-        "click",
-        (event) => {
-
-            const button =
-                event.target.closest(
-                    "[data-post-details]"
-                );
-
-
-            if (!button) {
-                return;
-            }
-
-
-            const postId =
-                button.getAttribute(
-                    "data-post-details"
-                );
-
-
-            if (!postId) {
-                return;
-            }
-
-
-            loadPostDetails(
-                postId
-            );
-
-        }
-    );
-
-
-    /* =====================================================
-       CONFIRM DELETE
+       DELETE CONFIRMATION
     ===================================================== */
 
     document.addEventListener(
@@ -819,15 +893,13 @@ document.addEventListener("DOMContentLoaded", () => {
             if (!confirmed) {
 
                 event.preventDefault();
-
             }
-
         }
     );
 
 
     /* =====================================================
-       CONFIRM APPROVAL
+       APPROVAL CONFIRMATION
     ===================================================== */
 
     document.addEventListener(
@@ -854,15 +926,13 @@ document.addEventListener("DOMContentLoaded", () => {
             if (!confirmed) {
 
                 event.preventDefault();
-
             }
-
         }
     );
 
 
     /* =====================================================
-       CONFIRM STATUS CHANGE
+       STATUS CONFIRMATION
     ===================================================== */
 
     document.addEventListener(
@@ -900,9 +970,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (!confirmed) {
 
                 event.preventDefault();
-
             }
-
         }
     );
 
@@ -918,14 +986,13 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
 
-        return status
+        return String(status)
             .replaceAll("_", " ")
             .replace(
                 /\b\w/g,
                 (char) =>
                     char.toUpperCase()
             );
-
     }
 
 
@@ -953,7 +1020,6 @@ document.addEventListener("DOMContentLoaded", () => {
             return escapeHtml(
                 value
             );
-
         }
 
 
@@ -964,7 +1030,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 timeStyle: "short"
             }
         );
-
     }
 
 
@@ -988,7 +1053,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
         return div.innerHTML;
-
     }
 
 });

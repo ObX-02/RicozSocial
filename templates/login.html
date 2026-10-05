@@ -23,58 +23,6 @@
         href="{{ url_for('static', filename='css/login.css') }}"
     >
 
-    <style>
-
-        /* =========================================================
-           LOGIN TYPE SWITCH
-        ========================================================= */
-
-        .login-type-switch {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 6px;
-            margin: 0 0 22px;
-            padding: 5px;
-            border: 1px solid rgba(0, 0, 0, 0.08);
-            border-radius: 12px;
-            background: rgba(0, 0, 0, 0.035);
-        }
-
-        .login-type-switch a {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 42px;
-            padding: 0 14px;
-            border-radius: 9px;
-            color: #666;
-            text-decoration: none;
-            font-size: 13px;
-            font-weight: 700;
-            transition: all 0.2s ease;
-        }
-
-        .login-type-switch a:hover {
-            color: #c8171d;
-            background: rgba(200, 23, 29, 0.06);
-        }
-
-        .login-type-switch a.active {
-            color: #fff;
-            background: #e31e24;
-            box-shadow: 0 5px 14px rgba(227, 30, 36, 0.18);
-        }
-
-        @media (max-width: 520px) {
-
-            .login-type-switch {
-                grid-template-columns: 1fr;
-            }
-
-        }
-
-    </style>
-
 </head>
 
 
@@ -202,7 +150,7 @@
         <header class="login-nav">
 
             <a
-                href="{{ url_for('login') }}"
+                href="{% if login_type == 'admin' %}{{ url_for('admin_login') }}{% else %}{{ url_for('login') }}{% endif %}"
                 class="brand"
             >
 
@@ -265,31 +213,60 @@
 
                     <span class="badge-dot"></span>
 
-                    ONE SOCIAL WORKSPACE
+                    {% if login_type == 'admin' %}
+                        ADMINISTRATION WORKSPACE
+                    {% else %}
+                        ONE SOCIAL WORKSPACE
+                    {% endif %}
 
                 </div>
 
 
                 <h1>
 
-                    Your brands.
+                    {% if login_type == 'admin' %}
 
-                    <span>
-                        Your content.
-                    </span>
+                        Manage your
+                        <span>
+                            social workspace.
+                        </span>
 
-                    <strong>
-                        One social workspace.
-                    </strong>
+                        <strong>
+                            From one place.
+                        </strong>
+
+                    {% else %}
+
+                        Your brands.
+
+                        <span>
+                            Your content.
+                        </span>
+
+                        <strong>
+                            One social workspace.
+                        </strong>
+
+                    {% endif %}
 
                 </h1>
 
 
                 <p class="intro-description">
 
-                    Plan, publish, collaborate, monitor conversations,
-                    manage approvals and understand performance —
-                    all from one professional workspace.
+                    {% if login_type == 'admin' %}
+
+                        Manage clients, brands, social accounts,
+                        content, campaigns and platform operations
+                        from the RicozSocial administration workspace.
+
+                    {% else %}
+
+                        Plan, publish, collaborate, monitor conversations,
+                        manage approvals and understand performance —
+                        all from one professional workspace.
+
+                    {% endif %}
 
                 </p>
 
@@ -361,12 +338,29 @@
                         <div class="feature-content">
 
                             <strong>
-                                Plan &amp; publish
+
+                                {% if login_type == 'admin' %}
+                                    Platform management
+                                {% else %}
+                                    Plan &amp; publish
+                                {% endif %}
+
                             </strong>
 
                             <p>
-                                Create, schedule and manage content
-                                across your social channels.
+
+                                {% if login_type == 'admin' %}
+
+                                    Manage the RicozSocial platform
+                                    and its business workspaces.
+
+                                {% else %}
+
+                                    Create, schedule and manage content
+                                    across your social channels.
+
+                                {% endif %}
+
                             </p>
 
                         </div>
@@ -388,12 +382,29 @@
                         <div class="feature-content">
 
                             <strong>
-                                Approvals &amp; collaboration
+
+                                {% if login_type == 'admin' %}
+                                    Clients &amp; teams
+                                {% else %}
+                                    Approvals &amp; collaboration
+                                {% endif %}
+
                             </strong>
 
                             <p>
-                                Keep content reviews organized
-                                before anything goes live.
+
+                                {% if login_type == 'admin' %}
+
+                                    Keep clients, roles, brands and
+                                    team access organized.
+
+                                {% else %}
+
+                                    Keep content reviews organized
+                                    before anything goes live.
+
+                                {% endif %}
+
                             </p>
 
                         </div>
@@ -415,12 +426,29 @@
                         <div class="feature-content">
 
                             <strong>
-                                Analytics &amp; insights
+
+                                {% if login_type == 'admin' %}
+                                    Insights &amp; control
+                                {% else %}
+                                    Analytics &amp; insights
+                                {% endif %}
+
                             </strong>
 
                             <p>
-                                Understand reach, engagement,
-                                audience and content performance.
+
+                                {% if login_type == 'admin' %}
+
+                                    Monitor platform activity,
+                                    content and business operations.
+
+                                {% else %}
+
+                                    Understand reach, engagement,
+                                    audience and content performance.
+
+                                {% endif %}
+
                             </p>
 
                         </div>
@@ -445,7 +473,11 @@
                             ✓
                         </span>
 
-                        Multi-brand workspace
+                        {% if login_type == 'admin' %}
+                            Controlled administration
+                        {% else %}
+                            Multi-brand workspace
+                        {% endif %}
 
                     </div>
 
@@ -456,7 +488,11 @@
                             ✓
                         </span>
 
-                        Team-ready workflows
+                        {% if login_type == 'admin' %}
+                            Role-based access
+                        {% else %}
+                            Team-ready workflows
+                        {% endif %}
 
                     </div>
 
@@ -467,7 +503,11 @@
                             ✓
                         </span>
 
-                        Centralized insights
+                        {% if login_type == 'admin' %}
+                            Secure management
+                        {% else %}
+                            Centralized insights
+                        {% endif %}
 
                     </div>
 
@@ -495,7 +535,11 @@
 
                             <span class="login-live-dot"></span>
 
-                            RICOZSOCIAL WORKSPACE
+                            {% if login_type == 'admin' %}
+                                RICOZSOCIAL ADMIN
+                            {% else %}
+                                RICOZSOCIAL WORKSPACE
+                            {% endif %}
 
                         </div>
 
@@ -517,11 +561,13 @@
                     <div class="login-heading">
 
                         <h2>
+
                             {% if login_type == 'admin' %}
                                 Admin Sign In
                             {% else %}
                                 Welcome back.
                             {% endif %}
+
                         </h2>
 
                         <p>
@@ -592,53 +638,14 @@
 
 
                     <!-- =================================================
-                         LOGIN TYPE SWITCH
-                    ================================================== -->
-
-                    <div
-                        class="login-type-switch"
-                        role="tablist"
-                        aria-label="Login type"
-                    >
-
-                        <a
-                            href="{{ url_for('login', login_type='client') }}"
-                            class="{% if login_type == 'client' %}active{% endif %}"
-                            role="tab"
-                            aria-selected="{{ 'true' if login_type == 'client' else 'false' }}"
-                        >
-                            Client Login
-                        </a>
-
-
-                        <a
-                            href="{{ url_for('login', login_type='admin') }}"
-                            class="{% if login_type == 'admin' %}active{% endif %}"
-                            role="tab"
-                            aria-selected="{{ 'true' if login_type == 'admin' else 'false' }}"
-                        >
-                            Admin Login
-                        </a>
-
-                    </div>
-
-
-
-                    <!-- =================================================
                          LOGIN FORM
                     ================================================== -->
 
                     <form
                         method="POST"
-                        action="{{ url_for('login') }}"
+                        action="{% if login_type == 'admin' %}{{ url_for('admin_login') }}{% else %}{{ url_for('login') }}{% endif %}"
                         class="login-form"
                     >
-
-                        <input
-                            type="hidden"
-                            name="login_type"
-                            value="{{ login_type or 'client' }}"
-                        >
 
 
                         <!-- Email -->
@@ -777,7 +784,68 @@
 
 
 
-                    <!-- Divider -->
+                    <!-- =================================================
+                         CLIENT / ADMIN SWITCH
+                    ================================================== -->
+
+                    <div class="login-divider">
+
+                        <span></span>
+
+                        <small>
+                            {% if login_type == 'admin' %}
+                                Are you a client?
+                            {% else %}
+                                Are you an administrator?
+                            {% endif %}
+                        </small>
+
+                        <span></span>
+
+                    </div>
+
+
+                    {% if login_type == 'admin' %}
+
+                        <a
+                            href="{{ url_for('login') }}"
+                            class="register-button"
+                        >
+
+                            <span>
+                                Go to Client Login
+                            </span>
+
+                            <span>
+                                →
+                            </span>
+
+                        </a>
+
+                    {% else %}
+
+                        <a
+                            href="{{ url_for('admin_login') }}"
+                            class="register-button"
+                        >
+
+                            <span>
+                                Go to Admin Login
+                            </span>
+
+                            <span>
+                                →
+                            </span>
+
+                        </a>
+
+                    {% endif %}
+
+
+
+                    <!-- =================================================
+                         REGISTER — CLIENT ONLY
+                    ================================================== -->
 
                     {% if login_type != 'admin' %}
 
@@ -793,9 +861,6 @@
 
                         </div>
 
-
-
-                        <!-- Register -->
 
                         <a
                             href="{{ url_for('register') }}"
@@ -855,11 +920,16 @@
                     </span>
 
                     <span>
-                        Social workspace
+
+                        {% if login_type == 'admin' %}
+                            Administration
+                        {% else %}
+                            Social workspace
+                        {% endif %}
+
                     </span>
 
                 </div>
-
 
             </section>
 

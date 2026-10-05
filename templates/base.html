@@ -1,6 +1,9 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
     <meta charset="UTF-8">
 
     <meta
@@ -17,33 +20,179 @@
         {% block title %}RicozSocial{% endblock %}
     </title>
 
+
+    <!-- =====================================================
+         GLOBAL STYLES
+    ====================================================== -->
+
     {% if current_user %}
+
         <link
             rel="stylesheet"
             href="{{ url_for('static', filename='css/base.css') }}"
         >
+
     {% else %}
+
         <link
             rel="stylesheet"
             href="{{ url_for('static', filename='css/auth.css') }}"
         >
+
     {% endif %}
 
+
     {% block extra_css %}{% endblock %}
+
+
+    <!-- =====================================================
+         TOPBAR CUSTOM STYLES
+    ====================================================== -->
+
+    <style>
+
+        /* =====================================================
+           TOPBAR PROFILE AREA
+        ====================================================== */
+
+        .topbar-profile-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+
+        .topbar-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+
+        /* =====================================================
+           BACK TO ADMIN BUTTON
+        ====================================================== */
+
+        .topbar-admin-back-button {
+            display: inline-flex;
+
+            align-items: center;
+            justify-content: center;
+
+            gap: 7px;
+
+            padding: 8px 13px;
+
+            background: #e5484d;
+            color: #ffffff !important;
+
+            border: 1px solid #e5484d;
+            border-radius: 7px;
+
+            text-decoration: none !important;
+
+            font-size: 12px;
+            font-weight: 700;
+
+            line-height: 1;
+
+            white-space: nowrap;
+
+            cursor: pointer;
+
+            box-shadow:
+                0 3px 8px rgba(229, 72, 77, 0.15);
+
+            transition:
+                background 0.2s ease,
+                border-color 0.2s ease,
+                transform 0.2s ease,
+                box-shadow 0.2s ease;
+        }
+
+
+        .topbar-admin-back-button:hover {
+            background: #c9363b;
+            border-color: #c9363b;
+
+            color: #ffffff !important;
+
+            transform: translateY(-1px);
+
+            box-shadow:
+                0 5px 14px rgba(229, 72, 77, 0.24);
+        }
+
+
+        .topbar-admin-back-icon {
+            display: inline-flex;
+
+            align-items: center;
+            justify-content: center;
+
+            font-size: 15px;
+            line-height: 1;
+        }
+
+
+        /* =====================================================
+           RESPONSIVE
+        ====================================================== */
+
+        @media (max-width: 900px) {
+
+            .topbar-profile-area {
+                gap: 8px;
+            }
+
+            .topbar-admin-back-button {
+                padding: 7px 10px;
+                font-size: 11px;
+            }
+
+        }
+
+
+        @media (max-width: 600px) {
+
+            .topbar-admin-back-button {
+                padding: 7px 9px;
+            }
+
+            .topbar-admin-back-button span:last-child {
+                display: none;
+            }
+
+        }
+
+    </style>
+
 </head>
+
 
 <body>
 
+
 {% if current_user %}
 
+
     <!-- =====================================================
-         APP LAYOUT
+         APPLICATION SHELL
     ====================================================== -->
 
     <div class="app-shell">
 
-        <!-- SIDEBAR -->
+
+        <!-- =================================================
+             SIDEBAR
+        ================================================== -->
+
         <aside class="sidebar">
+
+
+            <!-- =================================================
+                 BRAND
+            ================================================== -->
 
             <div class="sidebar-brand">
 
@@ -53,10 +202,13 @@
                 >
 
                     <span class="brand-mark">
+
                         <span></span>
                         <span></span>
                         <span></span>
+
                     </span>
+
 
                     <span class="brand-name">
                         Ricoz<span>Social</span>
@@ -67,150 +219,302 @@
             </div>
 
 
+            <!-- =================================================
+                 WORKSPACE
+            ================================================== -->
+
             <div class="workspace-label">
                 WORKSPACE
             </div>
 
 
+            <!-- =================================================
+                 SIDEBAR NAVIGATION
+            ================================================== -->
+
             <nav class="sidebar-nav">
+
+
+                <!-- OVERVIEW -->
 
                 <a
                     href="{{ url_for('dashboard') }}"
                     class="nav-item"
                 >
-                    <span class="nav-icon">⌂</span>
-                    <span>Overview</span>
+
+                    <span class="nav-icon">
+                        ⌂
+                    </span>
+
+                    <span>
+                        Overview
+                    </span>
+
                 </a>
+
+
+                <!-- BRANDS -->
 
                 <a
                     href="{{ url_for('brands') }}"
                     class="nav-item"
                 >
-                    <span class="nav-icon">◈</span>
-                    <span>Brands</span>
+
+                    <span class="nav-icon">
+                        ◈
+                    </span>
+
+                    <span>
+                        Brands
+                    </span>
+
                 </a>
+
+
+                <!-- ACCOUNTS -->
 
                 <a
                     href="{{ url_for('social_accounts') }}"
                     class="nav-item"
                 >
-                    <span class="nav-icon">◎</span>
-                    <span>Accounts</span>
+
+                    <span class="nav-icon">
+                        ◎
+                    </span>
+
+                    <span>
+                        Accounts
+                    </span>
+
                 </a>
+
+
+                <!-- PUBLISHER -->
 
                 <a
                     href="{{ url_for('publisher') }}"
                     class="nav-item"
                 >
-                    <span class="nav-icon">✎</span>
-                    <span>Publisher</span>
+
+                    <span class="nav-icon">
+                        ✎
+                    </span>
+
+                    <span>
+                        Publisher
+                    </span>
+
                 </a>
+
+
+                <!-- CALENDAR -->
 
                 <a
                     href="{{ url_for('calendar') }}"
                     class="nav-item"
                 >
-                    <span class="nav-icon">□</span>
-                    <span>Calendar</span>
+
+                    <span class="nav-icon">
+                        □
+                    </span>
+
+                    <span>
+                        Calendar
+                    </span>
+
                 </a>
+
+
+                <!-- APPROVALS -->
 
                 <a
                     href="{{ url_for('approvals') }}"
                     class="nav-item"
                 >
-                    <span class="nav-icon">✓</span>
-                    <span>Approvals</span>
+
+                    <span class="nav-icon">
+                        ✓
+                    </span>
+
+                    <span>
+                        Approvals
+                    </span>
+
 
                     {% if pending_approvals %}
+
                         <span class="nav-badge">
                             {{ pending_approvals }}
                         </span>
+
                     {% endif %}
+
                 </a>
 
+
+                <!-- =================================================
+                     ENGAGEMENT
+                ================================================== -->
 
                 <div class="nav-section">
                     ENGAGEMENT
                 </div>
 
 
+                <!-- COMMUNITY -->
+
                 <a
                     href="{{ url_for('community') }}"
                     class="nav-item"
                 >
-                    <span class="nav-icon">◌</span>
-                    <span>Community</span>
+
+                    <span class="nav-icon">
+                        ◌
+                    </span>
+
+                    <span>
+                        Community
+                    </span>
+
                 </a>
+
+
+                <!-- LISTENING -->
 
                 <a
                     href="{{ url_for('listening') }}"
                     class="nav-item"
                 >
-                    <span class="nav-icon">⌕</span>
-                    <span>Listening</span>
+
+                    <span class="nav-icon">
+                        ⌕
+                    </span>
+
+                    <span>
+                        Listening
+                    </span>
+
                 </a>
 
+
+                <!-- =================================================
+                     INSIGHTS
+                ================================================== -->
 
                 <div class="nav-section">
                     INSIGHTS
                 </div>
 
 
+                <!-- ANALYTICS -->
+
                 <a
                     href="{{ url_for('analytics') }}"
                     class="nav-item"
                 >
-                    <span class="nav-icon">▥</span>
-                    <span>Analytics</span>
+
+                    <span class="nav-icon">
+                        ▥
+                    </span>
+
+                    <span>
+                        Analytics
+                    </span>
+
                 </a>
+
+
+                <!-- REPORTS -->
 
                 <a
                     href="{{ url_for('reports') }}"
                     class="nav-item"
                 >
-                    <span class="nav-icon">▤</span>
-                    <span>Reports</span>
+
+                    <span class="nav-icon">
+                        ▤
+                    </span>
+
+                    <span>
+                        Reports
+                    </span>
+
                 </a>
 
+
+                <!-- =================================================
+                     SYSTEM
+                ================================================== -->
 
                 <div class="nav-section">
                     SYSTEM
                 </div>
 
 
+                <!-- NOTIFICATIONS -->
+
                 <a
                     href="{{ url_for('notifications') }}"
                     class="nav-item"
                 >
-                    <span class="nav-icon">♢</span>
-                    <span>Notifications</span>
+
+                    <span class="nav-icon">
+                        ♢
+                    </span>
+
+                    <span>
+                        Notifications
+                    </span>
+
 
                     {% if unread_notifications %}
+
                         <span class="nav-badge">
                             {{ unread_notifications }}
                         </span>
+
                     {% endif %}
+
                 </a>
+
+
+                <!-- SETTINGS -->
 
                 <a
                     href="{{ url_for('settings') }}"
                     class="nav-item"
                 >
-                    <span class="nav-icon">⚙</span>
-                    <span>Settings</span>
+
+                    <span class="nav-icon">
+                        ⚙
+                    </span>
+
+                    <span>
+                        Settings
+                    </span>
+
                 </a>
+
 
             </nav>
 
 
-            <!-- SIDEBAR FOOTER -->
+            <!-- =================================================
+                 SIDEBAR FOOTER
+            ================================================== -->
+
             <div class="sidebar-footer">
+
 
                 <div class="sidebar-user">
 
+
                     <div class="user-avatar">
+
                         {{ current_user.name[0]|upper }}
+
                     </div>
+
 
                     <div class="user-details">
 
@@ -224,12 +528,17 @@
 
                     </div>
 
+
                 </div>
+
+
+                <!-- LOGOUT -->
 
                 <form
                     method="POST"
                     action="{{ url_for('logout') }}"
                 >
+
                     <button
                         type="submit"
                         class="logout-button"
@@ -237,26 +546,42 @@
                     >
                         ↪
                     </button>
+
                 </form>
 
+
             </div>
+
 
         </aside>
 
 
-        <!-- MAIN -->
+        <!-- =====================================================
+             MAIN CONTENT
+        ====================================================== -->
+
         <main class="main-content">
 
-            <!-- TOPBAR -->
+
+            <!-- =================================================
+                 TOPBAR
+            ================================================== -->
+
             <header class="topbar">
+
+
+                <!-- MOBILE BRAND -->
 
                 <div class="mobile-brand">
 
                     <span class="brand-mark small">
+
                         <span></span>
                         <span></span>
                         <span></span>
+
                     </span>
+
 
                     <strong>
                         Ricoz<span>Social</span>
@@ -265,9 +590,14 @@
                 </div>
 
 
+                <!-- SEARCH -->
+
                 <div class="topbar-search">
 
-                    <span>⌕</span>
+                    <span>
+                        ⌕
+                    </span>
+
 
                     <input
                         type="search"
@@ -275,12 +605,22 @@
                         aria-label="Search"
                     >
 
-                    <kbd>⌘ K</kbd>
+
+                    <kbd>
+                        ⌘ K
+                    </kbd>
 
                 </div>
 
 
+                <!-- =================================================
+                     TOPBAR ACTIONS
+                ================================================== -->
+
                 <div class="topbar-actions">
+
+
+                    <!-- NOTIFICATIONS -->
 
                     <button
                         class="topbar-icon"
@@ -290,49 +630,119 @@
                         ♢
                     </button>
 
+
                     <div class="topbar-divider"></div>
 
-                    <div class="topbar-profile">
 
-                        <div class="user-avatar small">
-                            {{ current_user.name[0]|upper }}
-                        </div>
+                    <!-- =================================================
+                         PROFILE AREA
+                    ================================================== -->
 
-                        <div class="topbar-profile-text">
-                            <strong>
-                                {{ current_user.name }}
-                            </strong>
+                    <div class="topbar-profile-area">
 
-                            <span>
-                                {{ current_user.role|capitalize }}
+
+                        <!-- USER PROFILE -->
+
+                        <div class="topbar-profile">
+
+
+                            <div class="user-avatar small">
+
+                                {{ current_user.name[0]|upper }}
+
+                            </div>
+
+
+                            <div class="topbar-profile-text">
+
+                                <strong>
+                                    {{ current_user.name }}
+                                </strong>
+
+                                <span>
+                                    {{ current_user.role|capitalize }}
+                                </span>
+
+                            </div>
+
+
+                            <span class="profile-arrow">
+                                ▾
                             </span>
+
+
                         </div>
 
-                        <span class="profile-arrow">
-                            ▾
-                        </span>
+
+                        <!-- =================================================
+                             BACK TO ADMIN BUTTON
+
+                             IMPORTANT:
+
+                             app.py sends:
+
+                             show_admin_back_button=True
+
+                             ONLY from admin_client_details.
+
+                             default(false) makes sure that if another
+                             page does not send this variable, the
+                             button stays hidden.
+                        ================================================== -->
+
+                        {% if show_admin_back_button|default(false) %}
+
+                            <a
+                                href="{{ url_for('admin_dashboard') }}"
+                                class="topbar-admin-back-button"
+                                title="Back to Admin Dashboard"
+                            >
+
+                                <span class="topbar-admin-back-icon">
+                                    ←
+                                </span>
+
+                                <span>
+                                    Back to Admin
+                                </span>
+
+                            </a>
+
+                        {% endif %}
+
 
                     </div>
 
+
                 </div>
+
 
             </header>
 
 
-            <!-- FLASH MESSAGES -->
+            <!-- =================================================
+                 FLASH MESSAGES
+            ================================================== -->
+
             {% with messages = get_flashed_messages(with_categories=true) %}
 
                 {% if messages %}
 
                     <div class="flash-container">
 
+
                         {% for category, message in messages %}
 
                             <div class="flash-message {{ category }}">
-                                <span>{{ message }}</span>
+
+                                <span>
+                                    {{ message }}
+                                </span>
+
                             </div>
 
                         {% endfor %}
+
 
                     </div>
 
@@ -341,26 +751,41 @@
             {% endwith %}
 
 
-            <!-- PAGE CONTENT -->
+            <!-- =================================================
+                 PAGE CONTENT
+            ================================================== -->
+
             <section class="page-content">
 
-                {% block content %}{% endblock %}
+                {% block content %}
+
+                {% endblock %}
 
             </section>
 
+
         </main>
+
 
     </div>
 
+
 {% else %}
 
+
     <!-- =====================================================
-         AUTH LAYOUT
+         AUTHENTICATION LAYOUT
     ====================================================== -->
 
     <div class="auth-page">
 
+
+        <!-- =================================================
+             AUTH TOPBAR
+        ================================================== -->
+
         <header class="auth-topbar">
+
 
             <a
                 href="{{ url_for('login') }}"
@@ -375,33 +800,47 @@
 
                 </span>
 
+
                 <span class="brand-name">
                     Ricoz<span>Social</span>
                 </span>
 
             </a>
 
+
             <div class="auth-topbar-right">
-                <span>Social media management, simplified.</span>
+
+                <span>
+                    Social media management, simplified.
+                </span>
+
             </div>
+
 
         </header>
 
 
-        <!-- FLASH MESSAGES -->
+        <!-- =================================================
+             AUTH FLASH MESSAGES
+        ================================================== -->
+
         {% with messages = get_flashed_messages(with_categories=true) %}
 
             {% if messages %}
 
                 <div class="auth-flash-container">
 
+
                     {% for category, message in messages %}
 
                         <div class="flash-message {{ category }}">
+
                             {{ message }}
+
                         </div>
 
                     {% endfor %}
+
 
                 </div>
 
@@ -410,16 +849,33 @@
         {% endwith %}
 
 
-        {% block auth_content %}{% endblock %}
+        <!-- =================================================
+             AUTH CONTENT
+        ================================================== -->
+
+        {% block auth_content %}
+
+        {% endblock %}
+
 
     </div>
+
 
 {% endif %}
 
 
-<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+<!-- =========================================================
+     GLOBAL JAVASCRIPT
+========================================================= -->
+
+<script
+    src="{{ url_for('static', filename='js/app.js') }}"
+></script>
+
 
 {% block extra_js %}{% endblock %}
 
+
 </body>
 </html>
+```

@@ -1,235 +1,607 @@
+```html
 {% extends "base.html" %}
 
 {% block title %}
 Dashboard | RicozSocial
 {% endblock %}
 
+
 {% block extra_css %}
+
 <link
     rel="stylesheet"
     href="{{ url_for('static', filename='css/dashboard.css') }}"
 >
 
 <style>
-    /* =====================================================
-       AI ASSISTANT DASHBOARD CARD
-       ===================================================== */
 
-    .dashboard-ai-card {
-        position: relative;
-        overflow: hidden;
+/* =====================================================
+   AI ASSISTANT DASHBOARD CARD
+   ===================================================== */
 
-        background:
-            linear-gradient(
-                135deg,
-                #e31e24 0%,
-                #c8171d 55%,
-                #a91218 100%
-            );
+.dashboard-ai-card {
 
-        border-radius: 24px;
+    position: relative;
+    overflow: hidden;
 
-        padding: 30px 34px;
+    margin: 24px 0;
+    padding: 30px 34px;
 
-        margin-top: 24px;
+    border-radius: 24px;
 
-        color: #ffffff;
+    background:
+        linear-gradient(
+            135deg,
+            #e31e24 0%,
+            #c8171d 55%,
+            #a91218 100%
+        );
 
-        box-shadow:
-            0 18px 42px rgba(200, 23, 29, 0.20);
-    }
+    color: #fff;
 
-    .dashboard-ai-card::before {
-        content: "";
+    box-shadow:
+        0 18px 42px rgba(200, 23, 29, .20);
 
-        position: absolute;
+}
 
-        width: 260px;
-        height: 260px;
+.dashboard-ai-card::before {
 
-        border-radius: 50%;
+    content: "";
 
-        background: rgba(255, 255, 255, 0.08);
+    position: absolute;
 
-        top: -150px;
-        right: -70px;
-    }
+    width: 260px;
+    height: 260px;
 
-    .dashboard-ai-card::after {
-        content: "";
+    top: -150px;
+    right: -70px;
 
-        position: absolute;
+    border-radius: 50%;
 
-        width: 180px;
-        height: 180px;
+    background:
+        rgba(255,255,255,.08);
 
-        border-radius: 50%;
+}
 
-        background: rgba(255, 255, 255, 0.05);
+.dashboard-ai-card::after {
 
-        bottom: -110px;
-        left: 35%;
-    }
+    content: "";
+
+    position: absolute;
+
+    width: 180px;
+    height: 180px;
+
+    bottom: -110px;
+    left: 35%;
+
+    border-radius: 50%;
+
+    background:
+        rgba(255,255,255,.05);
+
+}
+
+.dashboard-ai-content {
+
+    position: relative;
+    z-index: 2;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 30px;
+
+}
+
+.dashboard-ai-copy {
+
+    display: flex;
+
+    align-items: flex-start;
+
+    gap: 18px;
+
+    min-width: 0;
+
+}
+
+.dashboard-ai-icon {
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    width: 58px;
+    height: 58px;
+
+    flex-shrink: 0;
+
+    border: 1px solid rgba(255,255,255,.22);
+
+    border-radius: 17px;
+
+    background:
+        rgba(255,255,255,.16);
+
+    font-size: 26px;
+
+}
+
+.dashboard-ai-eyebrow {
+
+    display: block;
+
+    margin-bottom: 5px;
+
+    font-size: 10px;
+
+    font-weight: 850;
+
+    letter-spacing: 2px;
+
+    opacity: .82;
+
+}
+
+.dashboard-ai-copy h2 {
+
+    margin: 0;
+
+    color: #fff;
+
+    font-size: 23px;
+
+    font-weight: 800;
+
+}
+
+.dashboard-ai-copy p {
+
+    max-width: 680px;
+
+    margin: 7px 0 0;
+
+    color:
+        rgba(255,255,255,.88);
+
+    font-size: 13px;
+
+    line-height: 1.65;
+
+}
+
+.dashboard-ai-action {
+
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 9px;
+
+    min-height: 46px;
+
+    padding: 0 20px;
+
+    flex-shrink: 0;
+
+    border-radius: 12px;
+
+    background: #fff;
+
+    color: #c8171d;
+
+    text-decoration: none;
+
+    font-size: 13px;
+
+    font-weight: 800;
+
+    box-shadow:
+        0 8px 20px rgba(0,0,0,.12);
+
+    transition:
+        transform .2s ease,
+        color .2s ease,
+        box-shadow .2s ease;
+
+}
+
+.dashboard-ai-action:hover {
+
+    transform:
+        translateY(-2px);
+
+    color: #a91218;
+
+    box-shadow:
+        0 12px 25px rgba(0,0,0,.16);
+
+}
+
+
+/* =====================================================
+   TEAM & RESPONSIBILITIES
+   ===================================================== */
+
+.dashboard-team-card {
+
+    position: relative;
+    overflow: hidden;
+
+    margin: 24px 0;
+    padding: 28px 30px;
+
+    border: 1px solid #f0dfe0;
+
+    border-radius: 24px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #ffffff 0%,
+            #fff8f8 100%
+        );
+
+    box-shadow:
+        0 14px 34px rgba(27,31,35,.07);
+
+}
+
+.dashboard-team-card::before {
+
+    content: "";
+
+    position: absolute;
+
+    width: 220px;
+    height: 220px;
+
+    top: -130px;
+    right: -65px;
+
+    border-radius: 50%;
+
+    background:
+        rgba(227,30,36,.045);
+
+    pointer-events: none;
+
+}
+
+.dashboard-team-card::after {
+
+    content: "";
+
+    position: absolute;
+
+    width: 140px;
+    height: 140px;
+
+    bottom: -90px;
+    left: 42%;
+
+    border-radius: 50%;
+
+    background:
+        rgba(227,30,36,.025);
+
+    pointer-events: none;
+
+}
+
+.dashboard-team-content {
+
+    position: relative;
+    z-index: 2;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 30px;
+
+}
+
+.dashboard-team-copy {
+
+    display: flex;
+
+    align-items: flex-start;
+
+    gap: 17px;
+
+    min-width: 0;
+
+}
+
+.dashboard-team-icon {
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    width: 58px;
+    height: 58px;
+
+    flex-shrink: 0;
+
+    border: 1px solid #f4d4d6;
+
+    border-radius: 17px;
+
+    background: #fff0f1;
+
+    color: #d71920;
+
+    font-size: 24px;
+
+}
+
+.dashboard-team-eyebrow {
+
+    display: block;
+
+    margin-bottom: 5px;
+
+    color: #d71920;
+
+    font-size: 10px;
+
+    font-weight: 850;
+
+    letter-spacing: 2px;
+
+}
+
+.dashboard-team-copy h2 {
+
+    margin: 0;
+
+    color: #202124;
+
+    font-size: 22px;
+
+    font-weight: 800;
+
+}
+
+.dashboard-team-copy p {
+
+    max-width: 720px;
+
+    margin: 7px 0 0;
+
+    color: #6b7078;
+
+    font-size: 13px;
+
+    line-height: 1.65;
+
+}
+
+.dashboard-team-highlights {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    margin-top: 13px;
+
+    flex-wrap: wrap;
+
+}
+
+.dashboard-team-pill {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    min-height: 29px;
+
+    padding: 0 10px;
+
+    border: 1px solid #eadedf;
+
+    border-radius: 999px;
+
+    background: #fff;
+
+    color: #5d626a;
+
+    font-size: 11px;
+
+    font-weight: 700;
+
+}
+
+.dashboard-team-pill::before {
+
+    content: "";
+
+    width: 6px;
+    height: 6px;
+
+    margin-right: 6px;
+
+    border-radius: 50%;
+
+    background: #e31e24;
+
+}
+
+.dashboard-team-action {
+
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 9px;
+
+    min-height: 46px;
+
+    padding: 0 20px;
+
+    flex-shrink: 0;
+
+    border-radius: 12px;
+
+    background: #e31e24;
+
+    color: #fff;
+
+    text-decoration: none;
+
+    font-size: 13px;
+
+    font-weight: 800;
+
+    white-space: nowrap;
+
+    box-shadow:
+        0 8px 20px rgba(227,30,36,.18);
+
+    transition:
+        transform .2s ease,
+        background .2s ease,
+        box-shadow .2s ease;
+
+}
+
+.dashboard-team-action:hover {
+
+    transform:
+        translateY(-2px);
+
+    background: #c8171d;
+
+    color: #fff;
+
+    box-shadow:
+        0 12px 25px rgba(227,30,36,.23);
+
+}
+
+.dashboard-team-action span {
+
+    font-size: 16px;
+
+}
+
+
+/* =====================================================
+   RESPONSIVE TEAM / AI
+   ===================================================== */
+
+@media (max-width: 800px) {
 
     .dashboard-ai-content {
-        position: relative;
-        z-index: 2;
 
-        display: flex;
-
-        align-items: center;
-        justify-content: space-between;
-
-        gap: 30px;
-    }
-
-    .dashboard-ai-copy {
-        display: flex;
+        flex-direction: column;
 
         align-items: flex-start;
 
-        gap: 18px;
-
-        min-width: 0;
-    }
-
-    .dashboard-ai-icon {
-        width: 58px;
-        height: 58px;
-
-        flex-shrink: 0;
-
-        display: flex;
-        align-items: center;
-        justify-content: center;
-
-        background: rgba(255, 255, 255, 0.16);
-
-        border: 1px solid rgba(255, 255, 255, 0.22);
-
-        border-radius: 17px;
-
-        font-size: 26px;
-        font-weight: 800;
-    }
-
-    .dashboard-ai-eyebrow {
-        display: block;
-
-        margin-bottom: 5px;
-
-        font-size: 10px;
-        font-weight: 850;
-
-        letter-spacing: 2px;
-
-        opacity: 0.82;
-    }
-
-    .dashboard-ai-copy h2 {
-        margin: 0;
-
-        font-size: 23px;
-        font-weight: 800;
-
-        color: #ffffff;
-    }
-
-    .dashboard-ai-copy p {
-        max-width: 680px;
-
-        margin: 7px 0 0;
-
-        font-size: 13px;
-
-        line-height: 1.65;
-
-        color: rgba(255, 255, 255, 0.88);
     }
 
     .dashboard-ai-action {
-        display: inline-flex;
 
-        align-items: center;
-        justify-content: center;
-
-        gap: 9px;
-
-        flex-shrink: 0;
-
-        min-height: 46px;
-
-        padding: 0 20px;
-
-        border-radius: 12px;
-
-        background: #ffffff;
-
-        color: #c8171d;
-
-        text-decoration: none;
-
-        font-size: 13px;
-        font-weight: 800;
-
-        box-shadow:
-            0 8px 20px rgba(0, 0, 0, 0.12);
-
-        transition:
-            transform 0.2s ease,
-            box-shadow 0.2s ease;
-    }
-
-    .dashboard-ai-action:hover {
-        transform: translateY(-2px);
-
-        box-shadow:
-            0 12px 25px rgba(0, 0, 0, 0.16);
-
-        color: #a91218;
-    }
-
-    .dashboard-ai-action span {
-        font-size: 16px;
-    }
-
-    @media (max-width: 800px) {
-
-        .dashboard-ai-content {
-            flex-direction: column;
-
-            align-items: flex-start;
-        }
-
-        .dashboard-ai-action {
-            width: 100%;
-        }
+        width: 100%;
 
     }
 
-    @media (max-width: 520px) {
+    .dashboard-team-content {
 
-        .dashboard-ai-card {
-            padding: 24px 20px;
-        }
+        flex-direction: column;
 
-        .dashboard-ai-copy {
-            gap: 13px;
-        }
-
-        .dashboard-ai-icon {
-            width: 48px;
-            height: 48px;
-
-            font-size: 21px;
-        }
-
-        .dashboard-ai-copy h2 {
-            font-size: 19px;
-        }
+        align-items: flex-start;
 
     }
+
+    .dashboard-team-action {
+
+        width: 100%;
+
+    }
+
+}
+
+
+@media (max-width: 600px) {
+
+    .dashboard-ai-card {
+
+        padding: 24px 20px;
+
+    }
+
+    .dashboard-ai-copy {
+
+        gap: 13px;
+
+    }
+
+    .dashboard-ai-icon {
+
+        width: 48px;
+        height: 48px;
+
+        font-size: 21px;
+
+    }
+
+    .dashboard-ai-copy h2 {
+
+        font-size: 19px;
+
+    }
+
+    .dashboard-team-card {
+
+        padding: 23px 20px;
+
+    }
+
+    .dashboard-team-copy {
+
+        gap: 13px;
+
+    }
+
+    .dashboard-team-icon {
+
+        width: 48px;
+        height: 48px;
+
+        font-size: 20px;
+
+    }
+
+    .dashboard-team-copy h2 {
+
+        font-size: 18px;
+
+    }
+
+    .dashboard-team-pill {
+
+        font-size: 10px;
+
+    }
+
+}
+
 </style>
+
 {% endblock %}
 
 
@@ -237,55 +609,75 @@ Dashboard | RicozSocial
 
 <div class="dashboard-page">
 
-    <!-- HERO -->
-    <section class="dashboard-hero">
 
-        <div class="hero-glow hero-glow-one"></div>
-        <div class="hero-glow hero-glow-two"></div>
+    <!-- =====================================================
+         HERO
+         ===================================================== -->
+
+    <section class="dashboard-hero">
 
         <div class="dashboard-hero-content">
 
             <div class="dashboard-hero-copy">
 
                 <div class="eyebrow">
-                    RICOZ WORKSPACE
+                    RICOZSOCIAL · COMMAND CENTER
                 </div>
 
                 <h1>
-                    Good to see you,
-                    <span>{{ current_user.name.split(' ')[0] }}</span>.
+
+                    Welcome back,
+
+                    <span>
+                        {{ current_user.name }}
+                    </span>
+
                 </h1>
 
                 <p>
-                    Manage your brands, social channels, content,
-                    approvals, and publishing workflow from one place.
+                    Manage your social media presence, content,
+                    campaigns, analytics and client activity
+                    from one powerful workspace.
                 </p>
 
                 <div class="hero-actions">
 
                     <a
-                        href="{{ url_for('publisher') }}"
+                        href="{{ url_for('create_post') }}"
                         class="hero-primary-btn"
                     >
-                        <span class="btn-icon">+</span>
+
+                        <span class="btn-icon">
+                            ＋
+                        </span>
+
                         Create Post
+
                     </a>
 
+
                     <a
-                        href="{{ url_for('calendar') }}"
+                        href="{{ url_for('publisher') }}"
                         class="hero-secondary-btn"
                     >
-                        View Calendar
-                        <span>→</span>
+
+                        <span>
+                            ▣
+                        </span>
+
+                        Publisher
+
                     </a>
 
                 </div>
 
             </div>
 
+
             <div class="hero-orbit">
 
                 <div class="orbit-ring orbit-ring-one"></div>
+
                 <div class="orbit-ring orbit-ring-two"></div>
 
                 <div class="hero-logo-card">
@@ -295,20 +687,37 @@ Dashboard | RicozSocial
                     </div>
 
                     <div>
-                        <strong>RicozSocial</strong>
-                        <span>Social workspace</span>
+
+                        <strong>
+                            RicozSocial
+                        </strong>
+
+                        <span>
+                            Social Command Center
+                        </span>
+
                     </div>
 
                 </div>
 
+
                 <div class="floating-mini-card mini-one">
+
                     <span class="mini-dot"></span>
-                    Social channels
+
+                    Active Workspace
+
                 </div>
 
+
                 <div class="floating-mini-card mini-two">
-                    <span class="mini-icon">✓</span>
-                    Workflow active
+
+                    <span class="mini-icon">
+                        ✓
+                    </span>
+
+                    All Systems Ready
+
                 </div>
 
             </div>
@@ -319,7 +728,7 @@ Dashboard | RicozSocial
 
 
     <!-- =====================================================
-         AI CONTENT ASSISTANT
+         AI ASSISTANT
          ===================================================== -->
 
     <section class="dashboard-ai-card">
@@ -335,17 +744,17 @@ Dashboard | RicozSocial
                 <div>
 
                     <span class="dashboard-ai-eyebrow">
-                        RICOZ AI
+                        AI CONTENT ASSISTANT
                     </span>
 
                     <h2>
-                        Create better content with AI
+                        Create Smarter Social Content
                     </h2>
 
                     <p>
-                        Turn your ideas into professional social media
-                        posts with AI-powered content generation,
-                        platform optimization and hashtag suggestions.
+                        Generate social media ideas, captions,
+                        hooks and platform-ready content with
+                        the RicozSocial AI assistant.
                     </p>
 
                 </div>
@@ -353,13 +762,25 @@ Dashboard | RicozSocial
             </div>
 
 
+            <!-- =================================================
+                 FIXED AI ASSISTANT ROUTE
+                 ================================================= -->
+
             <a
                 href="{{ url_for('ai_assistant') }}"
                 class="dashboard-ai-action"
             >
-                <span>✦</span>
+
+                <span>
+                    ✦
+                </span>
+
                 Open AI Assistant
-                <span>→</span>
+
+                <span>
+                    →
+                </span>
+
             </a>
 
         </div>
@@ -367,229 +788,369 @@ Dashboard | RicozSocial
     </section>
 
 
-    <!-- KPI -->
+    <!-- =====================================================
+         TEAM & RESPONSIBILITIES
+         ===================================================== -->
+
+    <section class="dashboard-team-card">
+
+        <div class="dashboard-team-content">
+
+            <div class="dashboard-team-copy">
+
+                <div class="dashboard-team-icon">
+                    👥
+                </div>
+
+                <div>
+
+                    <span class="dashboard-team-eyebrow">
+                        TEAM MANAGEMENT
+                    </span>
+
+                    <h2>
+                        Roles & Responsibilities
+                    </h2>
+
+                    <p>
+                        Define team roles, assign responsibilities,
+                        and make sure every client team member knows
+                        exactly what they are allowed to manage.
+                    </p>
+
+                    <div class="dashboard-team-highlights">
+
+                        <span class="dashboard-team-pill">
+                            Roles
+                        </span>
+
+                        <span class="dashboard-team-pill">
+                            Responsibilities
+                        </span>
+
+                        <span class="dashboard-team-pill">
+                            Access Rules
+                        </span>
+
+                        <span class="dashboard-team-pill">
+                            Team Permissions
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <a
+                href="{{ url_for('team') }}"
+                class="dashboard-team-action"
+                aria-label="Manage team roles and responsibilities"
+            >
+
+                <span>
+                    👥
+                </span>
+
+                Manage Roles & Responsibilities
+
+                <span>
+                    →
+                </span>
+
+            </a>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         KPI
+         ===================================================== -->
+
     <section class="kpi-grid">
 
-        <article class="kpi-card">
+
+        <div class="kpi-card">
 
             <div class="kpi-card-background"></div>
 
             <div class="kpi-top">
 
                 <div class="kpi-icon kpi-icon-red">
-                    <span>▦</span>
+                    ◉
                 </div>
 
                 <span class="kpi-label">
-                    Active Brands
+                    Total Posts
                 </span>
 
             </div>
 
             <div class="kpi-value">
-                {{ total_brands }}
+                {{ stats.total_posts|default(0) }}
             </div>
 
             <div class="kpi-footer">
-                <span>Brand workspaces</span>
 
-                <a href="{{ url_for('brands') }}">
-                    Manage →
+                <span>
+                    All created content
+                </span>
+
+                <a href="{{ url_for('publisher') }}">
+                    View →
                 </a>
+
             </div>
 
-        </article>
+        </div>
 
 
-        <article class="kpi-card">
+        <div class="kpi-card">
 
             <div class="kpi-card-background"></div>
 
             <div class="kpi-top">
 
                 <div class="kpi-icon kpi-icon-dark">
-                    <span>◎</span>
+                    ◷
                 </div>
 
                 <span class="kpi-label">
-                    Connected Accounts
+                    Scheduled
                 </span>
 
             </div>
 
             <div class="kpi-value">
-                {{ connected_accounts }}
+                {{ stats.scheduled_posts|default(0) }}
             </div>
 
             <div class="kpi-footer">
-                <span>Social channels</span>
 
-                <a href="{{ url_for('social_accounts') }}">
+                <span>
+                    Upcoming content
+                </span>
+
+                <a href="{{ url_for('publisher') }}">
                     View →
                 </a>
+
             </div>
 
-        </article>
+        </div>
 
 
-        <article class="kpi-card">
+        <div class="kpi-card">
 
             <div class="kpi-card-background"></div>
 
             <div class="kpi-top">
 
                 <div class="kpi-icon kpi-icon-soft">
-                    <span>◷</span>
+                    ✓
                 </div>
 
                 <span class="kpi-label">
-                    Scheduled Posts
+                    Published
                 </span>
 
             </div>
 
             <div class="kpi-value">
-                {{ scheduled_posts }}
+                {{ stats.published_posts|default(0) }}
             </div>
 
             <div class="kpi-footer">
-                <span>Upcoming content</span>
 
-                <a href="{{ url_for('calendar') }}">
-                    Calendar →
+                <span>
+                    Published content
+                </span>
+
+                <a href="{{ url_for('publisher') }}">
+                    View →
                 </a>
+
             </div>
 
-        </article>
+        </div>
 
 
-        <article class="kpi-card">
+        <div class="kpi-card">
 
             <div class="kpi-card-background"></div>
 
             <div class="kpi-top">
 
                 <div class="kpi-icon kpi-icon-alert">
-                    <span>✓</span>
+                    !
                 </div>
 
                 <span class="kpi-label">
-                    Pending Approvals
+                    Pending Approval
                 </span>
 
             </div>
 
             <div class="kpi-value">
-                {{ pending_approvals }}
+                {{ stats.pending_approvals|default(0) }}
             </div>
 
             <div class="kpi-footer">
-                <span>Needs attention</span>
 
-                <a href="{{ url_for('approvals') }}">
+                <span>
+                    Awaiting review
+                </span>
+
+                <a href="{{ url_for('publisher') }}">
                     Review →
                 </a>
+
             </div>
 
-        </article>
+        </div>
 
     </section>
 
 
-    <!-- ANALYTICS + ACCOUNTS -->
-    <section class="dashboard-main-grid">
+    <!-- =====================================================
+         MAIN ANALYTICS / ACCOUNTS
+         ===================================================== -->
 
-        <article class="dashboard-card analytics-card">
+    <div class="dashboard-main-grid">
+
+
+        <!-- ANALYTICS -->
+
+        <section class="dashboard-card">
 
             <div class="card-header">
 
                 <div>
+
                     <span class="card-eyebrow">
                         PERFORMANCE
                     </span>
 
                     <h2>
-                        Social activity
+                        Social Performance
                     </h2>
 
                     <p>
-                        Your publishing activity at a glance.
+                        Overview of your social media activity
                     </p>
+
                 </div>
 
                 <a
                     href="{{ url_for('analytics') }}"
                     class="card-action"
                 >
-                    Analytics →
+                    View Analytics →
                 </a>
 
             </div>
 
+
             <div class="analytics-summary">
 
                 <div class="analytics-summary-item">
-                    <span>Total posts</span>
-                    <strong>{{ total_posts }}</strong>
+
+                    <span>
+                        Impressions
+                    </span>
+
+                    <strong>
+                        {{ analytics.total_impressions|default(0) }}
+                    </strong>
+
                 </div>
 
-                <div class="analytics-summary-item">
-                    <span>Published</span>
-                    <strong>{{ published_posts }}</strong>
-                </div>
 
                 <div class="analytics-summary-item">
-                    <span>Scheduled</span>
-                    <strong>{{ scheduled_posts }}</strong>
+
+                    <span>
+                        Reach
+                    </span>
+
+                    <strong>
+                        {{ analytics.total_reach|default(0) }}
+                    </strong>
+
+                </div>
+
+
+                <div class="analytics-summary-item">
+
+                    <span>
+                        Engagement
+                    </span>
+
+                    <strong>
+                        {{ analytics.total_engagement|default(0) }}
+                    </strong>
+
                 </div>
 
             </div>
 
+
             <div class="chart-wrapper">
 
-                <canvas id="dashboardAnalyticsChart"></canvas>
+                {% if analytics_chart_data|default([]) %}
 
-                {% if not analytics %}
+                    <canvas
+                        id="dashboardAnalyticsChart"
+                    ></canvas>
 
-                <div class="chart-empty">
+                {% else %}
 
-                    <div class="chart-empty-icon">
-                        ↗
+                    <div class="chart-empty">
+
+                        <div class="chart-empty-icon">
+                            ◌
+                        </div>
+
+                        <strong>
+                            No analytics data yet
+                        </strong>
+
+                        <span>
+                            Connect social accounts and publish
+                            content to start seeing performance data.
+                        </span>
+
                     </div>
-
-                    <strong>
-                        Analytics will appear here
-                    </strong>
-
-                    <span>
-                        Publish content to start building your performance history.
-                    </span>
-
-                </div>
 
                 {% endif %}
 
             </div>
 
-        </article>
+        </section>
 
 
-        <article class="dashboard-card accounts-card">
+        <!-- SOCIAL ACCOUNTS -->
+
+        <section class="dashboard-card">
 
             <div class="card-header">
 
                 <div>
+
                     <span class="card-eyebrow">
-                        CHANNELS
+                        CONNECTED CHANNELS
                     </span>
 
                     <h2>
-                        Connected accounts
+                        Social Accounts
                     </h2>
 
                     <p>
-                        Your active social channels.
+                        Your connected platforms
                     </p>
+
                 </div>
 
                 <a
@@ -604,103 +1165,127 @@ Dashboard | RicozSocial
 
             {% if social_accounts %}
 
-            <div class="account-list">
+                <div class="account-list">
 
-                {% for account in social_accounts %}
+                    {% for account in social_accounts %}
 
-                <div class="account-row">
+                        <div class="account-row">
 
-                    <div
-                        class="platform-avatar platform-{{ account.platform|lower }}"
-                    >
-                        {{ account.platform[:1]|upper }}
-                    </div>
+                            <div
+                                class="platform-avatar platform-{{ account.platform|lower }}"
+                            >
 
-                    <div class="account-details">
+                                {{ account.platform[:1]|upper }}
 
-                        <strong>
-                            {{ account.account_name or account.username or 'Social Account' }}
-                        </strong>
+                            </div>
 
-                        <span>
-                            {{ account.platform|capitalize }}
 
-                            {% if account.brand_name %}
-                            · {{ account.brand_name }}
+                            <div class="account-details">
+
+                                <strong>
+                                    {{ account.account_name }}
+                                </strong>
+
+                                <span>
+
+                                    {{ account.platform }}
+
+                                    {% if account.username %}
+
+                                        · {{ account.username }}
+
+                                    {% endif %}
+
+                                </span>
+
+                            </div>
+
+
+                            {% if account.is_connected %}
+
+                                <span class="connected-status">
+
+                                    <i></i>
+
+                                    Connected
+
+                                </span>
+
                             {% endif %}
-                        </span>
 
-                    </div>
+                        </div>
 
-                    <span class="connected-status">
-                        <i></i>
-                        Connected
-                    </span>
+                    {% endfor %}
 
                 </div>
-
-                {% endfor %}
-
-            </div>
 
             {% else %}
 
-            <div class="empty-state compact">
+                <div class="empty-state compact">
 
-                <div class="empty-state-icon">
-                    ◎
+                    <div class="empty-state-icon">
+                        +
+                    </div>
+
+                    <strong>
+                        No social accounts connected
+                    </strong>
+
+                    <span>
+                        Connect your social platforms to manage
+                        everything from RicozSocial.
+                    </span>
+
+                    <a
+                        href="{{ url_for('social_accounts') }}"
+                        class="button button-primary"
+                    >
+                        Connect Account
+                    </a>
+
                 </div>
-
-                <strong>
-                    No connected accounts
-                </strong>
-
-                <span>
-                    Connect your social channels to manage them from RicozSocial.
-                </span>
-
-                <a
-                    href="{{ url_for('social_accounts') }}"
-                    class="button button-secondary"
-                >
-                    Connect Account
-                </a>
-
-            </div>
 
             {% endif %}
 
-        </article>
+        </section>
 
-    </section>
+    </div>
 
 
-    <!-- RECENT + UPCOMING -->
-    <section class="dashboard-two-column">
+    <!-- =====================================================
+         RECENT POSTS / SCHEDULE
+         ===================================================== -->
 
-        <article class="dashboard-card">
+    <div class="dashboard-two-column">
+
+
+        <!-- RECENT POSTS -->
+
+        <section class="dashboard-card">
 
             <div class="card-header">
 
                 <div>
+
                     <span class="card-eyebrow">
                         CONTENT
                     </span>
 
                     <h2>
-                        Recent posts
+                        Recent Posts
                     </h2>
 
                     <p>
-                        Latest content activity.
+                        Latest content activity
                     </p>
+
                 </div>
 
                 <a
                     href="{{ url_for('publisher') }}"
                     class="card-action"
                 >
-                    Publisher →
+                    View All →
                 </a>
 
             </div>
@@ -708,105 +1293,114 @@ Dashboard | RicozSocial
 
             {% if recent_posts %}
 
-            <div class="post-list">
+                <div class="post-list">
 
-                {% for post in recent_posts %}
+                    {% for post in recent_posts %}
 
-                <div class="post-row">
+                        <div class="post-row">
 
-                    <div class="post-status-dot status-{{ post.status|lower }}"></div>
+                            <span
+                                class="post-status-dot status-{{ post.status|default('draft')|lower|replace('_', '-') }}"
+                            ></span>
 
-                    <div class="post-row-content">
 
-                        <div class="post-row-title">
-                            {{ post.title or 'Untitled post' }}
+                            <div class="post-row-content">
+
+                                <strong class="post-row-title">
+
+                                    {{ post.title or 'Untitled Post' }}
+
+                                </strong>
+
+                                <span class="post-row-meta">
+
+                                    {{ post.brand_name|default('No Brand') }}
+
+                                    <span class="meta-separator">
+                                        ·
+                                    </span>
+
+                                    {{ post.status|default('Draft')|replace('_', ' ')|title }}
+
+                                </span>
+
+                            </div>
+
+
+                            <span class="post-row-date">
+
+                                {{
+                                    post.created_at.strftime('%b %d')
+                                    if post.created_at
+                                    else ''
+                                }}
+
+                            </span>
+
                         </div>
 
-                        <div class="post-row-meta">
-
-                            <span>
-                                {{ post.brand_name }}
-                            </span>
-
-                            <span class="meta-separator">
-                                •
-                            </span>
-
-                            <span>
-                                {{ post.status|replace('_', ' ')|capitalize }}
-                            </span>
-
-                        </div>
-
-                    </div>
-
-                    <div class="post-row-date">
-
-                        {% if post.created_at %}
-                            {{ post.created_at.strftime('%d %b') }}
-                        {% endif %}
-
-                    </div>
+                    {% endfor %}
 
                 </div>
-
-                {% endfor %}
-
-            </div>
 
             {% else %}
 
-            <div class="empty-state">
+                <div class="empty-state compact">
 
-                <div class="empty-state-icon">
-                    ✎
+                    <div class="empty-state-icon">
+                        +
+                    </div>
+
+                    <strong>
+                        No posts yet
+                    </strong>
+
+                    <span>
+                        Create your first social media post
+                        to start building your content library.
+                    </span>
+
+                    <a
+                        href="{{ url_for('create_post') }}"
+                        class="button button-primary"
+                    >
+                        Create Post
+                    </a>
+
                 </div>
-
-                <strong>
-                    No posts yet
-                </strong>
-
-                <span>
-                    Create your first social post to start your content workflow.
-                </span>
-
-                <a
-                    href="{{ url_for('publisher') }}"
-                    class="button button-primary"
-                >
-                    Create First Post
-                </a>
-
-            </div>
 
             {% endif %}
 
-        </article>
+        </section>
 
 
-        <article class="dashboard-card">
+        <!-- UPCOMING -->
+
+        <section class="dashboard-card">
 
             <div class="card-header">
 
                 <div>
+
                     <span class="card-eyebrow">
-                        SCHEDULE
+                        SCHEDULING
                     </span>
 
                     <h2>
-                        Upcoming posts
+                        Upcoming Posts
                     </h2>
 
                     <p>
-                        What's coming next.
+                        Scheduled content
                     </p>
+
                 </div>
 
                 <a
-                    href="{{ url_for('calendar') }}"
+                    href="{{ url_for('publisher') }}"
                     class="card-action"
                 >
-                    Calendar →
+                    View Calendar →
                 </a>
 
             </div>
@@ -814,178 +1408,226 @@ Dashboard | RicozSocial
 
             {% if upcoming_posts %}
 
-            <div class="schedule-list">
+                <div class="schedule-list">
 
-                {% for post in upcoming_posts %}
+                    {% for post in upcoming_posts %}
 
-                <div class="schedule-row">
+                        <div class="schedule-row">
 
-                    <div class="schedule-date">
+                            <div class="schedule-date">
 
-                        <strong>
-                            {{ post.scheduled_at.strftime('%d') }}
-                        </strong>
+                                <strong>
 
-                        <span>
-                            {{ post.scheduled_at.strftime('%b') }}
-                        </span>
+                                    {{
+                                        post.scheduled_at.strftime('%d')
+                                        if post.scheduled_at
+                                        else '--'
+                                    }}
 
-                    </div>
+                                </strong>
 
-                    <div class="schedule-details">
+                                <span>
 
-                        <strong>
-                            {{ post.title or 'Untitled post' }}
-                        </strong>
+                                    {{
+                                        post.scheduled_at.strftime('%b')
+                                        if post.scheduled_at
+                                        else ''
+                                    }}
 
-                        <span>
-                            {{ post.brand_name }}
-                        </span>
+                                </span>
 
-                    </div>
+                            </div>
 
-                    <div class="schedule-time">
-                        {{ post.scheduled_at.strftime('%I:%M %p') }}
-                    </div>
+
+                            <div class="schedule-details">
+
+                                <strong>
+                                    {{ post.title or 'Untitled Post' }}
+                                </strong>
+
+                                <span>
+                                    {{ post.brand_name|default('No Brand') }}
+                                </span>
+
+                            </div>
+
+
+                            <span class="schedule-time">
+
+                                {{
+                                    post.scheduled_at.strftime('%I:%M %p')
+                                    if post.scheduled_at
+                                    else ''
+                                }}
+
+                            </span>
+
+                        </div>
+
+                    {% endfor %}
 
                 </div>
-
-                {% endfor %}
-
-            </div>
 
             {% else %}
 
-            <div class="empty-state compact">
+                <div class="empty-state compact">
 
-                <div class="empty-state-icon">
-                    ◷
+                    <div class="empty-state-icon">
+                        ◷
+                    </div>
+
+                    <strong>
+                        Nothing scheduled
+                    </strong>
+
+                    <span>
+                        Schedule your upcoming social content
+                        from the Publisher.
+                    </span>
+
+                    <a
+                        href="{{ url_for('publisher') }}"
+                        class="button button-secondary"
+                    >
+                        Open Publisher
+                    </a>
+
                 </div>
-
-                <strong>
-                    Nothing scheduled
-                </strong>
-
-                <span>
-                    Upcoming scheduled content will appear here.
-                </span>
-
-            </div>
 
             {% endif %}
 
-        </article>
+        </section>
 
-    </section>
+    </div>
 
 
-    <!-- APPROVALS + BRANDS -->
-    <section class="dashboard-two-column">
+    <!-- =====================================================
+         APPROVALS / BRANDS
+         ===================================================== -->
 
-        <article class="dashboard-card">
+    <div class="dashboard-two-column">
+
+
+        <!-- APPROVALS -->
+
+        <section class="dashboard-card">
 
             <div class="card-header">
 
                 <div>
+
                     <span class="card-eyebrow">
                         WORKFLOW
                     </span>
 
                     <h2>
-                        Approval queue
+                        Pending Approvals
                     </h2>
 
                     <p>
-                        Content waiting for review.
+                        Content waiting for review
                     </p>
+
                 </div>
 
                 <a
-                    href="{{ url_for('approvals') }}"
+                    href="{{ url_for('publisher') }}"
                     class="card-action"
                 >
-                    Review all →
+                    Review →
                 </a>
 
             </div>
 
 
-            {% if approval_queue %}
+            {% if pending_approvals %}
 
-            <div class="approval-list">
+                <div class="approval-list">
 
-                {% for approval in approval_queue %}
+                    {% for approval in pending_approvals %}
 
-                <div class="approval-row">
+                        <div class="approval-row">
 
-                    <div class="approval-avatar">
-                        {{ (approval.submitted_by_name or 'U')[:1]|upper }}
+                            <div class="approval-avatar">
+
+                                {{
+                                    (approval.creator_name or 'U')[:1]|upper
+                                }}
+
+                            </div>
+
+
+                            <div class="approval-details">
+
+                                <strong>
+                                    {{ approval.post_title or 'Untitled Post' }}
+                                </strong>
+
+                                <span>
+
+                                    {{ approval.creator_name|default('Unknown User') }}
+
+                                    ·
+
+                                    {{ approval.brand_name|default('No Brand') }}
+
+                                </span>
+
+                            </div>
+
+
+                            <span class="approval-pending">
+                                Pending
+                            </span>
+
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+            {% else %}
+
+                <div class="empty-state compact">
+
+                    <div class="empty-state-icon success">
+                        ✓
                     </div>
 
-                    <div class="approval-details">
+                    <strong>
+                        All caught up
+                    </strong>
 
-                        <strong>
-                            {{ approval.title or 'Untitled post' }}
-                        </strong>
-
-                        <span>
-                            {{ approval.brand_name }}
-
-                            {% if approval.submitted_by_name %}
-                            · {{ approval.submitted_by_name }}
-                            {% endif %}
-                        </span>
-
-                    </div>
-
-                    <span class="approval-pending">
-                        Pending
+                    <span>
+                        There are no pending content approvals
+                        right now.
                     </span>
 
                 </div>
 
-                {% endfor %}
-
-            </div>
-
-            {% else %}
-
-            <div class="empty-state compact">
-
-                <div class="empty-state-icon success">
-                    ✓
-                </div>
-
-                <strong>
-                    Approval queue is clear
-                </strong>
-
-                <span>
-                    Content waiting for review will appear here.
-                </span>
-
-            </div>
-
             {% endif %}
 
-        </article>
+        </section>
 
 
-        <article class="dashboard-card">
+        <!-- BRANDS -->
+
+        <section class="dashboard-card">
 
             <div class="card-header">
 
                 <div>
+
                     <span class="card-eyebrow">
-                        WORKSPACE
+                        WORKSPACES
                     </span>
 
                     <h2>
-                        Your brands
+                        Your Brands
                     </h2>
 
                     <p>
-                        Brand workspaces connected to your account.
+                        Brands available in your workspace
                     </p>
 
                 </div>
@@ -1002,102 +1644,244 @@ Dashboard | RicozSocial
 
             {% if brands %}
 
-            <div class="brand-list">
+                <div class="brand-list">
 
-                {% for brand in brands %}
+                    {% for brand in brands %}
 
-                <a
-                    href="{{ url_for('brand_detail', brand_id=brand.id) }}"
-                    class="brand-row"
-                >
-
-                    <div class="brand-row-logo">
-
-                        {% if brand.logo_url %}
-
-                        <img
-                            src="{{ brand.logo_url }}"
-                            alt="{{ brand.name }}"
+                        <a
+                            href="{{ url_for('brand_detail', brand_id=brand.id) }}"
+                            class="brand-row"
                         >
 
-                        {% else %}
+                            <div class="brand-row-logo">
 
-                        {{ brand.name[:1]|upper }}
+                                {% if brand.logo_url %}
 
-                        {% endif %}
+                                    <img
+                                        src="{{ brand.logo_url }}"
+                                        alt="{{ brand.name }}"
+                                    >
 
-                    </div>
+                                {% else %}
 
-                    <div class="brand-row-details">
+                                    {{ brand.name[:1]|upper }}
 
-                        <strong>
-                            {{ brand.name }}
-                        </strong>
+                                {% endif %}
 
-                        <span>
-                            {{ brand.description or 'Brand workspace' }}
-                        </span>
+                            </div>
 
-                    </div>
 
-                    <span class="brand-row-arrow">
-                        →
-                    </span>
+                            <div class="brand-row-details">
 
-                </a>
+                                <strong>
+                                    {{ brand.name }}
+                                </strong>
 
-                {% endfor %}
+                                <span>
+                                    {{ brand.website_url|default('No website configured') }}
+                                </span>
 
-            </div>
+                            </div>
+
+
+                            <span class="brand-row-arrow">
+                                →
+                            </span>
+
+                        </a>
+
+                    {% endfor %}
+
+                </div>
 
             {% else %}
 
-            <div class="empty-state compact">
+                <div class="empty-state compact">
 
-                <div class="empty-state-icon">
-                    ▦
+                    <div class="empty-state-icon">
+                        +
+                    </div>
+
+                    <strong>
+                        No brands yet
+                    </strong>
+
+                    <span>
+                        Create a brand workspace to start
+                        managing social media activity.
+                    </span>
+
+                    <a
+                        href="{{ url_for('brands') }}"
+                        class="button button-primary"
+                    >
+                        Create Brand
+                    </a>
+
                 </div>
-
-                <strong>
-                    No brands yet
-                </strong>
-
-                <span>
-                    Create a brand workspace to organize your social content.
-                </span>
-
-                <a
-                    href="{{ url_for('brands') }}"
-                    class="button button-secondary"
-                >
-                    Create Brand
-                </a>
-
-            </div>
 
             {% endif %}
 
-        </article>
+        </section>
 
-    </section>
+    </div>
 
 </div>
 
-{% endblock %}
 
+<!-- =========================================================
+     ANALYTICS CHART
+     ========================================================= -->
 
-{% block extra_js %}
+{% if analytics_chart_data|default([]) %}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
-    window.dashboardAnalytics = {{ analytics | default([], true) | tojson }};
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        const canvas =
+            document.getElementById(
+                "dashboardAnalyticsChart"
+            );
+
+
+        if (!canvas) {
+            return;
+        }
+
+
+        const chartData =
+            {{ analytics_chart_data|default([])|tojson }};
+
+
+        if (
+            !Array.isArray(chartData)
+            || chartData.length === 0
+        ) {
+            return;
+        }
+
+
+        const labels =
+            chartData.map(
+                item => item.label || ""
+            );
+
+
+        const impressions =
+            chartData.map(
+                item =>
+                    Number(
+                        item.impressions || 0
+                    )
+            );
+
+
+        const reach =
+            chartData.map(
+                item =>
+                    Number(
+                        item.reach || 0
+                    )
+            );
+
+
+        const engagement =
+            chartData.map(
+                item =>
+                    Number(
+                        item.engagement || 0
+                    )
+            );
+
+
+        new Chart(
+            canvas,
+            {
+                type: "line",
+
+                data: {
+
+                    labels: labels,
+
+                    datasets: [
+
+                        {
+                            label: "Impressions",
+                            data: impressions,
+                            borderWidth: 2,
+                            tension: 0.35,
+                            fill: false
+                        },
+
+                        {
+                            label: "Reach",
+                            data: reach,
+                            borderWidth: 2,
+                            tension: 0.35,
+                            fill: false
+                        },
+
+                        {
+                            label: "Engagement",
+                            data: engagement,
+                            borderWidth: 2,
+                            tension: 0.35,
+                            fill: false
+                        }
+
+                    ]
+
+                },
+
+                options: {
+
+                    responsive: true,
+
+                    maintainAspectRatio: false,
+
+                    plugins: {
+
+                        legend: {
+
+                            display: true,
+
+                            position: "bottom"
+
+                        }
+
+                    },
+
+                    scales: {
+
+                        y: {
+
+                            beginAtZero: true,
+
+                            ticks: {
+
+                                precision: 0
+
+                            }
+
+                        }
+
+                    }
+
+                }
+
+            }
+        );
+
+    }
+);
+
 </script>
 
-<script
-    src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"
-></script>
-
-<script
-    src="{{ url_for('static', filename='js/dashboard.js') }}"
-></script>
+{% endif %}
 
 {% endblock %}

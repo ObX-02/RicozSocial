@@ -1,3 +1,4 @@
+
 # =========================================================
 # RICOZSOCIAL
 # ENTERPRISE SOCIAL MEDIA MANAGEMENT PLATFORM
@@ -5,24 +6,38 @@
 
 import os
 import re
-from google import genai
+
 from functools import wraps
 from datetime import datetime, date, timedelta
 
+
+# =========================================================
+# ENVIRONMENT CONFIGURATION
+# =========================================================
+
+from dotenv import load_dotenv
+
+load_dotenv()
+
+
+# =========================================================
+# GOOGLE GEMINI AI
+# =========================================================
+
+from google import genai
+
+
+# =========================================================
+# DATABASE
+# =========================================================
+
 import psycopg
 from psycopg.rows import dict_row
-from dotenv import load_dotenv
-# =========================================================
-# GEMINI AI CONFIGURATION
-# =========================================================
 
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
-gemini_client = (
-    genai.Client(api_key=GEMINI_API_KEY)
-    if GEMINI_API_KEY
-    else None
-)
+# =========================================================
+# FLASK
+# =========================================================
 
 from flask import (
     Flask,
@@ -36,6 +51,11 @@ from flask import (
     jsonify,
 )
 
+
+# =========================================================
+# SECURITY
+# =========================================================
+
 from werkzeug.security import (
     generate_password_hash,
     check_password_hash,
@@ -46,14 +66,58 @@ from werkzeug.security import (
 # CONFIGURATION
 # =========================================================
 
-load_dotenv()
-
 app = Flask(__name__)
 
 app.config["SECRET_KEY"] = os.getenv(
     "SECRET_KEY",
     "change-this-secret-key"
 )
+
+
+# =========================================================
+# GEMINI AI CONFIGURATION
+# =========================================================
+
+GEMINI_API_KEY = os.getenv(
+    "GEMINI_API_KEY"
+)
+
+
+gemini_client = (
+    genai.Client(
+        api_key=GEMINI_API_KEY
+    )
+    if GEMINI_API_KEY
+    else None
+)
+
+
+# =========================================================
+# DATABASE CONFIGURATION
+# =========================================================
+
+DATABASE_URL = (
+    os.getenv("POSTGRES_URL")
+    or os.getenv("POSTGRES_PRISMA_URL")
+    or os.getenv("POSTGRES_URL_NON_POOLING")
+    or os.getenv("DATABASE_URL")
+)
+
+
+if not DATABASE_URL:
+
+    DATABASE_URL = (
+        "postgresql://postgres@localhost:5432/ricoz_social"
+    )
+
+
+def get_db_connection():
+
+    return psycopg.connect(
+        DATABASE_URL,
+        row_factory=dict_row,
+        connect_timeout=10
+    )
 
 
 # =========================================================
@@ -1387,7 +1451,7 @@ def register():
 
 
 # =========================================================
-# LOGIN
+# CLIENT LOGIN
 # =========================================================
 
 @app.route("/login", methods=["GET", "POST"])
@@ -1418,21 +1482,17 @@ def login():
             ""
         )
 
-        login_type = request.form.get(
-            "login_type",
-            "client"
-        ).strip().lower()
+        if not email or not password:
 
-        # ---------------------------------------------------------
-        # ALLOW ONLY THESE TWO LOGIN TYPES
-        # ---------------------------------------------------------
+            flash(
+                "Email and password are required.",
+                "danger"
+            )
 
-        if login_type not in (
-            "client",
-            "admin"
-        ):
-
-            login_type = "client"
+            return render_template(
+                "login.html",
+                login_type="client"
+            )
 
         conn = get_db_connection()
 
@@ -1449,7 +1509,7 @@ def login():
                 user = cur.fetchone()
 
                 # -------------------------------------------------
-                # BASIC CREDENTIAL CHECK
+                # CREDENTIAL CHECK
                 # -------------------------------------------------
 
                 if not user or not user.get("password_hash"):
@@ -1461,7 +1521,7 @@ def login():
 
                     return render_template(
                         "login.html",
-                        login_type=login_type
+                        login_type="client"
                     )
 
                 if not check_password_hash(
@@ -1476,11 +1536,11 @@ def login():
 
                     return render_template(
                         "login.html",
-                        login_type=login_type
+                        login_type="client"
                     )
 
                 # -------------------------------------------------
-                # ACCOUNT STATUS CHECK
+                # ACCOUNT STATUS
                 # -------------------------------------------------
 
                 if not user["is_active"]:
@@ -1492,117 +1552,64 @@ def login():
 
                     return render_template(
                         "login.html",
-                        login_type=login_type
+                        login_type="client"
                     )
 
                 # -------------------------------------------------
-                # ADMIN LOGIN
+                # ADMIN ACCOUNT CANNOT USE CLIENT LOGIN
                 # -------------------------------------------------
 
-                if login_type == "admin":
-
-                    if user.get("role") != "admin":
-
-                        flash(
-                            "This account does not have administrator access.",
-                            "danger"
-                        )
-
-                        return render_template(
-                            "login.html",
-                            login_type="admin"
-                        )
-
-                    session.clear()
-
-                    session["user_id"] = user["id"]
-                    session["login_type"] = "admin"
-
-                    log_activity(
-                        "admin_login",
-                        "user",
-                        user["id"],
-                        "Administrator logged into the admin panel."
-                    )
+                if user.get("role") == "admin":
 
                     flash(
-                        "Welcome to the Admin Panel.",
-                        "success"
+                        "Please use the Admin Login page for this account.",
+                        "warning"
                     )
 
-                    next_url = request.args.get(
-                        "next"
+                    return render_template(
+                        "login.html",
+                        login_type="client"
                     )
 
-                    if (
-                        next_url
-                        and next_url.startswith("/")
-                        and not next_url.startswith("//")
-                    ):
+                # -------------------------------------------------
+                # CLIENT LOGIN
+                # -------------------------------------------------
 
-                        return redirect(
-                            next_url
-                        )
+                session.clear()
 
-                    return redirect(
-                        url_for("admin_dashboard")
-                    )
+                session["user_id"] = user["id"]
+                session["login_type"] = "client"
 
-                        # -------------------------------------------------
-            # CLIENT LOGIN
-            # -------------------------------------------------
-
-            if user.get("role") == "admin":
+                log_activity(
+                    "login",
+                    "user",
+                    user["id"],
+                    "User logged into the client panel."
+                )
 
                 flash(
-                    "Please use Admin Login for this administrator account.",
-                    "warning"
+                    "Welcome back.",
+                    "success"
                 )
 
-                return render_template(
-                    "login.html",
-                    login_type="client"
-                )
+                next_url = request.args.get("next")
 
-            session.clear()
+                if (
+                    next_url
+                    and next_url.startswith("/")
+                    and not next_url.startswith("//")
+                ):
 
-            session["user_id"] = user["id"]
-            session["login_type"] = "client"
-
-            log_activity(
-                "login",
-                "user",
-                user["id"],
-                "User logged into the client panel."
-            )
-
-            flash(
-                "Welcome back.",
-                "success"
-            )
-
-            next_url = request.args.get(
-                "next"
-            )
-
-            if (
-                next_url
-                and next_url.startswith("/")
-                and not next_url.startswith("//")
-            ):
+                    return redirect(next_url)
 
                 return redirect(
-                    next_url
+                    url_for("dashboard")
                 )
-
-            return redirect(
-                url_for("dashboard")
-            )
 
         except Exception:
 
             app.logger.exception(
-                "Login failed."
+                "Client login failed."
             )
 
             flash(
@@ -1612,31 +1619,200 @@ def login():
 
             return render_template(
                 "login.html",
-                login_type=login_type
+                login_type="client"
             )
 
         finally:
 
             conn.close()
 
+    return render_template(
+        "login.html",
+        login_type="client"
+    )
 
-    # =====================================================
-    # LOGIN PAGE — GET REQUEST
-    # =====================================================
 
-    login_type = request.args.get(
-        "login_type",
-        "client"
-    ).strip().lower()
+# =========================================================
+# ADMIN LOGIN
+# =========================================================
 
-    if login_type not in ("client", "admin"):
-        login_type = "client"
+@app.route("/admin/login", methods=["GET", "POST"])
+def admin_login():
+
+    if get_current_user():
+
+        current_user = get_current_user()
+
+        if current_user.get("role") == "admin":
+
+            return redirect(
+                url_for("admin_dashboard")
+            )
+
+        return redirect(
+            url_for("dashboard")
+        )
+
+    if request.method == "POST":
+
+        email = request.form.get(
+            "email",
+            ""
+        ).strip().lower()
+
+        password = request.form.get(
+            "password",
+            ""
+        )
+
+        if not email or not password:
+
+            flash(
+                "Email and password are required.",
+                "danger"
+            )
+
+            return render_template(
+                "login.html",
+                login_type="admin"
+            )
+
+        conn = get_db_connection()
+
+        try:
+
+            with conn.cursor() as cur:
+
+                cur.execute("""
+                    SELECT *
+                    FROM users
+                    WHERE LOWER(email) = LOWER(%s)
+                """, (email,))
+
+                user = cur.fetchone()
+
+                # -------------------------------------------------
+                # CREDENTIAL CHECK
+                # -------------------------------------------------
+
+                if not user or not user.get("password_hash"):
+
+                    flash(
+                        "Invalid administrator credentials.",
+                        "danger"
+                    )
+
+                    return render_template(
+                        "login.html",
+                        login_type="admin"
+                    )
+
+                if not check_password_hash(
+                    user["password_hash"],
+                    password
+                ):
+
+                    flash(
+                        "Invalid administrator credentials.",
+                        "danger"
+                    )
+
+                    return render_template(
+                        "login.html",
+                        login_type="admin"
+                    )
+
+                # -------------------------------------------------
+                # ACCOUNT STATUS
+                # -------------------------------------------------
+
+                if not user["is_active"]:
+
+                    flash(
+                        "This administrator account is inactive.",
+                        "danger"
+                    )
+
+                    return render_template(
+                        "login.html",
+                        login_type="admin"
+                    )
+
+                # -------------------------------------------------
+                # ADMIN ROLE CHECK
+                # -------------------------------------------------
+
+                if user.get("role") != "admin":
+
+                    flash(
+                        "This account does not have administrator access.",
+                        "danger"
+                    )
+
+                    return render_template(
+                        "login.html",
+                        login_type="admin"
+                    )
+
+                # -------------------------------------------------
+                # ADMIN LOGIN
+                # -------------------------------------------------
+
+                session.clear()
+
+                session["user_id"] = user["id"]
+                session["login_type"] = "admin"
+
+                log_activity(
+                    "admin_login",
+                    "user",
+                    user["id"],
+                    "Administrator logged into the admin panel."
+                )
+
+                flash(
+                    "Welcome to the Admin Panel.",
+                    "success"
+                )
+
+                next_url = request.args.get("next")
+
+                if (
+                    next_url
+                    and next_url.startswith("/")
+                    and not next_url.startswith("//")
+                ):
+
+                    return redirect(next_url)
+
+                return redirect(
+                    url_for("admin_dashboard")
+                )
+
+        except Exception:
+
+            app.logger.exception(
+                "Admin login failed."
+            )
+
+            flash(
+                "Unable to complete administrator login right now.",
+                "danger"
+            )
+
+            return render_template(
+                "login.html",
+                login_type="admin"
+            )
+
+        finally:
+
+            conn.close()
 
     return render_template(
         "login.html",
-        login_type=login_type
+        login_type="admin"
     )
-
 # =========================================================
 # ONE-TIME ADMIN SETUP
 # =========================================================
@@ -1892,11 +2068,22 @@ def logout():
 @login_required
 def dashboard():
 
+    current_user = get_current_user()
+
+    if not current_user:
+        return redirect(
+            url_for("login")
+        )
+
     conn = get_db_connection()
 
     try:
 
         with conn.cursor() as cur:
+
+            # =================================================
+            # BASIC COUNTS
+            # =================================================
 
             cur.execute("""
                 SELECT COUNT(*) AS count
@@ -1931,11 +2118,19 @@ def dashboard():
 
             cur.execute("""
                 SELECT COUNT(*) AS count
+                FROM posts
+                WHERE status = 'published'
+            """)
+
+            published_posts = cur.fetchone()["count"]
+
+            cur.execute("""
+                SELECT COUNT(*) AS count
                 FROM content_approvals
                 WHERE status = 'pending'
             """)
 
-            pending_approvals = cur.fetchone()["count"]
+            pending_approval_count = cur.fetchone()["count"]
 
             cur.execute("""
                 SELECT COUNT(*) AS count
@@ -1945,14 +2140,179 @@ def dashboard():
 
             community_items = cur.fetchone()["count"]
 
+            # =================================================
+            # ANALYTICS SUMMARY
+            # =================================================
+
             cur.execute("""
-                SELECT *
-                FROM posts
+                SELECT
+                    COALESCE(SUM(impressions), 0) AS total_impressions,
+                    COALESCE(SUM(reach), 0) AS total_reach,
+                    COALESCE(
+                        SUM(likes)
+                        + SUM(comments)
+                        + SUM(shares)
+                        + SUM(clicks),
+                        0
+                    ) AS total_engagement
+                FROM analytics
+            """)
+
+            analytics_row = cur.fetchone()
+
+            analytics = {
+                "total_impressions": analytics_row["total_impressions"] or 0,
+                "total_reach": analytics_row["total_reach"] or 0,
+                "total_engagement": analytics_row["total_engagement"] or 0,
+            }
+
+            # =================================================
+            # ANALYTICS CHART DATA
+            # =================================================
+
+            cur.execute("""
+                SELECT
+                    metric_date,
+                    COALESCE(SUM(impressions), 0) AS impressions,
+                    COALESCE(SUM(reach), 0) AS reach,
+                    COALESCE(
+                        SUM(likes)
+                        + SUM(comments)
+                        + SUM(shares)
+                        + SUM(clicks),
+                        0
+                    ) AS engagement
+                FROM analytics
+                GROUP BY metric_date
+                ORDER BY metric_date ASC
+                LIMIT 30
+            """)
+
+            analytics_rows = cur.fetchall()
+
+            analytics_chart_data = []
+
+            for row in analytics_rows:
+
+                metric_date = row["metric_date"]
+
+                if hasattr(metric_date, "strftime"):
+                    label = metric_date.strftime("%b %d")
+                else:
+                    label = str(metric_date)
+
+                analytics_chart_data.append({
+                    "label": label,
+                    "impressions": row["impressions"] or 0,
+                    "reach": row["reach"] or 0,
+                    "engagement": row["engagement"] or 0,
+                })
+
+            # =================================================
+            # SOCIAL ACCOUNTS
+            # =================================================
+
+            cur.execute("""
+                SELECT
+                    id,
+                    brand_id,
+                    platform,
+                    account_name,
+                    username,
+                    profile_url,
+                    is_connected
+                FROM social_accounts
+                WHERE is_connected = TRUE
                 ORDER BY created_at DESC
+                LIMIT 10
+            """)
+
+            social_accounts = cur.fetchall()
+
+            # =================================================
+            # RECENT POSTS
+            # =================================================
+
+            cur.execute("""
+                SELECT
+                    p.*,
+                    b.name AS brand_name
+                FROM posts p
+                LEFT JOIN brands b
+                    ON b.id = p.brand_id
+                ORDER BY p.created_at DESC
                 LIMIT 8
             """)
 
             recent_posts = cur.fetchall()
+
+            # =================================================
+            # UPCOMING POSTS
+            # =================================================
+
+            cur.execute("""
+                SELECT
+                    p.*,
+                    b.name AS brand_name
+                FROM posts p
+                LEFT JOIN brands b
+                    ON b.id = p.brand_id
+                WHERE p.status = 'scheduled'
+                  AND p.scheduled_at IS NOT NULL
+                ORDER BY p.scheduled_at ASC
+                LIMIT 8
+            """)
+
+            upcoming_posts = cur.fetchall()
+
+            # =================================================
+            # PENDING APPROVALS
+            # =================================================
+
+            cur.execute("""
+                SELECT
+                    ca.id,
+                    ca.status,
+                    ca.created_at,
+                    p.title AS post_title,
+                    b.name AS brand_name,
+                    u.name AS creator_name
+                FROM content_approvals ca
+                LEFT JOIN posts p
+                    ON p.id = ca.post_id
+                LEFT JOIN brands b
+                    ON b.id = p.brand_id
+                LEFT JOIN users u
+                    ON u.id = p.created_by
+                WHERE ca.status = 'pending'
+                ORDER BY ca.created_at DESC
+                LIMIT 8
+            """)
+
+            pending_approvals = cur.fetchall()
+
+            # =================================================
+            # BRANDS
+            # =================================================
+
+            cur.execute("""
+                SELECT
+                    id,
+                    name,
+                    logo_url,
+                    website_url,
+                    is_active
+                FROM brands
+                WHERE is_active = TRUE
+                ORDER BY name ASC
+                LIMIT 8
+            """)
+
+            brands = cur.fetchall()
+
+            # =================================================
+            # NOTIFICATIONS
+            # =================================================
 
             cur.execute("""
                 SELECT *
@@ -1960,25 +2320,110 @@ def dashboard():
                 WHERE user_id = %s
                 ORDER BY created_at DESC
                 LIMIT 5
-            """, (get_current_user()["id"],))
+            """, (
+                current_user["id"],
+            ))
 
             notifications = cur.fetchall()
 
+        # =====================================================
+        # DASHBOARD STATS OBJECT
+        # =====================================================
+
+        stats = {
+            "total_brands": total_brands,
+            "connected_accounts": connected_accounts,
+            "total_posts": total_posts,
+            "scheduled_posts": scheduled_posts,
+            "published_posts": published_posts,
+            "pending_approvals": pending_approval_count,
+            "community_items": community_items,
+        }
+
+        # =====================================================
+        # RENDER DASHBOARD
+        # =====================================================
+
         return render_template(
             "dashboard.html",
+
+            # Current user
+            current_user=current_user,
+
+            # Main statistics
+            stats=stats,
+
+            # Analytics
+            analytics=analytics,
+            analytics_chart_data=analytics_chart_data,
+
+            # Social accounts
+            social_accounts=social_accounts,
+
+            # Content
+            recent_posts=recent_posts,
+            upcoming_posts=upcoming_posts,
+
+            # Approvals
+            pending_approvals=pending_approvals,
+
+            # Brands
+            brands=brands,
+
+            # Notifications
+            notifications=notifications,
+
+            # Compatibility variables
             total_brands=total_brands,
             connected_accounts=connected_accounts,
             total_posts=total_posts,
             scheduled_posts=scheduled_posts,
-            pending_approvals=pending_approvals,
+            published_posts=published_posts,
+            scheduled_posts_count=scheduled_posts,
+            pending_approval_count=pending_approval_count,
             community_items=community_items,
-            recent_posts=recent_posts,
-            notifications=notifications,
+        )
+
+    except Exception as exc:
+
+        app.logger.exception(
+            "Failed to load dashboard."
+        )
+
+        return (
+            f"""
+            <div style="
+                font-family: Arial, sans-serif;
+                padding: 40px;
+                max-width: 900px;
+                margin: auto;
+            ">
+                <h2>Dashboard Error</h2>
+
+                <p>
+                    The dashboard could not be loaded.
+                </p>
+
+                <pre style="
+                    background: #f5f5f5;
+                    padding: 20px;
+                    border-radius: 8px;
+                    overflow-x: auto;
+                    white-space: pre-wrap;
+                ">{str(exc)}</pre>
+
+                <p>
+                    Please check the Flask terminal/log for the
+                    complete traceback.
+                </p>
+            </div>
+            """,
+            500
         )
 
     finally:
-        conn.close()
 
+        conn.close()
 # =========================================================
 # ADMIN DASHBOARD
 # =========================================================
@@ -2350,6 +2795,175 @@ def admin_dashboard():
 
         conn.close()
 # =========================================================
+# ADMIN — CLIENT REPORTS
+# =========================================================
+
+@app.route("/admin/client-reports")
+@login_required
+def admin_client_reports():
+
+    current_user = get_current_user()
+
+    # ---------------------------------------------------------
+    # ADMIN ACCESS CHECK
+    # ---------------------------------------------------------
+
+    if not current_user:
+        return redirect(
+            url_for("login")
+        )
+
+    if current_user.get("role") != "admin":
+
+        flash(
+            "Administrator access is required.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("dashboard")
+        )
+
+    conn = get_db_connection()
+
+    try:
+
+        with conn.cursor() as cur:
+
+            # =================================================
+            # TOTAL REPORTS
+            # =================================================
+
+            cur.execute("""
+                SELECT COUNT(*) AS count
+                FROM reports
+            """)
+
+            total_reports = cur.fetchone()["count"]
+
+            # =================================================
+            # TOTAL CLIENTS WITH REPORTS
+            # =================================================
+
+            cur.execute("""
+                SELECT COUNT(DISTINCT b.id) AS count
+                FROM reports r
+                INNER JOIN brands b
+                    ON b.id = r.brand_id
+            """)
+
+            clients_with_reports = cur.fetchone()["count"]
+
+            # =================================================
+            # REPORTS THIS MONTH
+            # =================================================
+
+            cur.execute("""
+                SELECT COUNT(*) AS count
+                FROM reports
+                WHERE created_at >= DATE_TRUNC(
+                    'month',
+                    CURRENT_DATE
+                )
+            """)
+
+            reports_this_month = cur.fetchone()["count"]
+
+            # =================================================
+            # REPORT LIST
+            # =================================================
+
+            cur.execute("""
+                SELECT
+                    r.id,
+                    r.brand_id,
+                    r.created_by,
+                    r.name,
+                    r.period_start,
+                    r.period_end,
+                    r.report_type,
+                    r.file_url,
+                    r.created_at,
+
+                    b.name AS brand_name,
+
+                    u.name AS created_by_name,
+                    u.email AS created_by_email
+
+                FROM reports r
+
+                LEFT JOIN brands b
+                    ON b.id = r.brand_id
+
+                LEFT JOIN users u
+                    ON u.id = r.created_by
+
+                ORDER BY r.created_at DESC
+
+                LIMIT 100
+            """)
+
+            reports = cur.fetchall()
+
+            # =================================================
+            # CLIENT / BRAND LIST
+            # =================================================
+
+            cur.execute("""
+                SELECT
+                    b.id,
+                    b.name,
+                    b.is_active,
+                    COUNT(r.id) AS report_count
+
+                FROM brands b
+
+                LEFT JOIN reports r
+                    ON r.brand_id = b.id
+
+                GROUP BY
+                    b.id,
+                    b.name,
+                    b.is_active
+
+                ORDER BY
+                    b.name ASC
+            """)
+
+            report_clients = cur.fetchall()
+
+        return render_template(
+            "admin_client_reports.html",
+
+            current_user=current_user,
+
+            total_reports=total_reports,
+            clients_with_reports=clients_with_reports,
+            reports_this_month=reports_this_month,
+
+            reports=reports,
+            report_clients=report_clients,
+        )
+
+    except Exception:
+
+        app.logger.exception(
+            "Failed to load client reports."
+        )
+
+        flash(
+            "Unable to load client reports right now.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("admin_dashboard")
+        )
+
+    finally:
+
+        conn.close()
+# =========================================================
 # AI CONTENT ASSISTANT
 # =========================================================
 
@@ -2365,27 +2979,63 @@ def ai_assistant():
     generated_content = None
     error_message = None
 
+    # =====================================================
+    # POST REQUEST
+    # =====================================================
+
     if request.method == "POST":
 
-        topic = request.form.get("topic", "").strip()
-        platform = request.form.get("platform", "Instagram").strip()
-        tone = request.form.get("tone", "Professional").strip()
-        length = request.form.get("length", "Medium").strip()
+        topic = request.form.get(
+            "topic",
+            ""
+        ).strip()
+
+        platform = request.form.get(
+            "platform",
+            "Instagram"
+        ).strip()
+
+        tone = request.form.get(
+            "tone",
+            "Professional"
+        ).strip()
+
+        length = request.form.get(
+            "length",
+            "Medium"
+        ).strip()
+
+        # =================================================
+        # VALIDATION
+        # =================================================
 
         if not topic:
 
-            error_message = "Please enter a topic or idea."
+            error_message = (
+                "Please enter a topic or idea."
+            )
+
+        elif len(topic) > 5000:
+
+            error_message = (
+                "Please keep the topic under 5000 characters."
+            )
 
         elif not gemini_client:
 
             error_message = (
                 "AI service is not configured. "
-                "Please check the OpenAI API key."
+                "Please check your GEMINI_API_KEY "
+                "configuration."
             )
 
         else:
 
             try:
+
+                # =============================================
+                # AI PROMPT
+                # =============================================
 
                 prompt = f"""
 You are an expert social media content strategist
@@ -2410,13 +3060,15 @@ Requirements:
 
 1. Write engaging and professional content.
 2. Match the selected platform.
-3. Do not mention that AI generated the content.
+3. Do not mention AI, Gemini, automation, or this prompt.
 4. Do not use unnecessary quotation marks.
 5. Include a clear call-to-action when appropriate.
-6. After the post, provide 5 relevant hashtags.
+6. Provide exactly 5 relevant hashtags.
 7. Keep the content natural and ready to publish.
+8. Do not explain your process.
+9. Do not add extra sections.
 
-Return the response in this exact format:
+Return the response exactly in this format:
 
 POST:
 [post content]
@@ -2425,21 +3077,210 @@ HASHTAGS:
 #hashtag1 #hashtag2 #hashtag3 #hashtag4 #hashtag5
 """
 
-                response = gemini_client.models.generate_content(
-                    model="gemini-3.8-flash",
-                    contents=prompt
+                # =============================================
+                # GEMINI INTERACTION
+                # =============================================
+                #
+                # Low thinking level is intentional here.
+                # This is a social-media content generation
+                # task, so we do not need heavy reasoning.
+                #
+                # timeout is configured on the Gemini client
+                # itself rather than passed as an unsupported
+                # argument to interactions.create().
+                #
+                # =============================================
+
+                ai_client = gemini_client
+
+                try:
+
+                    interaction = (
+                        ai_client.interactions.create(
+                            model="gemini-3.8-flash",
+                            input=prompt,
+                            generation_config={
+                                "thinking_level": "low"
+                            }
+                        )
+                    )
+
+                except TypeError:
+
+                    # =========================================
+                    # FALLBACK FOR OLDER SDK VERSIONS
+                    # =========================================
+
+                    app.logger.warning(
+                        "Gemini SDK does not support "
+                        "generation_config on this client. "
+                        "Retrying without it."
+                    )
+
+                    interaction = (
+                        ai_client.interactions.create(
+                            model="gemini-3.8-flash",
+                            input=prompt
+                        )
+                    )
+
+                # =============================================
+                # GET RESPONSE TEXT
+                # =============================================
+
+                generated_content = getattr(
+                    interaction,
+                    "output_text",
+                    None
                 )
 
-                generated_content = response.text.strip()
+                if generated_content is None:
+
+                    generated_content = ""
+
+                generated_content = (
+                    str(generated_content)
+                    .strip()
+                )
+
+                # =============================================
+                # EMPTY RESPONSE CHECK
+                # =============================================
+
+                if not generated_content:
+
+                    raise RuntimeError(
+                        "Gemini connected successfully but "
+                        "returned an empty response."
+                    )
+
+            # =================================================
+            # TIMEOUT
+            # =================================================
+
+            except TimeoutError:
+
+                app.logger.exception(
+                    "Gemini AI request timed out."
+                )
+
+                error_message = (
+                    "The AI request took too long to respond. "
+                    "Please try again."
+                )
+
+            # =================================================
+            # GENERAL AI ERROR
+            # =================================================
 
             except Exception as e:
 
                 app.logger.exception(
-                    "AI content generation failed: %s",
-                    e
+                    "Gemini AI content generation failed."
                 )
 
-                error_message = f"AI Error: {str(e)}"
+                error_text = str(e).strip()
+
+                error_lower = error_text.lower()
+
+                # ---------------------------------------------
+                # TIMEOUT / CONNECTION
+                # ---------------------------------------------
+
+                if (
+                    "timeout" in error_lower
+                    or "timed out" in error_lower
+                    or "deadline" in error_lower
+                ):
+
+                    error_message = (
+                        "The AI service took too long to respond. "
+                        "Please try again."
+                    )
+
+                # ---------------------------------------------
+                # API KEY
+                # ---------------------------------------------
+
+                elif (
+                    "api key" in error_lower
+                    or "authentication" in error_lower
+                    or "unauthorized" in error_lower
+                    or "401" in error_lower
+                ):
+
+                    error_message = (
+                        "The Gemini API key is missing or invalid. "
+                        "Please check your GEMINI_API_KEY."
+                    )
+
+                # ---------------------------------------------
+                # MODEL
+                # ---------------------------------------------
+
+                elif (
+                    "not found" in error_lower
+                    or "404" in error_lower
+                    or "model" in error_lower
+                ):
+
+                    error_message = (
+                        "The selected Gemini model is currently "
+                        "unavailable. Please check the Gemini "
+                        "API configuration."
+                    )
+
+                # ---------------------------------------------
+                # RATE LIMIT
+                # ---------------------------------------------
+
+                elif (
+                    "429" in error_lower
+                    or "rate limit" in error_lower
+                    or "quota" in error_lower
+                    or "resource exhausted" in error_lower
+                ):
+
+                    error_message = (
+                        "The Gemini API rate limit or quota "
+                        "has been reached. Please try again "
+                        "after a short while."
+                    )
+
+                # ---------------------------------------------
+                # CONNECTION
+                # ---------------------------------------------
+
+                elif (
+                    "connection" in error_lower
+                    or "connect" in error_lower
+                    or "network" in error_lower
+                    or "disconnected" in error_lower
+                ):
+
+                    error_message = (
+                        "The AI service could not be reached. "
+                        "Please check your internet connection "
+                        "and try again."
+                    )
+
+                # ---------------------------------------------
+                # FALLBACK
+                # ---------------------------------------------
+
+                else:
+
+                    error_message = (
+                        f"AI Error: {error_text}"
+                        if error_text
+                        else
+                        "The AI service could not generate "
+                        "a response. Please try again."
+                    )
+
+    # =========================================================
+    # RENDER PAGE
+    # =========================================================
 
     return render_template(
         "ai_assistant.html",
@@ -3236,45 +4077,28 @@ def admin_client_details(user_id):
 
 
         return render_template(
-            "admin_client_details.html",
+    "admin_client_details.html",
+    current_user=current_user,
+    client=client,
+    brands_count=brands_count,
+    social_accounts_count=social_accounts_count,
+    connected_accounts_count=connected_accounts_count,
+    total_posts=total_posts,
+    published_posts=published_posts,
+    scheduled_posts=scheduled_posts,
+    draft_posts=draft_posts,
+    pending_approvals=pending_approvals,
+    community_items=community_items,
+    last_activity=last_activity,
+    client_brands=client_brands,
+    client_social_accounts=client_social_accounts,
+    client_posts=client_posts,
+    client_approvals=client_approvals,
+    client_activity=client_activity,
+    client_notifications=client_notifications,
 
-            current_user=current_user,
-
-            client=client,
-
-            brands_count=brands_count,
-
-            social_accounts_count=social_accounts_count,
-
-            connected_accounts_count=connected_accounts_count,
-
-            total_posts=total_posts,
-
-            published_posts=published_posts,
-
-            scheduled_posts=scheduled_posts,
-
-            draft_posts=draft_posts,
-
-            pending_approvals=pending_approvals,
-
-            community_items=community_items,
-
-            last_activity=last_activity,
-
-            client_brands=client_brands,
-
-            client_social_accounts=client_social_accounts,
-
-            client_posts=client_posts,
-
-            client_approvals=client_approvals,
-
-            client_activity=client_activity,
-
-            client_notifications=client_notifications
-        )
-
+    show_admin_back_button=True
+)
     except Exception:
 
         app.logger.exception(
@@ -10004,7 +10828,1421 @@ def resolve_community_comment(comment_id):
         url_for("community")
     )
 
+# =========================================================
+# TEAM & RESPONSIBILITIES
+# =========================================================
 
+@app.route("/team")
+@login_required
+def team():
+
+    current_user = get_current_user()
+
+    if not current_user:
+        return redirect(url_for("login"))
+
+    conn = get_db_connection()
+
+    try:
+
+        with conn.cursor() as cur:
+
+            # -------------------------------------------------
+            # FIND BRANDS AVAILABLE TO CURRENT USER
+            # -------------------------------------------------
+
+            if current_user.get("role") == "admin":
+
+                cur.execute("""
+                    SELECT
+                        id,
+                        name,
+                        description,
+                        created_by,
+                        is_active,
+                        created_at
+                    FROM brands
+                    WHERE is_active = TRUE
+                    ORDER BY name ASC
+                """)
+
+            else:
+
+                cur.execute("""
+                    SELECT DISTINCT
+                        b.id,
+                        b.name,
+                        b.description,
+                        b.created_by,
+                        b.is_active,
+                        b.created_at
+                    FROM brands b
+                    LEFT JOIN brand_members bm
+                        ON bm.brand_id = b.id
+                        AND bm.user_id = %s
+                    WHERE b.is_active = TRUE
+                    AND (
+                        b.created_by = %s
+                        OR bm.user_id = %s
+                    )
+                    ORDER BY b.name ASC
+                """, (
+                    current_user["id"],
+                    current_user["id"],
+                    current_user["id"]
+                ))
+
+            brands = cur.fetchall()
+
+            # -------------------------------------------------
+            # SELECT CURRENT BRAND
+            # -------------------------------------------------
+
+            selected_brand_id = request.args.get(
+                "brand_id",
+                type=int
+            )
+
+            if selected_brand_id:
+
+                selected_brand = next(
+                    (
+                        brand
+                        for brand in brands
+                        if brand["id"] == selected_brand_id
+                    ),
+                    None
+                )
+
+            else:
+
+                selected_brand = (
+                    brands[0]
+                    if brands
+                    else None
+                )
+
+            # -------------------------------------------------
+            # AVAILABLE USERS
+            # -------------------------------------------------
+
+            available_users = []
+
+            if selected_brand:
+
+                cur.execute("""
+                    SELECT
+                        u.id,
+                        u.name,
+                        u.email
+                    FROM users u
+                    WHERE u.role <> 'admin'
+                    AND u.is_active = TRUE
+                    AND u.id <> %s
+                    AND NOT EXISTS (
+                        SELECT 1
+                        FROM brand_members bm
+                        WHERE bm.brand_id = %s
+                        AND bm.user_id = u.id
+                    )
+                    AND u.id <> %s
+                    ORDER BY u.name ASC
+                """, (
+                    selected_brand["created_by"],
+                    selected_brand["id"],
+                    selected_brand["created_by"]
+                ))
+
+                available_users = cur.fetchall()
+
+            # -------------------------------------------------
+            # TEAM MEMBERS
+            # -------------------------------------------------
+
+            team_members = []
+
+            if selected_brand:
+
+                cur.execute("""
+                    SELECT
+                        bm.id AS membership_id,
+                        bm.brand_id,
+                        bm.user_id,
+                        bm.role,
+                        bm.created_at,
+
+                        u.name,
+                        u.email,
+                        u.is_active,
+                        u.created_at AS user_created_at,
+
+                        (
+                            SELECT COUNT(*)
+                            FROM posts p
+                            WHERE p.created_by = u.id
+                            AND p.brand_id = bm.brand_id
+                        ) AS post_count
+
+                    FROM brand_members bm
+
+                    INNER JOIN users u
+                        ON u.id = bm.user_id
+
+                    WHERE bm.brand_id = %s
+
+                    ORDER BY
+                        CASE bm.role
+                            WHEN 'owner' THEN 1
+                            WHEN 'manager' THEN 2
+                            WHEN 'publisher' THEN 3
+                            WHEN 'analyst' THEN 4
+                            WHEN 'member' THEN 5
+                            ELSE 6
+                        END,
+                        u.name ASC
+                """, (
+                    selected_brand["id"],
+                ))
+
+                team_members = cur.fetchall()
+
+                # -------------------------------------------------
+                # LOAD RESPONSIBILITIES
+                # -------------------------------------------------
+
+                for member in team_members:
+
+                    cur.execute("""
+                        SELECT responsibility_key
+                        FROM brand_member_responsibilities
+                        WHERE brand_member_id = %s
+                        ORDER BY responsibility_key ASC
+                    """, (
+                        member["membership_id"],
+                    ))
+
+                    responsibility_rows = cur.fetchall()
+
+                    member["responsibilities"] = [
+                        row["responsibility_key"]
+                        for row in responsibility_rows
+                    ]
+
+                    member["is_owner"] = (
+                        member["user_id"]
+                        == selected_brand["created_by"]
+                        or member["role"] == "owner"
+                    )
+
+                # -------------------------------------------------
+                # INCLUDE BRAND OWNER IF NOT IN brand_members
+                # -------------------------------------------------
+
+                cur.execute("""
+                    SELECT
+                        u.id,
+                        u.name,
+                        u.email,
+                        u.is_active,
+                        u.created_at
+                    FROM users u
+                    INNER JOIN brands b
+                        ON b.created_by = u.id
+                    WHERE b.id = %s
+                """, (
+                    selected_brand["id"],
+                ))
+
+                brand_owner = cur.fetchone()
+
+                if brand_owner:
+
+                    owner_exists = any(
+                        member["user_id"]
+                        == brand_owner["id"]
+                        for member in team_members
+                    )
+
+                    if not owner_exists:
+
+                        team_members.insert(
+                            0,
+                            {
+                                "membership_id": None,
+                                "brand_id": selected_brand["id"],
+                                "user_id": brand_owner["id"],
+                                "role": "owner",
+                                "created_at": selected_brand.get(
+                                    "created_at"
+                                ),
+                                "name": brand_owner["name"],
+                                "email": brand_owner["email"],
+                                "is_active": brand_owner["is_active"],
+                                "user_created_at": brand_owner["created_at"],
+                                "post_count": 0,
+                                "responsibilities": [],
+                                "is_owner": True
+                            }
+                        )
+
+            # -------------------------------------------------
+            # TEAM STATISTICS
+            # -------------------------------------------------
+
+            total_members = len(team_members)
+
+            manager_count = sum(
+                1
+                for member in team_members
+                if member["role"] == "manager"
+            )
+
+            publisher_count = sum(
+                1
+                for member in team_members
+                if member["role"] == "publisher"
+            )
+
+            analyst_count = sum(
+                1
+                for member in team_members
+                if member["role"] == "analyst"
+            )
+
+            active_members = sum(
+                1
+                for member in team_members
+                if member["is_active"]
+            )
+
+        return render_template(
+            "team.html",
+
+            current_user=current_user,
+
+            brands=brands,
+            selected_brand=selected_brand,
+
+            team_members=team_members,
+            available_users=available_users,
+
+            total_members=total_members,
+            active_members=active_members,
+            manager_count=manager_count,
+            publisher_count=publisher_count,
+            analyst_count=analyst_count
+        )
+
+    except Exception:
+
+        app.logger.exception(
+            "Failed to load Team & Responsibilities page."
+        )
+
+        flash(
+            "Unable to load team management right now.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("dashboard")
+        )
+
+    finally:
+
+        conn.close()
+
+# =========================================================
+# ADD TEAM MEMBER
+# =========================================================
+
+@app.route("/team/add", methods=["POST"])
+@login_required
+def add_team_member():
+
+    current_user = get_current_user()
+
+    if not current_user:
+        return redirect(url_for("login"))
+
+    brand_id = request.form.get("brand_id", type=int)
+    user_id = request.form.get("user_id", type=int)
+    role = (request.form.get("role") or "").strip().lower()
+
+    allowed_roles = {
+        "manager",
+        "publisher",
+        "analyst",
+        "member"
+    }
+
+    if not brand_id or not user_id:
+        flash("Please select a brand and team member.", "danger")
+        return redirect(url_for("team"))
+
+    if role not in allowed_roles:
+        flash("Invalid team role selected.", "danger")
+        return redirect(
+            url_for("team", brand_id=brand_id)
+        )
+
+    conn = get_db_connection()
+
+    try:
+
+        with conn.cursor() as cur:
+
+            # -------------------------------------------------
+            # BRAND
+            # -------------------------------------------------
+
+            cur.execute("""
+                SELECT
+                    id,
+                    name,
+                    created_by,
+                    is_active
+                FROM brands
+                WHERE id = %s
+            """, (brand_id,))
+
+            brand = cur.fetchone()
+
+            if not brand:
+                flash("Brand workspace was not found.", "danger")
+                return redirect(url_for("team"))
+
+            if not brand["is_active"]:
+                flash(
+                    "This brand workspace is currently inactive.",
+                    "danger"
+                )
+                return redirect(
+                    url_for("team", brand_id=brand_id)
+                )
+
+            # -------------------------------------------------
+            # CURRENT USER BRAND PERMISSION
+            # -------------------------------------------------
+
+            if current_user.get("role") == "admin":
+
+                manager_access = True
+                owner_access = True
+
+            elif brand["created_by"] == current_user["id"]:
+
+                manager_access = True
+                owner_access = True
+
+            else:
+
+                cur.execute("""
+                    SELECT role
+                    FROM brand_members
+                    WHERE brand_id = %s
+                    AND user_id = %s
+                    LIMIT 1
+                """, (
+                    brand_id,
+                    current_user["id"]
+                ))
+
+                current_membership = cur.fetchone()
+
+                if not current_membership:
+                    flash(
+                        "You do not have permission to manage this team.",
+                        "danger"
+                    )
+                    return redirect(
+                        url_for("team", brand_id=brand_id)
+                    )
+
+                current_role = current_membership["role"]
+
+                owner_access = current_role == "owner"
+                manager_access = current_role in {
+                    "owner",
+                    "manager"
+                }
+
+            # -------------------------------------------------
+            # MANAGER RESTRICTION
+            # -------------------------------------------------
+
+            if not owner_access and role == "manager":
+
+                flash(
+                    "Only the brand owner or administrator can assign "
+                    "the Manager role.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for("team", brand_id=brand_id)
+                )
+
+            if not manager_access:
+
+                flash(
+                    "You do not have permission to add team members.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for("team", brand_id=brand_id)
+                )
+
+            # -------------------------------------------------
+            # USER
+            # -------------------------------------------------
+
+            cur.execute("""
+                SELECT
+                    id,
+                    name,
+                    email,
+                    role,
+                    is_active
+                FROM users
+                WHERE id = %s
+            """, (user_id,))
+
+            member_user = cur.fetchone()
+
+            if not member_user:
+
+                flash(
+                    "Selected user was not found.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for("team", brand_id=brand_id)
+                )
+
+            # -------------------------------------------------
+            # NEVER ADD ADMIN AS BRAND TEAM MEMBER
+            # -------------------------------------------------
+
+            if member_user["role"] == "admin":
+
+                flash(
+                    "Administrator accounts cannot be added as "
+                    "brand team members.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for("team", brand_id=brand_id)
+                )
+
+            # -------------------------------------------------
+            # ACTIVE USER CHECK
+            # -------------------------------------------------
+
+            if not member_user["is_active"]:
+
+                flash(
+                    "This user account is currently inactive.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for("team", brand_id=brand_id)
+                )
+
+            # -------------------------------------------------
+            # PREVENT DUPLICATE MEMBERSHIP
+            # -------------------------------------------------
+
+            cur.execute("""
+                SELECT
+                    id,
+                    role
+                FROM brand_members
+                WHERE brand_id = %s
+                AND user_id = %s
+                LIMIT 1
+            """, (
+                brand_id,
+                user_id
+            ))
+
+            existing_membership = cur.fetchone()
+
+            if existing_membership:
+
+                flash(
+                    "This user is already a member of this brand.",
+                    "warning"
+                )
+
+                return redirect(
+                    url_for("team", brand_id=brand_id)
+                )
+
+            # -------------------------------------------------
+            # BRAND OWNER PROTECTION
+            # -------------------------------------------------
+
+            if brand["created_by"] == user_id:
+
+                flash(
+                    "The brand owner already has ownership access.",
+                    "warning"
+                )
+
+                return redirect(
+                    url_for("team", brand_id=brand_id)
+                )
+
+            # -------------------------------------------------
+            # INSERT MEMBERSHIP
+            # -------------------------------------------------
+
+            cur.execute("""
+                INSERT INTO brand_members (
+                    brand_id,
+                    user_id,
+                    role,
+                    created_at
+                )
+                VALUES (
+                    %s,
+                    %s,
+                    %s,
+                    CURRENT_TIMESTAMP
+                )
+            """, (
+                brand_id,
+                user_id,
+                role
+            ))
+
+            # -------------------------------------------------
+            # NOTIFICATION
+            # -------------------------------------------------
+
+            cur.execute("""
+                INSERT INTO notifications (
+                    user_id,
+                    title,
+                    message,
+                    notification_type
+                )
+                VALUES (
+                    %s,
+                    %s,
+                    %s,
+                    'team'
+                )
+            """, (
+                user_id,
+                "Added to a brand team",
+                f"You have been added to the '{brand['name']}' "
+                f"team as {role.capitalize()}."
+            ))
+
+        conn.commit()
+
+        # -----------------------------------------------------
+        # ACTIVITY LOG
+        # -----------------------------------------------------
+
+        log_activity(
+            "team_member_added",
+            "brand_member",
+            user_id,
+            (
+                f"Added {member_user['name']} to "
+                f"{brand['name']} as {role.capitalize()}."
+            ),
+            brand_id
+        )
+
+        flash(
+            f"{member_user['name']} was added to the team "
+            f"as {role.capitalize()}.",
+            "success"
+        )
+
+    except Exception:
+
+        conn.rollback()
+
+        app.logger.exception(
+            "Failed to add team member."
+        )
+
+        flash(
+            "Unable to add the team member right now.",
+            "danger"
+        )
+
+    finally:
+        conn.close()
+
+    return redirect(
+        url_for("team", brand_id=brand_id)
+    )
+# =========================================================
+# GET TEAM MEMBER RESPONSIBILITIES
+# =========================================================
+
+@app.route("/team/<int:member_id>/responsibilities")
+@login_required
+def team_member_responsibilities(member_id):
+
+    current_user = get_current_user()
+
+    if not current_user:
+        return jsonify({
+            "error": "Authentication required"
+        }), 401
+
+    conn = get_db_connection()
+
+    try:
+
+        with conn.cursor() as cur:
+
+            # -------------------------------------------------
+            # VERIFY TEAM MEMBER
+            # -------------------------------------------------
+
+            cur.execute("""
+                SELECT
+                    bm.id AS membership_id,
+                    bm.brand_id,
+                    bm.user_id,
+                    bm.role,
+                    b.name AS brand_name,
+                    b.created_by AS brand_owner_id
+                FROM brand_members bm
+                INNER JOIN brands b
+                    ON b.id = bm.brand_id
+                WHERE bm.id = %s
+                LIMIT 1
+            """, (
+                member_id,
+            ))
+
+            member = cur.fetchone()
+
+            if not member:
+
+                return jsonify({
+                    "error": "Team member not found."
+                }), 404
+
+
+            # -------------------------------------------------
+            # CHECK ACCESS
+            # -------------------------------------------------
+
+            if current_user.get("role") == "admin":
+
+                has_access = True
+
+            elif member["brand_owner_id"] == current_user["id"]:
+
+                has_access = True
+
+            else:
+
+                cur.execute("""
+                    SELECT role
+                    FROM brand_members
+                    WHERE brand_id = %s
+                    AND user_id = %s
+                    LIMIT 1
+                """, (
+                    member["brand_id"],
+                    current_user["id"]
+                ))
+
+                current_membership = cur.fetchone()
+
+                has_access = (
+                    current_membership
+                    and current_membership["role"]
+                    in {"owner", "manager"}
+                )
+
+
+            if not has_access:
+
+                return jsonify({
+                    "error": "You do not have permission to view responsibilities."
+                }), 403
+
+
+            # -------------------------------------------------
+            # LOAD RESPONSIBILITIES
+            # -------------------------------------------------
+
+            cur.execute("""
+                SELECT
+                    responsibility_key
+                FROM brand_member_responsibilities
+                WHERE brand_member_id = %s
+                ORDER BY responsibility_key ASC
+            """, (
+                member_id,
+            ))
+
+            rows = cur.fetchall()
+
+
+            responsibilities = [
+                row["responsibility_key"]
+                for row in rows
+            ]
+
+
+        return jsonify({
+            "member_id": member_id,
+            "responsibilities": responsibilities
+        })
+
+
+    except Exception:
+
+        app.logger.exception(
+            "Failed to load team member responsibilities."
+        )
+
+        return jsonify({
+            "error": "Unable to load responsibilities."
+        }), 500
+
+
+    finally:
+
+        conn.close()
+# =========================================================
+# TEAM MEMBER — UPDATE ROLE & RESPONSIBILITIES
+# =========================================================
+
+@app.route("/team/<int:member_id>/update", methods=["POST"])
+@login_required
+def update_team_member(member_id):
+
+    current_user = get_current_user()
+
+    if not current_user:
+        return redirect(url_for("login"))
+
+    new_role = (request.form.get("role") or "").strip().lower()
+    brand_id = request.form.get("brand_id", type=int)
+
+    allowed_roles = {
+        "manager",
+        "publisher",
+        "analyst",
+        "member"
+    }
+
+    allowed_responsibilities = {
+        "content_creation",
+        "content_scheduling",
+        "content_approval",
+        "analytics",
+        "reporting",
+        "community_management",
+        "social_accounts",
+        "team_management",
+        "campaign_management"
+    }
+
+    selected_responsibilities = request.form.getlist(
+        "responsibilities"
+    )
+
+    selected_responsibilities = [
+        item.strip().lower()
+        for item in selected_responsibilities
+        if item.strip().lower() in allowed_responsibilities
+    ]
+
+    if not brand_id:
+        flash("Brand information is required.", "danger")
+        return redirect(url_for("team"))
+
+    if new_role not in allowed_roles:
+        flash("Invalid team role selected.", "danger")
+        return redirect(url_for("team", brand_id=brand_id))
+
+    conn = get_db_connection()
+
+    try:
+
+        with conn.cursor() as cur:
+
+            # -------------------------------------------------
+            # BRAND
+            # -------------------------------------------------
+
+            cur.execute("""
+                SELECT
+                    id,
+                    name,
+                    created_by,
+                    is_active
+                FROM brands
+                WHERE id = %s
+            """, (brand_id,))
+
+            brand = cur.fetchone()
+
+            if not brand:
+                flash("Brand not found.", "danger")
+                return redirect(url_for("team"))
+
+            if not brand["is_active"]:
+                flash("This brand is currently inactive.", "danger")
+                return redirect(
+                    url_for("team", brand_id=brand_id)
+                )
+
+            # -------------------------------------------------
+            # CURRENT USER PERMISSION
+            # -------------------------------------------------
+
+            if current_user.get("role") == "admin":
+
+                manager_access = True
+                owner_access = True
+
+            elif brand["created_by"] == current_user["id"]:
+
+                manager_access = True
+                owner_access = True
+
+            else:
+
+                cur.execute("""
+                    SELECT role
+                    FROM brand_members
+                    WHERE brand_id = %s
+                    AND user_id = %s
+                    LIMIT 1
+                """, (
+                    brand_id,
+                    current_user["id"]
+                ))
+
+                current_membership = cur.fetchone()
+
+                if not current_membership:
+                    flash(
+                        "You do not have permission to manage this team.",
+                        "danger"
+                    )
+                    return redirect(
+                        url_for("team", brand_id=brand_id)
+                    )
+
+                current_role = current_membership["role"]
+
+                owner_access = current_role == "owner"
+
+                manager_access = current_role in {
+                    "owner",
+                    "manager"
+                }
+
+            if not manager_access:
+
+                flash(
+                    "You do not have permission to update team members.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for("team", brand_id=brand_id)
+                )
+
+            # -------------------------------------------------
+            # MEMBER
+            # -------------------------------------------------
+
+            cur.execute("""
+                SELECT
+                    bm.id,
+                    bm.brand_id,
+                    bm.user_id,
+                    bm.role,
+                    u.name,
+                    u.email,
+                    u.role AS system_role,
+                    u.is_active
+                FROM brand_members bm
+                INNER JOIN users u
+                    ON u.id = bm.user_id
+                WHERE bm.id = %s
+                AND bm.brand_id = %s
+                LIMIT 1
+            """, (
+                member_id,
+                brand_id
+            ))
+
+            member = cur.fetchone()
+
+            if not member:
+
+                flash(
+                    "Team member was not found.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for("team", brand_id=brand_id)
+                )
+
+            # -------------------------------------------------
+            # ADMIN PROTECTION
+            # -------------------------------------------------
+
+            if member["system_role"] == "admin":
+
+                flash(
+                    "Administrator accounts cannot be managed from a brand team.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for("team", brand_id=brand_id)
+                )
+
+            # -------------------------------------------------
+            # BRAND OWNER PROTECTION
+            # -------------------------------------------------
+
+            if member["user_id"] == brand["created_by"]:
+
+                flash(
+                    "The brand owner cannot be changed from this screen.",
+                    "warning"
+                )
+
+                return redirect(
+                    url_for("team", brand_id=brand_id)
+                )
+
+            # -------------------------------------------------
+            # MANAGER RESTRICTION
+            # -------------------------------------------------
+
+            if not owner_access and new_role == "manager":
+
+                flash(
+                    "Only the brand owner can assign the Manager role.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for("team", brand_id=brand_id)
+                )
+
+            # -------------------------------------------------
+            # UPDATE ROLE
+            # -------------------------------------------------
+
+            cur.execute("""
+                UPDATE brand_members
+                SET role = %s
+                WHERE id = %s
+                AND brand_id = %s
+            """, (
+                new_role,
+                member_id,
+                brand_id
+            ))
+
+            # -------------------------------------------------
+            # REPLACE RESPONSIBILITIES
+            # -------------------------------------------------
+
+            cur.execute("""
+                DELETE FROM brand_member_responsibilities
+                WHERE brand_member_id = %s
+            """, (member_id,))
+
+            for responsibility in selected_responsibilities:
+
+                cur.execute("""
+                    INSERT INTO brand_member_responsibilities (
+                        brand_member_id,
+                        responsibility_key,
+                        created_at
+                    )
+                    VALUES (
+                        %s,
+                        %s,
+                        CURRENT_TIMESTAMP
+                    )
+                    ON CONFLICT (
+                        brand_member_id,
+                        responsibility_key
+                    )
+                    DO NOTHING
+                """, (
+                    member_id,
+                    responsibility
+                ))
+
+            # -------------------------------------------------
+            # NOTIFICATION
+            # -------------------------------------------------
+
+            responsibility_count = len(
+                selected_responsibilities
+            )
+
+            cur.execute("""
+                INSERT INTO notifications (
+                    user_id,
+                    title,
+                    message,
+                    notification_type
+                )
+                VALUES (
+                    %s,
+                    %s,
+                    %s,
+                    'team'
+                )
+            """, (
+                member["user_id"],
+                "Team role updated",
+                (
+                    f"Your role for '{brand['name']}' "
+                    f"has been updated to "
+                    f"{new_role.capitalize()} with "
+                    f"{responsibility_count} responsibility"
+                    f"{'' if responsibility_count == 1 else 'ies'}."
+                )
+            ))
+
+        conn.commit()
+
+        # -----------------------------------------------------
+        # ACTIVITY LOG
+        # -----------------------------------------------------
+
+        log_activity(
+            "team_member_updated",
+            "brand_member",
+            member_id,
+            (
+                f"Updated {member['name']} "
+                f"to {new_role.capitalize()} "
+                f"with {len(selected_responsibilities)} "
+                f"responsibilities."
+            ),
+            brand_id
+        )
+
+        flash(
+            f"{member['name']}'s role and responsibilities were updated.",
+            "success"
+        )
+
+    except Exception:
+
+        conn.rollback()
+
+        app.logger.exception(
+            "Failed to update team member."
+        )
+
+        flash(
+            "Unable to update the team member right now.",
+            "danger"
+        )
+
+    finally:
+
+        conn.close()
+
+    return redirect(
+        url_for(
+            "team",
+            brand_id=brand_id
+        )
+    )
+
+
+# =========================================================
+# TEAM MEMBER — REMOVE
+# =========================================================
+
+@app.route("/team/<int:member_id>/remove", methods=["POST"])
+@login_required
+def remove_team_member(member_id):
+
+    current_user = get_current_user()
+
+    if not current_user:
+        return redirect(url_for("login"))
+
+    brand_id = request.form.get("brand_id", type=int)
+
+    if not brand_id:
+        flash("Brand information is required.", "danger")
+        return redirect(url_for("team"))
+
+    conn = get_db_connection()
+
+    try:
+
+        with conn.cursor() as cur:
+
+            # -------------------------------------------------
+            # BRAND
+            # -------------------------------------------------
+
+            cur.execute("""
+                SELECT
+                    id,
+                    name,
+                    created_by,
+                    is_active
+                FROM brands
+                WHERE id = %s
+            """, (brand_id,))
+
+            brand = cur.fetchone()
+
+            if not brand:
+                flash("Brand not found.", "danger")
+                return redirect(url_for("team"))
+
+            # -------------------------------------------------
+            # CURRENT USER PERMISSION
+            # -------------------------------------------------
+
+            if current_user.get("role") == "admin":
+
+                manager_access = True
+
+            elif brand["created_by"] == current_user["id"]:
+
+                manager_access = True
+
+            else:
+
+                cur.execute("""
+                    SELECT role
+                    FROM brand_members
+                    WHERE brand_id = %s
+                    AND user_id = %s
+                    LIMIT 1
+                """, (
+                    brand_id,
+                    current_user["id"]
+                ))
+
+                current_membership = cur.fetchone()
+
+                manager_access = (
+                    current_membership
+                    and current_membership["role"]
+                    in {"owner", "manager"}
+                )
+
+            if not manager_access:
+
+                flash(
+                    "You do not have permission to remove team members.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for("team", brand_id=brand_id)
+                )
+
+            # -------------------------------------------------
+            # MEMBER
+            # -------------------------------------------------
+
+            cur.execute("""
+                SELECT
+                    bm.id,
+                    bm.user_id,
+                    bm.role,
+                    u.name,
+                    u.email,
+                    u.role AS system_role
+                FROM brand_members bm
+                INNER JOIN users u
+                    ON u.id = bm.user_id
+                WHERE bm.id = %s
+                AND bm.brand_id = %s
+                LIMIT 1
+            """, (
+                member_id,
+                brand_id
+            ))
+
+            member = cur.fetchone()
+
+            if not member:
+
+                flash(
+                    "Team member was not found.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for("team", brand_id=brand_id)
+                )
+
+            # -------------------------------------------------
+            # PROTECTION
+            # -------------------------------------------------
+
+            if member["system_role"] == "admin":
+
+                flash(
+                    "Administrator accounts cannot be removed from a brand team.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for("team", brand_id=brand_id)
+                )
+
+            if member["user_id"] == brand["created_by"]:
+
+                flash(
+                    "The brand owner cannot be removed from the team.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for("team", brand_id=brand_id)
+                )
+
+            # -------------------------------------------------
+            # MANAGER CANNOT REMOVE MANAGER
+            # -------------------------------------------------
+
+            if current_user.get("role") != "admin":
+
+                cur.execute("""
+                    SELECT role
+                    FROM brand_members
+                    WHERE brand_id = %s
+                    AND user_id = %s
+                    LIMIT 1
+                """, (
+                    brand_id,
+                    current_user["id"]
+                ))
+
+                current_membership = cur.fetchone()
+
+                if (
+                    current_membership
+                    and current_membership["role"] == "manager"
+                    and member["role"] == "manager"
+                ):
+
+                    flash(
+                        "Managers cannot remove another Manager.",
+                        "danger"
+                    )
+
+                    return redirect(
+                        url_for("team", brand_id=brand_id)
+                    )
+
+            # -------------------------------------------------
+            # REMOVE MEMBER
+            # -------------------------------------------------
+
+            cur.execute("""
+                DELETE FROM brand_members
+                WHERE id = %s
+                AND brand_id = %s
+            """, (
+                member_id,
+                brand_id
+            ))
+
+            # -------------------------------------------------
+            # NOTIFICATION
+            # -------------------------------------------------
+
+            cur.execute("""
+                INSERT INTO notifications (
+                    user_id,
+                    title,
+                    message,
+                    notification_type
+                )
+                VALUES (
+                    %s,
+                    %s,
+                    %s,
+                    'team'
+                )
+            """, (
+                member["user_id"],
+                "Removed from brand team",
+                f"You have been removed from the '{brand['name']}' team."
+            ))
+
+        conn.commit()
+
+        # -----------------------------------------------------
+        # ACTIVITY LOG
+        # -----------------------------------------------------
+
+        log_activity(
+            "team_member_removed",
+            "brand_member",
+            member_id,
+            (
+                f"Removed {member['name']} "
+                f"from {brand['name']} team."
+            ),
+            brand_id
+        )
+
+        flash(
+            f"{member['name']} was removed from the team.",
+            "success"
+        )
+
+    except Exception:
+
+        conn.rollback()
+
+        app.logger.exception(
+            "Failed to remove team member."
+        )
+
+        flash(
+            "Unable to remove the team member right now.",
+            "danger"
+        )
+
+    finally:
+
+        conn.close()
+
+    return redirect(
+        url_for(
+            "team",
+            brand_id=brand_id
+        )
+    )
 # =========================================================
 # LISTENING
 # =========================================================

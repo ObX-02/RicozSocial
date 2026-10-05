@@ -1,0 +1,1882 @@
+```html
+{% extends "base.html" %}
+
+{% block title %}
+Client Reports | RicozSocial
+{% endblock %}
+
+{% block extra_css %}
+<link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/admin_client_reports.css') }}"
+>
+{% endblock %}
+
+{% block content %}
+
+<div class="client-reports-page">
+
+    <!-- =====================================================
+         PAGE HEADER
+    ====================================================== -->
+
+    <section class="reports-header">
+
+        <div class="reports-header-content">
+
+            <div>
+
+                <div class="page-eyebrow">
+                    <span class="eyebrow-dot"></span>
+                    ADMINISTRATION
+                </div>
+
+                <h1>
+                    Client Reports
+                </h1>
+
+                <p>
+                    Manage, review and organize performance reports
+                    across all client brands from one workspace.
+                </p>
+
+            </div>
+
+            <div class="header-actions">
+
+                <a
+                    href="{{ url_for('admin_dashboard') }}"
+                    class="secondary-button"
+                >
+                    <span>←</span>
+                    Dashboard
+                </a>
+
+                <button
+                    type="button"
+                    class="primary-button"
+                    id="createReportButton"
+                >
+                    <span>＋</span>
+                    Create Report
+                </button>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         STATISTICS
+    ====================================================== -->
+
+    <section class="report-stats">
+
+        <div class="stat-card">
+
+            <div class="stat-icon red">
+                ◫
+            </div>
+
+            <div class="stat-content">
+
+                <span class="stat-label">
+                    Total Reports
+                </span>
+
+                <strong>
+                    {{ total_reports }}
+                </strong>
+
+                <small>
+                    All client reports
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <div class="stat-icon green">
+                ◎
+            </div>
+
+            <div class="stat-content">
+
+                <span class="stat-label">
+                    Active Clients
+                </span>
+
+                <strong>
+                    {{ clients_with_reports }}
+                </strong>
+
+                <small>
+                    Clients with reports
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <div class="stat-icon red">
+                ↗
+            </div>
+
+            <div class="stat-content">
+
+                <span class="stat-label">
+                    This Month
+                </span>
+
+                <strong>
+                    {{ reports_this_month }}
+                </strong>
+
+                <small>
+                    Reports created
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <div class="stat-icon green">
+                ✓
+            </div>
+
+            <div class="stat-content">
+
+                <span class="stat-label">
+                    Client Coverage
+                </span>
+
+                <strong>
+                    {{ report_clients|length }}
+                </strong>
+
+                <small>
+                    Brands available
+                </small>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         MAIN REPORTS CARD
+    ====================================================== -->
+
+    <section class="reports-card">
+
+        <div class="reports-toolbar">
+
+            <div class="toolbar-heading">
+
+                <h2>
+                    All Client Reports
+                </h2>
+
+                <span class="report-count">
+                    {{ reports|length }} records
+                </span>
+
+            </div>
+
+
+            <div class="toolbar-controls">
+
+                <div class="search-box">
+
+                    <span class="search-icon">
+                        ⌕
+                    </span>
+
+                    <input
+                        type="search"
+                        id="reportSearch"
+                        placeholder="Search reports or clients..."
+                        autocomplete="off"
+                    >
+
+                </div>
+
+
+                <select
+                    id="clientFilter"
+                    class="filter-select"
+                >
+
+                    <option value="">
+                        All Clients
+                    </option>
+
+                    {% for client in report_clients %}
+
+                        <option value="{{ client.name|lower }}">
+                            {{ client.name }}
+                        </option>
+
+                    {% endfor %}
+
+                </select>
+
+
+                <select
+                    id="reportTypeFilter"
+                    class="filter-select"
+                >
+
+                    <option value="">
+                        All Types
+                    </option>
+
+                    <option value="monthly">
+                        Monthly
+                    </option>
+
+                    <option value="weekly">
+                        Weekly
+                    </option>
+
+                    <option value="campaign">
+                        Campaign
+                    </option>
+
+                    <option value="analytics">
+                        Analytics
+                    </option>
+
+                    <option value="custom">
+                        Custom
+                    </option>
+
+                </select>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             REPORT TABLE
+        ================================================== -->
+
+        <div class="table-wrapper">
+
+            <table
+                class="reports-table"
+                id="reportsTable"
+            >
+
+                <thead>
+
+                    <tr>
+
+                        <th>Report</th>
+                        <th>Client</th>
+                        <th>Type</th>
+                        <th>Reporting Period</th>
+                        <th>Created By</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% if reports %}
+
+                        {% for report in reports %}
+
+                            <tr
+                                class="report-row"
+                                data-client="{{ (report.brand_name or 'Unknown')|lower }}"
+                                data-type="{{ (report.report_type or 'custom')|lower }}"
+                            >
+
+                                <td>
+
+                                    <div class="report-name-cell">
+
+                                        <div class="report-icon">
+                                            ◫
+                                        </div>
+
+                                        <div>
+
+                                            <strong>
+                                                {{ report.name }}
+                                            </strong>
+
+                                            <span>
+                                                Report #{{ report.id }}
+                                            </span>
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+
+                                <td>
+
+                                    <div class="client-cell">
+
+                                        <div class="client-avatar">
+                                            {{
+                                                (
+                                                    report.brand_name or "C"
+                                                )[:1]|upper
+                                            }}
+                                        </div>
+
+                                        <div>
+
+                                            <strong>
+                                                {{ report.brand_name or "Unknown Client" }}
+                                            </strong>
+
+                                            <span>
+                                                Client Brand
+                                            </span>
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+
+                                <td>
+
+                                    <span
+                                        class="type-badge type-{{ (report.report_type or 'custom')|lower }}"
+                                    >
+
+                                        {{
+                                            (report.report_type or "Custom")
+                                            |replace("_", " ")
+                                            |title
+                                        }}
+
+                                    </span>
+
+                                </td>
+
+
+                                <td>
+
+                                    <div class="period-cell">
+
+                                        <strong>
+
+                                            {% if report.period_start %}
+                                                {{ report.period_start.strftime("%d %b %Y") }}
+                                            {% else %}
+                                                —
+                                            {% endif %}
+
+                                        </strong>
+
+                                        <span>
+
+                                            to
+
+                                            {% if report.period_end %}
+                                                {{ report.period_end.strftime("%d %b %Y") }}
+                                            {% else %}
+                                                —
+                                            {% endif %}
+
+                                        </span>
+
+                                    </div>
+
+                                </td>
+
+
+                                <td>
+
+                                    <div class="creator-cell">
+
+                                        <strong>
+                                            {{ report.created_by_name or "System" }}
+                                        </strong>
+
+                                        {% if report.created_by_email %}
+
+                                            <span>
+                                                {{ report.created_by_email }}
+                                            </span>
+
+                                        {% endif %}
+
+                                    </div>
+
+                                </td>
+
+
+                                <td>
+
+                                    <span class="date-cell">
+
+                                        {% if report.created_at %}
+                                            {{ report.created_at.strftime("%d %b %Y") }}
+                                        {% else %}
+                                            —
+                                        {% endif %}
+
+                                    </span>
+
+                                </td>
+
+
+                                <td>
+
+                                    <div class="row-actions">
+
+                                        <button
+                                            type="button"
+                                            class="icon-action view-report"
+                                            title="View report"
+                                            data-report-id="{{ report.id }}"
+                                        >
+                                            View
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            class="icon-action edit-report"
+                                            title="Edit report"
+                                            data-report-id="{{ report.id }}"
+                                        >
+                                            Edit
+                                        </button>
+
+                                        {% if report.file_url %}
+
+                                            <a
+                                                href="{{ report.file_url }}"
+                                                target="_blank"
+                                                rel="noopener"
+                                                class="icon-action download-report"
+                                            >
+                                                Open
+                                            </a>
+
+                                        {% endif %}
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    {% else %}
+
+                        <tr id="emptyReportsRow">
+
+                            <td
+                                colspan="7"
+                                class="empty-state"
+                            >
+
+                                <div class="empty-icon">
+                                    ◫
+                                </div>
+
+                                <h3>
+                                    No client reports yet
+                                </h3>
+
+                                <p>
+                                    Create your first client report
+                                    to start managing performance data.
+                                </p>
+
+                                <button
+                                    type="button"
+                                    class="primary-button"
+                                    id="emptyCreateButton"
+                                >
+                                    ＋ Create Report
+                                </button>
+
+                            </td>
+
+                        </tr>
+
+                    {% endif %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        <!-- =================================================
+             TABLE FOOTER
+        ================================================== -->
+
+        <div class="reports-footer">
+
+            <div class="footer-summary">
+
+                Showing
+
+                <strong id="visibleReportCount">
+                    {{ reports|length }}
+                </strong>
+
+                report(s)
+
+            </div>
+
+
+            <div class="footer-info">
+
+                <span class="status-dot"></span>
+
+                Report management is active
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         CLIENT DIRECTORY
+    ====================================================== -->
+
+    <section class="client-directory-card">
+
+        <div class="directory-header">
+
+            <div>
+
+                <span class="section-label">
+                    CLIENT DIRECTORY
+                </span>
+
+                <h2>
+                    Reported Clients
+                </h2>
+
+                <p>
+                    Quickly see which brands currently have
+                    reporting activity.
+                </p>
+
+            </div>
+
+            <div class="directory-total">
+
+                <strong>
+                    {{ report_clients|length }}
+                </strong>
+
+                <span>
+                    Brands
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="client-grid">
+
+            {% if report_clients %}
+
+                {% for client in report_clients %}
+
+                    <div class="directory-client">
+
+                        <div class="directory-avatar">
+                            {{ (client.name or "C")[:1]|upper }}
+                        </div>
+
+
+                        <div class="directory-client-info">
+
+                            <strong>
+                                {{ client.name }}
+                            </strong>
+
+                            <span>
+
+                                {{ client.report_count }}
+
+                                {% if client.report_count == 1 %}
+                                    report
+                                {% else %}
+                                    reports
+                                {% endif %}
+
+                            </span>
+
+                        </div>
+
+
+                        <span
+                            class="
+                                client-status
+                                {% if client.is_active %}
+                                    active
+                                {% else %}
+                                    inactive
+                                {% endif %}
+                            "
+                        >
+
+                            {% if client.is_active %}
+                                Active
+                            {% else %}
+                                Inactive
+                            {% endif %}
+
+                        </span>
+
+                    </div>
+
+                {% endfor %}
+
+            {% else %}
+
+                <div class="directory-empty">
+                    No client brands are available yet.
+                </div>
+
+            {% endif %}
+
+        </div>
+
+    </section>
+
+</div>
+
+
+<!-- =========================================================
+     CREATE REPORT MODAL
+========================================================== -->
+
+<div
+    class="report-modal"
+    id="createReportModal"
+    aria-hidden="true"
+>
+
+    <div
+        class="modal-overlay"
+        id="modalOverlay"
+    ></div>
+
+
+    <div
+        class="modal-card report-builder-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="createReportTitle"
+    >
+
+        <!-- MODAL HEADER -->
+
+        <div class="modal-header">
+
+            <div>
+
+                <span class="modal-label">
+                    REPORT BUILDER
+                </span>
+
+                <h2 id="createReportTitle">
+                    Create Client Report
+                </h2>
+
+                <p>
+                    Configure a professional performance report
+                    for a client brand.
+                </p>
+
+            </div>
+
+
+            <button
+                type="button"
+                class="modal-close"
+                id="closeReportModal"
+                aria-label="Close"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <!-- BUILDER PROGRESS -->
+
+        <div class="builder-progress">
+
+            <div class="builder-step active">
+
+                <span class="step-number">
+                    1
+                </span>
+
+                <div>
+                    <strong>
+                        Report Details
+                    </strong>
+
+                    <small>
+                        Basic information
+                    </small>
+                </div>
+
+            </div>
+
+
+            <div class="builder-line"></div>
+
+
+            <div class="builder-step">
+
+                <span class="step-number">
+                    2
+                </span>
+
+                <div>
+                    <strong>
+                        Metrics
+                    </strong>
+
+                    <small>
+                        Performance data
+                    </small>
+                </div>
+
+            </div>
+
+
+            <div class="builder-line"></div>
+
+
+            <div class="builder-step">
+
+                <span class="step-number">
+                    3
+                </span>
+
+                <div>
+                    <strong>
+                        Review
+                    </strong>
+
+                    <small>
+                        Confirm report
+                    </small>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- FORM -->
+
+        <form
+            id="createReportForm"
+            method="POST"
+            action="{{ url_for('admin_client_reports') }}"
+        >
+
+            <div class="modal-body">
+
+                <!-- =================================================
+                     REPORT INFORMATION
+                ================================================== -->
+
+                <div class="builder-section">
+
+                    <div class="builder-section-heading">
+
+                        <span class="builder-section-icon">
+                            ◫
+                        </span>
+
+                        <div>
+
+                            <h3>
+                                Report Information
+                            </h3>
+
+                            <p>
+                                Define the client and reporting period.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-grid">
+
+
+                        <!-- CLIENT -->
+
+                        <div class="form-group">
+
+                            <label for="reportBrandId">
+                                Client / Brand
+                                <span>*</span>
+                            </label>
+
+                            <select
+                                id="reportBrandId"
+                                name="brand_id"
+                                required
+                            >
+
+                                <option value="">
+                                    Select client brand
+                                </option>
+
+                                {% for client in report_clients %}
+
+                                    <option
+                                        value="{{ client.id }}"
+                                    >
+                                        {{ client.name }}
+                                    </option>
+
+                                {% endfor %}
+
+                            </select>
+
+                            <small>
+                                Select the brand this report belongs to.
+                            </small>
+
+                        </div>
+
+
+                        <!-- REPORT NAME -->
+
+                        <div class="form-group">
+
+                            <label for="reportName">
+                                Report Name
+                                <span>*</span>
+                            </label>
+
+                            <input
+                                type="text"
+                                id="reportName"
+                                name="name"
+                                placeholder="e.g. September Performance Report"
+                                maxlength="150"
+                                required
+                            >
+
+                            <small>
+                                Use a clear and professional report name.
+                            </small>
+
+                        </div>
+
+
+                        <!-- REPORT TYPE -->
+
+                        <div class="form-group">
+
+                            <label for="reportType">
+                                Report Type
+                                <span>*</span>
+                            </label>
+
+                            <select
+                                id="reportType"
+                                name="report_type"
+                                required
+                            >
+
+                                <option value="">
+                                    Select report type
+                                </option>
+
+                                <option value="monthly">
+                                    Monthly Performance
+                                </option>
+
+                                <option value="weekly">
+                                    Weekly Performance
+                                </option>
+
+                                <option value="campaign">
+                                    Campaign Performance
+                                </option>
+
+                                <option value="analytics">
+                                    Analytics Report
+                                </option>
+
+                                <option value="custom">
+                                    Custom Report
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <!-- REPORT PERIOD -->
+
+                        <div class="form-group">
+
+                            <label>
+                                Reporting Period
+                                <span>*</span>
+                            </label>
+
+                            <div class="date-range">
+
+                                <input
+                                    type="date"
+                                    id="periodStart"
+                                    name="period_start"
+                                    required
+                                >
+
+                                <span>
+                                    to
+                                </span>
+
+                                <input
+                                    type="date"
+                                    id="periodEnd"
+                                    name="period_end"
+                                    required
+                                >
+
+                            </div>
+
+                            <small>
+                                Select the period covered by this report.
+                            </small>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =================================================
+                     PERFORMANCE METRICS
+                ================================================== -->
+
+                <div class="builder-section">
+
+                    <div class="builder-section-heading">
+
+                        <span class="builder-section-icon">
+                            ↗
+                        </span>
+
+                        <div>
+
+                            <h3>
+                                Performance Metrics
+                            </h3>
+
+                            <p>
+                                Choose the performance data to include.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="metrics-grid">
+
+
+                        <label class="metric-option">
+
+                            <input
+                                type="checkbox"
+                                name="metrics"
+                                value="impressions"
+                                checked
+                            >
+
+                            <span class="metric-check">
+                                ✓
+                            </span>
+
+                            <span class="metric-content">
+
+                                <strong>
+                                    Impressions
+                                </strong>
+
+                                <small>
+                                    Total content impressions
+                                </small>
+
+                            </span>
+
+                        </label>
+
+
+                        <label class="metric-option">
+
+                            <input
+                                type="checkbox"
+                                name="metrics"
+                                value="reach"
+                                checked
+                            >
+
+                            <span class="metric-check">
+                                ✓
+                            </span>
+
+                            <span class="metric-content">
+
+                                <strong>
+                                    Reach
+                                </strong>
+
+                                <small>
+                                    Unique audience reached
+                                </small>
+
+                            </span>
+
+                        </label>
+
+
+                        <label class="metric-option">
+
+                            <input
+                                type="checkbox"
+                                name="metrics"
+                                value="likes"
+                                checked
+                            >
+
+                            <span class="metric-check">
+                                ✓
+                            </span>
+
+                            <span class="metric-content">
+
+                                <strong>
+                                    Likes
+                                </strong>
+
+                                <small>
+                                    Total post likes
+                                </small>
+
+                            </span>
+
+                        </label>
+
+
+                        <label class="metric-option">
+
+                            <input
+                                type="checkbox"
+                                name="metrics"
+                                value="comments"
+                                checked
+                            >
+
+                            <span class="metric-check">
+                                ✓
+                            </span>
+
+                            <span class="metric-content">
+
+                                <strong>
+                                    Comments
+                                </strong>
+
+                                <small>
+                                    Audience comments
+                                </small>
+
+                            </span>
+
+                        </label>
+
+
+                        <label class="metric-option">
+
+                            <input
+                                type="checkbox"
+                                name="metrics"
+                                value="shares"
+                                checked
+                            >
+
+                            <span class="metric-check">
+                                ✓
+                            </span>
+
+                            <span class="metric-content">
+
+                                <strong>
+                                    Shares
+                                </strong>
+
+                                <small>
+                                    Content shares
+                                </small>
+
+                            </span>
+
+                        </label>
+
+
+                        <label class="metric-option">
+
+                            <input
+                                type="checkbox"
+                                name="metrics"
+                                value="clicks"
+                            >
+
+                            <span class="metric-check">
+                                ✓
+                            </span>
+
+                            <span class="metric-content">
+
+                                <strong>
+                                    Clicks
+                                </strong>
+
+                                <small>
+                                    Link and content clicks
+                                </small>
+
+                            </span>
+
+                        </label>
+
+
+                        <label class="metric-option">
+
+                            <input
+                                type="checkbox"
+                                name="metrics"
+                                value="followers"
+                                checked
+                            >
+
+                            <span class="metric-check">
+                                ✓
+                            </span>
+
+                            <span class="metric-content">
+
+                                <strong>
+                                    Followers
+                                </strong>
+
+                                <small>
+                                    Audience growth
+                                </small>
+
+                            </span>
+
+                        </label>
+
+
+                        <label class="metric-option">
+
+                            <input
+                                type="checkbox"
+                                name="metrics"
+                                value="engagement"
+                                checked
+                            >
+
+                            <span class="metric-check">
+                                ✓
+                            </span>
+
+                            <span class="metric-content">
+
+                                <strong>
+                                    Engagement
+                                </strong>
+
+                                <small>
+                                    Overall engagement activity
+                                </small>
+
+                            </span>
+
+                        </label>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =================================================
+                     REPORT OPTIONS
+                ================================================== -->
+
+                <div class="builder-section">
+
+                    <div class="builder-section-heading">
+
+                        <span class="builder-section-icon">
+                            ⚙
+                        </span>
+
+                        <div>
+
+                            <h3>
+                                Report Options
+                            </h3>
+
+                            <p>
+                                Configure additional report settings.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-grid">
+
+
+                        <div class="form-group">
+
+                            <label for="reportFileUrl">
+                                Existing Report File
+                            </label>
+
+                            <input
+                                type="url"
+                                id="reportFileUrl"
+                                name="file_url"
+                                placeholder="https://..."
+                            >
+
+                            <small>
+                                Optional external report or document URL.
+                            </small>
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label for="reportDescription">
+                                Internal Notes
+                            </label>
+
+                            <input
+                                type="text"
+                                id="reportDescription"
+                                name="description"
+                                maxlength="250"
+                                placeholder="Optional internal note"
+                            >
+
+                            <small>
+                                Optional note for administrators.
+                            </small>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =================================================
+                     FORM NOTICE
+                ================================================== -->
+
+                <div class="builder-notice">
+
+                    <span class="notice-icon">
+                        i
+                    </span>
+
+                    <div>
+
+                        <strong>
+                            Report data
+                        </strong>
+
+                        <p>
+                            Selected metrics will be used by the report
+                            generation workflow. Actual analytics values
+                            will come from the client's connected platform
+                            data.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 MODAL FOOTER
+            ================================================== -->
+
+            <div class="modal-footer">
+
+                <button
+                    type="button"
+                    class="secondary-button"
+                    id="cancelReportModal"
+                >
+                    Cancel
+                </button>
+
+                <button
+                    type="submit"
+                    class="primary-button"
+                    id="saveReportButton"
+                >
+                    <span>✓</span>
+                    Create Report
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     PAGE JAVASCRIPT
+========================================================== -->
+
+<script>
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        /* =====================================================
+           REPORT FILTERING
+        ===================================================== */
+
+        const searchInput =
+            document.getElementById("reportSearch");
+
+        const clientFilter =
+            document.getElementById("clientFilter");
+
+        const typeFilter =
+            document.getElementById("reportTypeFilter");
+
+        const rows =
+            document.querySelectorAll(".report-row");
+
+        const visibleCount =
+            document.getElementById("visibleReportCount");
+
+
+        function filterReports() {
+
+            const searchValue =
+                (searchInput?.value || "")
+                .trim()
+                .toLowerCase();
+
+            const clientValue =
+                (clientFilter?.value || "")
+                .trim()
+                .toLowerCase();
+
+            const typeValue =
+                (typeFilter?.value || "")
+                .trim()
+                .toLowerCase();
+
+            let count = 0;
+
+
+            rows.forEach(
+                function (row) {
+
+                    const rowText =
+                        row.textContent.toLowerCase();
+
+                    const rowClient =
+                        row.dataset.client || "";
+
+                    const rowType =
+                        row.dataset.type || "";
+
+
+                    const matchesSearch =
+                        !searchValue ||
+                        rowText.includes(searchValue);
+
+                    const matchesClient =
+                        !clientValue ||
+                        rowClient === clientValue;
+
+                    const matchesType =
+                        !typeValue ||
+                        rowType === typeValue;
+
+
+                    if (
+                        matchesSearch &&
+                        matchesClient &&
+                        matchesType
+                    ) {
+
+                        row.style.display = "";
+
+                        count++;
+
+                    } else {
+
+                        row.style.display = "none";
+
+                    }
+
+                }
+            );
+
+
+            if (visibleCount) {
+
+                visibleCount.textContent =
+                    count;
+
+            }
+
+        }
+
+
+        if (searchInput) {
+
+            searchInput.addEventListener(
+                "input",
+                filterReports
+            );
+
+        }
+
+
+        if (clientFilter) {
+
+            clientFilter.addEventListener(
+                "change",
+                filterReports
+            );
+
+        }
+
+
+        if (typeFilter) {
+
+            typeFilter.addEventListener(
+                "change",
+                filterReports
+            );
+
+        }
+
+
+        /* =====================================================
+           CREATE REPORT MODAL
+        ===================================================== */
+
+        const modal =
+            document.getElementById(
+                "createReportModal"
+            );
+
+        const createButton =
+            document.getElementById(
+                "createReportButton"
+            );
+
+        const emptyCreateButton =
+            document.getElementById(
+                "emptyCreateButton"
+            );
+
+        const closeButton =
+            document.getElementById(
+                "closeReportModal"
+            );
+
+        const cancelButton =
+            document.getElementById(
+                "cancelReportModal"
+            );
+
+        const overlay =
+            document.getElementById(
+                "modalOverlay"
+            );
+
+
+        function openModal() {
+
+            if (!modal) {
+                return;
+            }
+
+            modal.classList.add("active");
+
+            modal.setAttribute(
+                "aria-hidden",
+                "false"
+            );
+
+            document.body.classList.add(
+                "modal-open"
+            );
+
+
+            const firstInput =
+                document.getElementById(
+                    "reportBrandId"
+                );
+
+            if (firstInput) {
+
+                setTimeout(
+                    function () {
+                        firstInput.focus();
+                    },
+                    100
+                );
+
+            }
+
+        }
+
+
+        function closeModal() {
+
+            if (!modal) {
+                return;
+            }
+
+            modal.classList.remove("active");
+
+            modal.setAttribute(
+                "aria-hidden",
+                "true"
+            );
+
+            document.body.classList.remove(
+                "modal-open"
+            );
+
+        }
+
+
+        if (createButton) {
+
+            createButton.addEventListener(
+                "click",
+                openModal
+            );
+
+        }
+
+
+        if (emptyCreateButton) {
+
+            emptyCreateButton.addEventListener(
+                "click",
+                openModal
+            );
+
+        }
+
+
+        if (closeButton) {
+
+            closeButton.addEventListener(
+                "click",
+                closeModal
+            );
+
+        }
+
+
+        if (cancelButton) {
+
+            cancelButton.addEventListener(
+                "click",
+                closeModal
+            );
+
+        }
+
+
+        if (overlay) {
+
+            overlay.addEventListener(
+                "click",
+                closeModal
+            );
+
+        }
+
+
+        document.addEventListener(
+            "keydown",
+            function (event) {
+
+                if (
+                    event.key === "Escape" &&
+                    modal &&
+                    modal.classList.contains("active")
+                ) {
+
+                    closeModal();
+
+                }
+
+            }
+        );
+
+
+        /* =====================================================
+           DATE VALIDATION
+        ===================================================== */
+
+        const startDate =
+            document.getElementById(
+                "periodStart"
+            );
+
+        const endDate =
+            document.getElementById(
+                "periodEnd"
+            );
+
+
+        if (startDate && endDate) {
+
+            startDate.addEventListener(
+                "change",
+                function () {
+
+                    if (startDate.value) {
+
+                        endDate.min =
+                            startDate.value;
+
+                    }
+
+                    if (
+                        endDate.value &&
+                        startDate.value &&
+                        endDate.value < startDate.value
+                    ) {
+
+                        endDate.value = "";
+
+                    }
+
+                }
+            );
+
+
+            endDate.addEventListener(
+                "change",
+                function () {
+
+                    if (
+                        startDate.value &&
+                        endDate.value &&
+                        endDate.value < startDate.value
+                    ) {
+
+                        alert(
+                            "The report end date cannot be earlier than the start date."
+                        );
+
+                        endDate.value = "";
+
+                    }
+
+                }
+            );
+
+        }
+
+
+        /* =====================================================
+           FORM VALIDATION
+        ===================================================== */
+
+        const reportForm =
+            document.getElementById(
+                "createReportForm"
+            );
+
+
+        if (reportForm) {
+
+            reportForm.addEventListener(
+                "submit",
+                function (event) {
+
+                    const selectedMetrics =
+                        reportForm.querySelectorAll(
+                            'input[name="metrics"]:checked'
+                        );
+
+
+                    if (
+                        selectedMetrics.length === 0
+                    ) {
+
+                        event.preventDefault();
+
+                        alert(
+                            "Please select at least one performance metric."
+                        );
+
+                        return;
+
+                    }
+
+
+                    if (
+                        startDate &&
+                        endDate &&
+                        startDate.value &&
+                        endDate.value &&
+                        endDate.value < startDate.value
+                    ) {
+
+                        event.preventDefault();
+
+                        alert(
+                            "The report end date cannot be earlier than the start date."
+                        );
+
+                        return;
+
+                    }
+
+                }
+            );
+
+        }
+
+
+        /* =====================================================
+           VIEW / EDIT
+        ===================================================== */
+
+        document.querySelectorAll(
+            ".view-report"
+        ).forEach(
+            function (button) {
+
+                button.addEventListener(
+                    "click",
+                    function () {
+
+                        const reportId =
+                            this.dataset.reportId;
+
+                        if (!reportId) {
+                            return;
+                        }
+
+                        window.location.href =
+                            "/admin/client-reports/" +
+                            reportId;
+
+                    }
+                );
+
+            }
+        );
+
+
+        document.querySelectorAll(
+            ".edit-report"
+        ).forEach(
+            function (button) {
+
+                button.addEventListener(
+                    "click",
+                    function () {
+
+                        const reportId =
+                            this.dataset.reportId;
+
+                        if (!reportId) {
+                            return;
+                        }
+
+                        window.location.href =
+                            "/admin/client-reports/" +
+                            reportId +
+                            "/edit";
+
+                    }
+                );
+
+            }
+        );
+
+    }
+);
+
+</script>
+
+{% endblock %}
+```
+
+**Important:** Is code mein form UI complete hai, lekin abhi `POST` backend route `admin_client_reports` par submit hoga aur actual database insertion hum next step mein connect karenge. Main jaan-boojh kar abhi fake DB logic nahi daal raha, taake existing `reports` schema ke against error na aaye.
+
+Ab file save karke **Create Report** button click karke check karein. Modal proper open hona chahiye.

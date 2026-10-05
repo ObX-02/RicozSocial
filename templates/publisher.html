@@ -12,21 +12,16 @@ Publisher | RicozSocial
 >
 
 <style>
-
-/* =========================================================
-   AI CONTENT CONTROLS
-   ========================================================= */
-
 .publisher-content-label-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 16px;
+    gap: 14px;
     margin-bottom: 8px;
 }
 
 .publisher-content-label-row label {
-    margin-bottom: 0;
+    margin: 0;
 }
 
 .publisher-ai-btn {
@@ -34,53 +29,44 @@ Publisher | RicozSocial
     align-items: center;
     justify-content: center;
     gap: 7px;
-    border: 1px solid #e31e24;
+    border: 1px solid #c91f2b;
     background: #fff;
-    color: #c8171d;
+    color: #a91621;
     border-radius: 9px;
     padding: 8px 13px;
-    font-size: 13px;
-    font-weight: 700;
+    font-size: 12px;
+    font-weight: 800;
     cursor: pointer;
-    transition: all 0.2s ease;
-    white-space: nowrap;
-}
-
-.publisher-ai-btn span {
-    font-size: 15px;
+    transition: all .2s ease;
 }
 
 .publisher-ai-btn:hover {
-    background: #e31e24;
+    background: #c91f2b;
     color: #fff;
     transform: translateY(-1px);
-    box-shadow: 0 5px 14px rgba(227, 30, 36, 0.18);
 }
 
 .publisher-ai-status {
     margin-top: 9px;
     padding: 9px 12px;
     border-radius: 8px;
-    background: #ecfdf3;
-    border: 1px solid #b7ebc6;
-    color: #16803a;
-    font-size: 13px;
-    font-weight: 600;
+    background: #eaf8f0;
+    border: 1px solid #b9dfc8;
+    color: #168348;
+    font-size: 12px;
+    font-weight: 700;
 }
 
 @media (max-width: 600px) {
-
     .publisher-content-label-row {
-        align-items: flex-start;
+        align-items: stretch;
         flex-direction: column;
     }
 
     .publisher-ai-btn {
         width: 100%;
     }
-
 }
-
 </style>
 
 {% endblock %}
@@ -92,185 +78,128 @@ Publisher | RicozSocial
 
     <!-- =====================================================
          HEADER
-         ===================================================== -->
+    ====================================================== -->
 
-    <div class="publisher-header">
+    <section class="publisher-header">
 
-        <div class="publisher-heading">
+        <div class="publisher-header-left">
 
             <div class="publisher-eyebrow">
                 CONTENT MANAGEMENT
             </div>
 
-            <h1>
+            <h1 class="publisher-title">
                 Publisher
             </h1>
 
-            <p>
-                Create, review, schedule and manage social media content.
+            <p class="publisher-subtitle">
+                Create, review, schedule and manage social media content
+                across your connected brand accounts.
             </p>
 
         </div>
 
+        <button
+            type="button"
+            id="openCreatePost"
+            class="publisher-create-btn"
+            onclick="openCreatePostModal()"
+        >
+            <span>＋</span>
+            Create Post
+        </button>
 
-        <div class="publisher-actions">
-
-            <button
-                type="button"
-                class="publisher-primary-btn"
-                onclick="openCreatePostModal()"
-            >
-
-                <span>＋</span>
-
-                Create Post
-
-            </button>
-
-        </div>
-
-    </div>
+    </section>
 
 
     <!-- =====================================================
-         STATS
-         ===================================================== -->
+         STATISTICS
+    ====================================================== -->
 
-    <div class="publisher-stats">
+    <section class="publisher-stats">
 
         <div class="publisher-stat-card">
-
-            <div class="publisher-stat-icon">
-                ◉
+            <div class="publisher-stat-label">
+                Total Posts
             </div>
 
-            <div>
-
-                <span class="publisher-stat-label">
-                    Total Posts
-                </span>
-
-                <strong>
-                    {{ stats.total or 0 }}
-                </strong>
-
+            <div class="publisher-stat-value">
+                {{ stats.total or 0 }}
             </div>
 
+            <div class="publisher-stat-meta">
+                All content
+            </div>
         </div>
 
 
         <div class="publisher-stat-card">
-
-            <div class="publisher-stat-icon">
-                ◌
+            <div class="publisher-stat-label">
+                Drafts
             </div>
 
-            <div>
-
-                <span class="publisher-stat-label">
-                    Drafts
-                </span>
-
-                <strong>
-                    {{ stats.drafts or 0 }}
-                </strong>
-
+            <div class="publisher-stat-value">
+                {{ stats.draft or stats.drafts or 0 }}
             </div>
 
+            <div class="publisher-stat-meta">
+                In preparation
+            </div>
         </div>
 
 
         <div class="publisher-stat-card">
-
-            <div class="publisher-stat-icon">
-                ⏳
+            <div class="publisher-stat-label">
+                Awaiting Approval
             </div>
 
-            <div>
-
-                <span class="publisher-stat-label">
-                    Awaiting Approval
-                </span>
-
-                <strong>
-                    {{ stats.pending_approval or 0 }}
-                </strong>
-
+            <div class="publisher-stat-value">
+                {{ stats.pending_approval or 0 }}
             </div>
 
+            <div class="publisher-stat-meta">
+                Review required
+            </div>
         </div>
 
 
         <div class="publisher-stat-card">
-
-            <div class="publisher-stat-icon">
-                ✓
+            <div class="publisher-stat-label">
+                Scheduled
             </div>
 
-            <div>
-
-                <span class="publisher-stat-label">
-                    Approved
-                </span>
-
-                <strong>
-                    {{ stats.approved or 0 }}
-                </strong>
-
+            <div class="publisher-stat-value">
+                {{ stats.scheduled or 0 }}
             </div>
 
+            <div class="publisher-stat-meta">
+                Ready to publish
+            </div>
         </div>
 
 
         <div class="publisher-stat-card">
-
-            <div class="publisher-stat-icon">
-                ◷
+            <div class="publisher-stat-label">
+                Published
             </div>
 
-            <div>
-
-                <span class="publisher-stat-label">
-                    Scheduled
-                </span>
-
-                <strong>
-                    {{ stats.scheduled or 0 }}
-                </strong>
-
+            <div class="publisher-stat-value">
+                {{ stats.published or 0 }}
             </div>
 
+            <div class="publisher-stat-meta">
+                Live content
+            </div>
         </div>
 
-
-        <div class="publisher-stat-card">
-
-            <div class="publisher-stat-icon">
-                ●
-            </div>
-
-            <div>
-
-                <span class="publisher-stat-label">
-                    Published
-                </span>
-
-                <strong>
-                    {{ stats.published or 0 }}
-                </strong>
-
-            </div>
-
-        </div>
-
-    </div>
+    </section>
 
 
     <!-- =====================================================
          FILTERS
-         ===================================================== -->
+    ====================================================== -->
 
-    <div class="publisher-filter-card">
+    <section class="publisher-filter-card">
 
         <form
             method="GET"
@@ -278,45 +207,47 @@ Publisher | RicozSocial
             class="publisher-filter-form"
         >
 
-            <div class="publisher-filter-field">
+            <div class="publisher-field">
 
-                <label>
-                    Search
+                <label for="publisherSearch">
+                    Search Posts
                 </label>
 
                 <input
+                    id="publisherSearch"
                     type="text"
                     name="search"
-                    value="{{ search }}"
-                    placeholder="Search posts..."
+                    value="{{ search or '' }}"
+                    placeholder="Search by title or content..."
                 >
 
             </div>
 
 
-            <div class="publisher-filter-field">
+            <div class="publisher-field">
 
-                <label>
+                <label for="publisherBrandFilter">
                     Brand
                 </label>
 
-                <select name="brand_id">
+                <select
+                    id="publisherBrandFilter"
+                    name="brand_id"
+                >
 
                     <option value="">
                         All Brands
                     </option>
 
-                    {% for brand in available_brands %}
+                    {% for brand in brands %}
 
                         <option
                             value="{{ brand.id }}"
-                            {% if selected_brand|string == brand.id|string %}
+                            {% if brand_id|string == brand.id|string %}
                                 selected
                             {% endif %}
                         >
-
                             {{ brand.name }}
-
                         </option>
 
                     {% endfor %}
@@ -326,13 +257,16 @@ Publisher | RicozSocial
             </div>
 
 
-            <div class="publisher-filter-field">
+            <div class="publisher-field">
 
-                <label>
+                <label for="publisherStatusFilter">
                     Status
                 </label>
 
-                <select name="status">
+                <select
+                    id="publisherStatusFilter"
+                    name="status"
+                >
 
                     <option value="">
                         All Statuses
@@ -342,13 +276,11 @@ Publisher | RicozSocial
 
                         <option
                             value="{{ status_value }}"
-                            {% if selected_status == status_value %}
+                            {% if status == status_value %}
                                 selected
                             {% endif %}
                         >
-
-                            {{ status_value|replace('_', ' ')|title }}
-
+                            {{ status_value|replace("_", " ")|title }}
                         </option>
 
                     {% endfor %}
@@ -358,54 +290,82 @@ Publisher | RicozSocial
             </div>
 
 
-            <div class="publisher-filter-buttons">
+            <div class="publisher-field">
 
-                <button
-                    type="submit"
-                    class="publisher-filter-btn"
-                >
-                    Apply
-                </button>
+                <label for="publisherPlatformFilter">
+                    Platform
+                </label>
 
-                <a
-                    href="{{ url_for('publisher') }}"
-                    class="publisher-reset-btn"
+                <select
+                    id="publisherPlatformFilter"
+                    name="platform"
                 >
-                    Reset
-                </a>
+
+                    <option value="">
+                        All Platforms
+                    </option>
+
+                    {% for platform_name in platforms %}
+
+                        <option
+                            value="{{ platform_name }}"
+                            {% if platform == platform_name %}
+                                selected
+                            {% endif %}
+                        >
+                            {{ platform_name|title }}
+                        </option>
+
+                    {% endfor %}
+
+                </select>
 
             </div>
 
+
+            <button
+                type="submit"
+                class="publisher-filter-btn"
+            >
+                Apply
+            </button>
+
+
+            <a
+                href="{{ url_for('publisher') }}"
+                class="publisher-reset-btn"
+            >
+                Reset
+            </a>
+
         </form>
 
-    </div>
+    </section>
 
 
     <!-- =====================================================
-         POSTS TABLE
-         ===================================================== -->
+         CONTENT LIBRARY
+    ====================================================== -->
 
-    <div class="publisher-table-card">
+    <section class="publisher-table-card">
 
         <div class="publisher-table-header">
 
             <div>
 
-                <span class="publisher-table-eyebrow">
+                <div class="publisher-eyebrow">
                     CONTENT LIBRARY
-                </span>
+                </div>
 
-                <h2>
+                <h2 class="publisher-table-title">
                     Posts
                 </h2>
 
             </div>
 
-            <span class="publisher-result-count">
-
+            <span class="publisher-table-count">
                 {{ posts|length }}
                 result{% if posts|length != 1 %}s{% endif %}
-
             </span>
 
         </div>
@@ -420,31 +380,12 @@ Publisher | RicozSocial
                 <thead>
 
                     <tr>
-
-                        <th>
-                            Content
-                        </th>
-
-                        <th>
-                            Brand
-                        </th>
-
-                        <th>
-                            Status
-                        </th>
-
-                        <th>
-                            Schedule
-                        </th>
-
-                        <th>
-                            Platforms
-                        </th>
-
-                        <th>
-                            Actions
-                        </th>
-
+                        <th>Content</th>
+                        <th>Brand</th>
+                        <th>Status</th>
+                        <th>Schedule</th>
+                        <th>Platforms</th>
+                        <th>Actions</th>
                     </tr>
 
                 </thead>
@@ -456,51 +397,53 @@ Publisher | RicozSocial
 
                     <tr>
 
+                        <!-- CONTENT -->
+
                         <td>
 
                             <div class="publisher-content-cell">
 
-                                <div class="publisher-content-title">
-
+                                <div class="publisher-post-title">
                                     {{ post.title or "Untitled Post" }}
-
                                 </div>
 
-                                <div class="publisher-content-preview">
-
-                                    {{ post.content|truncate(90) }}
-
+                                <div class="publisher-post-content">
+                                    {{ post.content|truncate(100) }}
                                 </div>
 
-                                <small>
-
-                                    By
+                                <div class="publisher-creator">
+                                    Created by
                                     {{ post.creator_name or "Unknown User" }}
-
-                                </small>
+                                </div>
 
                             </div>
 
                         </td>
 
 
+                        <!-- BRAND -->
+
                         <td>
 
-                            <span class="publisher-brand-badge">
-
+                            <span class="publisher-brand">
                                 {{ post.brand_name }}
-
                             </span>
 
                         </td>
 
 
+                        <!-- STATUS -->
+
                         <td>
+
+                            {% set safe_status =
+                                post.status|lower|replace("_", "-")
+                            %}
 
                             <span
                                 class="
                                     publisher-status
-                                    status-{{ post.status|lower|replace('_','-') }}
+                                    publisher-status-{{ safe_status }}
                                 "
                             >
 
@@ -510,7 +453,7 @@ Publisher | RicozSocial
 
                                 {% else %}
 
-                                    {{ post.status|replace('_', ' ')|title }}
+                                    {{ post.status|replace("_", " ")|title }}
 
                                 {% endif %}
 
@@ -518,6 +461,8 @@ Publisher | RicozSocial
 
                         </td>
 
+
+                        <!-- SCHEDULE -->
 
                         <td>
 
@@ -528,9 +473,7 @@ Publisher | RicozSocial
                                     {{ post.scheduled_at.strftime("%d %b %Y") }}
 
                                     <span>
-
                                         {{ post.scheduled_at.strftime("%I:%M %p") }}
-
                                     </span>
 
                                 </div>
@@ -542,9 +485,7 @@ Publisher | RicozSocial
                                     Published
 
                                     <span>
-
                                         {{ post.published_at.strftime("%d %b %Y") }}
-
                                     </span>
 
                                 </div>
@@ -560,29 +501,23 @@ Publisher | RicozSocial
                         </td>
 
 
+                        <!-- PLATFORMS -->
+
                         <td>
 
-                            {% if post.platform_count %}
+                            {% if post.platforms %}
 
-                                <div class="publisher-platform-count">
+                                <div class="publisher-platforms">
 
-                                    {{ post.platform_count }}
+                                    {% for platform_name in post.platforms.split(",") %}
 
-                                    platform{% if post.platform_count != 1 %}s{% endif %}
+                                        <span class="publisher-platform">
+                                            {{ platform_name|trim|title }}
+                                        </span>
+
+                                    {% endfor %}
 
                                 </div>
-
-                                {% if post.published_platform_count %}
-
-                                    <small class="publisher-published-count">
-
-                                        {{ post.published_platform_count }}
-
-                                        published
-
-                                    </small>
-
-                                {% endif %}
 
                             {% else %}
 
@@ -595,9 +530,11 @@ Publisher | RicozSocial
                         </td>
 
 
+                        <!-- ACTIONS -->
+
                         <td>
 
-                            <div class="publisher-row-actions">
+                            <div class="publisher-actions">
 
                                 <button
                                     type="button"
@@ -610,15 +547,25 @@ Publisher | RicozSocial
 
                                 {% if post.status in ["draft", "rejected"] %}
 
+                                    <a
+                                        href="{{ url_for('edit_post', post_id=post.id) }}"
+                                        class="publisher-action-btn"
+                                    >
+                                        Edit
+                                    </a>
+
                                     <form
                                         method="POST"
-                                        action="{{ url_for('submit_post_for_approval', post_id=post.id) }}"
+                                        action="{{ url_for(
+                                            'submit_post_for_approval',
+                                            post_id=post.id
+                                        ) }}"
+                                        data-confirm-approval
                                     >
 
                                         <button
                                             type="submit"
-                                            class="publisher-action-btn publisher-approval-btn"
-                                            onclick="return confirm('Submit this post for approval?')"
+                                            class="publisher-action-btn success"
                                         >
                                             Submit
                                         </button>
@@ -632,7 +579,11 @@ Publisher | RicozSocial
 
                                     <form
                                         method="POST"
-                                        action="{{ url_for('update_post_status', post_id=post.id) }}"
+                                        action="{{ url_for(
+                                            'update_post_status',
+                                            post_id=post.id
+                                        ) }}"
+                                        data-confirm-status="scheduled"
                                     >
 
                                         <input
@@ -643,8 +594,7 @@ Publisher | RicozSocial
 
                                         <button
                                             type="submit"
-                                            class="publisher-action-btn publisher-schedule-btn"
-                                            onclick="return confirm('Schedule this approved post?')"
+                                            class="publisher-action-btn success"
                                         >
                                             Schedule
                                         </button>
@@ -658,7 +608,11 @@ Publisher | RicozSocial
 
                                     <form
                                         method="POST"
-                                        action="{{ url_for('update_post_status', post_id=post.id) }}"
+                                        action="{{ url_for(
+                                            'update_post_status',
+                                            post_id=post.id
+                                        ) }}"
+                                        data-confirm-status="published"
                                     >
 
                                         <input
@@ -669,8 +623,7 @@ Publisher | RicozSocial
 
                                         <button
                                             type="submit"
-                                            class="publisher-action-btn publisher-publish-btn"
-                                            onclick="return confirm('Mark this post as published?')"
+                                            class="publisher-action-btn primary"
                                         >
                                             Publish
                                         </button>
@@ -682,13 +635,16 @@ Publisher | RicozSocial
 
                                 <form
                                     method="POST"
-                                    action="{{ url_for('delete_post', post_id=post.id) }}"
+                                    action="{{ url_for(
+                                        'delete_post',
+                                        post_id=post.id
+                                    ) }}"
+                                    data-confirm-delete
                                 >
 
                                     <button
                                         type="submit"
-                                        class="publisher-action-btn publisher-delete-btn"
-                                        onclick="return confirm('Delete this post permanently?')"
+                                        class="publisher-action-btn danger"
                                     >
                                         Delete
                                     </button>
@@ -711,65 +667,75 @@ Publisher | RicozSocial
 
         {% else %}
 
-            <div class="publisher-empty-state">
+        <div class="publisher-empty">
 
-                <div class="publisher-empty-icon">
-                    ✦
-                </div>
-
-                <h3>
-                    No posts found
-                </h3>
-
-                <p>
-                    Create your first post or change the filters.
-                </p>
-
-                <button
-                    type="button"
-                    class="publisher-primary-btn"
-                    onclick="openCreatePostModal()"
-                >
-                    Create Post
-                </button>
-
+            <div class="publisher-empty-icon">
+                ✦
             </div>
+
+            <h3>
+                No posts found
+            </h3>
+
+            <p>
+                Create your first social media post or change your filters.
+            </p>
+
+            <button
+                type="button"
+                class="publisher-create-btn publisher-empty-create"
+                onclick="openCreatePostModal()"
+            >
+                ＋ Create Post
+            </button>
+
+        </div>
 
         {% endif %}
 
-    </div>
+    </section>
 
 </div>
 
 
 <!-- =========================================================
-     CREATE POST MODAL
-     ========================================================= -->
+     CREATE / EDIT POST MODAL
+========================================================= -->
 
 <div
     id="createPostModal"
     class="publisher-modal"
+    {% if edit_mode %}data-edit-mode="true"{% endif %}
 >
 
     <div
         class="publisher-modal-overlay"
         onclick="closeCreatePostModal()"
-    >
-    </div>
+    ></div>
 
 
-    <div class="publisher-modal-box">
+    <div class="publisher-modal-card publisher-composer">
 
         <div class="publisher-modal-header">
 
             <div>
 
-                <span>
-                    NEW CONTENT
-                </span>
+                <div class="publisher-modal-eyebrow">
+                    {% if edit_mode %}
+                        CONTENT EDITOR
+                    {% else %}
+                        NEW CONTENT
+                    {% endif %}
+                </div>
 
-                <h2>
-                    Create Post
+                <h2 class="publisher-modal-title">
+
+                    {% if edit_mode %}
+                        Edit Post
+                    {% else %}
+                        Create Post
+                    {% endif %}
+
                 </h2>
 
             </div>
@@ -777,6 +743,7 @@ Publisher | RicozSocial
 
             <button
                 type="button"
+                id="closeCreatePost"
                 class="publisher-modal-close"
                 onclick="closeCreatePostModal()"
             >
@@ -788,59 +755,400 @@ Publisher | RicozSocial
 
         <form
             method="POST"
-            action="{{ url_for('create_post') }}"
+            action="{% if edit_mode %}
+                {{ url_for('edit_post', post_id=post.id) }}
+            {% else %}
+                {{ url_for('create_post') }}
+            {% endif %}"
             class="publisher-create-form"
+            id="publisherPostForm"
         >
 
-            <div class="publisher-form-grid">
+            <div class="publisher-modal-body">
 
-                <div class="publisher-form-field">
+                <!-- =================================================
+                     SECTION 1
+                ================================================== -->
 
-                    <label>
-                        Brand
-                    </label>
+                <div class="publisher-form-section">
 
-                    <select
-                        name="brand_id"
-                        required
-                        id="createBrand"
-                    >
+                    <div class="publisher-section-heading">
 
-                        <option value="">
-                            Select Brand
-                        </option>
+                        <div class="publisher-section-icon">
+                            01
+                        </div>
 
-                        {% for brand in available_brands %}
+                        <div>
+                            <strong>
+                                Post Information
+                            </strong>
 
-                            {% if brand.is_active %}
+                            <span>
+                                Choose the brand and define your content title.
+                            </span>
+                        </div>
 
-                                <option value="{{ brand.id }}">
+                    </div>
 
-                                    {{ brand.name }}
 
+                    <div class="publisher-form-grid">
+
+                        <div class="publisher-field">
+
+                            <label for="publisherBrand">
+                                Brand
+                            </label>
+
+                            <select
+                                name="brand_id"
+                                id="publisherBrand"
+                                required
+                            >
+
+                                <option value="">
+                                    Select Brand
                                 </option>
 
-                            {% endif %}
+                                {% for brand in brands %}
 
-                        {% endfor %}
+                                    {% if brand.is_active %}
 
-                    </select>
+                                        <option
+                                            value="{{ brand.id }}"
+                                            {% if edit_mode and post.brand_id|string == brand.id|string %}
+                                                selected
+                                            {% endif %}
+                                        >
+                                            {{ brand.name }}
+                                        </option>
+
+                                    {% endif %}
+
+                                {% endfor %}
+
+                            </select>
+
+                        </div>
+
+
+                        <div class="publisher-field">
+
+                            <label for="publisherTitle">
+                                Post Title
+                            </label>
+
+                            <input
+                                type="text"
+                                name="title"
+                                id="publisherTitle"
+                                maxlength="255"
+                                required
+                                value="{% if edit_mode %}{{ post.title or '' }}{% endif %}"
+                                placeholder="Enter a clear internal post title..."
+                            >
+
+                        </div>
+
+                    </div>
 
                 </div>
 
 
-                <div class="publisher-form-field">
+                <!-- =================================================
+                     SECTION 2
+                ================================================== -->
 
-                    <label>
-                        Title
-                    </label>
+                <div class="publisher-form-section">
 
-                    <input
-                        type="text"
-                        name="title"
-                        maxlength="255"
-                        placeholder="Post title"
-                    >
+                    <div class="publisher-section-heading">
+
+                        <div class="publisher-section-icon">
+                            02
+                        </div>
+
+                        <div>
+                            <strong>
+                                Content
+                            </strong>
+
+                            <span>
+                                Write your post copy or bring content from Ricoz AI.
+                            </span>
+                        </div>
+
+                    </div>
+
+
+                    <div class="publisher-field">
+
+                        <div class="publisher-content-label-row">
+
+                            <label for="publisherContent">
+                                Post Content
+                            </label>
+
+                            <button
+                                type="button"
+                                class="publisher-ai-btn"
+                                onclick="useAIContentInPublisher()"
+                            >
+                                ✦ Use AI Content
+                            </button>
+
+                        </div>
+
+
+                        <textarea
+                            id="publisherContent"
+                            name="content"
+                            rows="8"
+                            required
+                            maxlength="10000"
+                            placeholder="Write your social media content here..."
+                        >{% if edit_mode %}{{ post.content or '' }}{% endif %}</textarea>
+
+
+                        <div
+                            id="publisherAIStatus"
+                            class="publisher-ai-status"
+                            style="display:none;"
+                        >
+                            ✦ AI-generated content loaded successfully.
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =================================================
+                     SECTION 3
+                ================================================== -->
+
+                <div class="publisher-form-section">
+
+                    <div class="publisher-section-heading">
+
+                        <div class="publisher-section-icon">
+                            03
+                        </div>
+
+                        <div>
+                            <strong>
+                                Media
+                            </strong>
+
+                            <span>
+                                Add an image or media URL for this post.
+                            </span>
+                        </div>
+
+                    </div>
+
+
+                    <div class="publisher-field">
+
+                        <label for="publisherMedia">
+                            Media URL
+                        </label>
+
+                        <input
+                            type="url"
+                            name="media_url"
+                            id="publisherMedia"
+                            value="{% if edit_mode %}{{ post.media_url or '' }}{% endif %}"
+                            placeholder="https://example.com/media.jpg"
+                        >
+
+                        <small class="publisher-help-text">
+                            Use a publicly accessible media URL.
+                        </small>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =================================================
+                     SECTION 4
+                ================================================== -->
+
+                <div class="publisher-form-section">
+
+                    <div class="publisher-section-heading">
+
+                        <div class="publisher-section-icon">
+                            04
+                        </div>
+
+                        <div>
+                            <strong>
+                                Publishing
+                            </strong>
+
+                            <span>
+                                Set the workflow status and optional schedule.
+                            </span>
+                        </div>
+
+                    </div>
+
+
+                    <div class="publisher-form-grid">
+
+                        <div class="publisher-field">
+
+                            <label for="publisherStatus">
+                                Status
+                            </label>
+
+                            <select
+                                name="status"
+                                id="publisherStatus"
+                            >
+
+                                <option
+                                    value="draft"
+                                    {% if not edit_mode or post.status == "draft" %}
+                                        selected
+                                    {% endif %}
+                                >
+                                    Draft
+                                </option>
+
+                                <option
+                                    value="pending_approval"
+                                    {% if edit_mode and post.status == "pending_approval" %}
+                                        selected
+                                    {% endif %}
+                                >
+                                    Pending Approval
+                                </option>
+
+                                <option
+                                    value="scheduled"
+                                    {% if edit_mode and post.status == "scheduled" %}
+                                        selected
+                                    {% endif %}
+                                >
+                                    Scheduled
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <div
+                            class="publisher-field"
+                            id="scheduleField"
+                        >
+
+                            <label for="publisherSchedule">
+                                Schedule Date & Time
+                            </label>
+
+                            <input
+                                type="datetime-local"
+                                name="scheduled_at"
+                                id="publisherSchedule"
+                                {% if edit_mode and post.scheduled_at %}
+                                    value="{{ post.scheduled_at.strftime('%Y-%m-%dT%H:%M') }}"
+                                {% endif %}
+                            >
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =================================================
+                     SECTION 5
+                ================================================== -->
+
+                <div class="publisher-form-section">
+
+                    <div class="publisher-section-heading">
+
+                        <div class="publisher-section-icon">
+                            05
+                        </div>
+
+                        <div>
+                            <strong>
+                                Social Accounts
+                            </strong>
+
+                            <span>
+                                Select the connected accounts where this content belongs.
+                            </span>
+                        </div>
+
+                    </div>
+
+
+                    <div class="publisher-account-grid">
+
+                        {% if accounts %}
+
+                            {% for account in accounts %}
+
+                                <label class="publisher-account-option">
+
+                                    <input
+                                        type="checkbox"
+                                        name="social_accounts"
+                                        value="{{ account.id }}"
+                                        {% if edit_mode and account.id in selected_accounts %}
+                                            checked
+                                        {% endif %}
+                                    >
+
+                                    <span class="publisher-account-check"></span>
+
+                                    <span class="publisher-account-content">
+
+                                        <strong>
+                                            {{ account.platform|title }}
+                                        </strong>
+
+                                        <small>
+                                            {{ account.account_name }}
+                                            {% if account.username %}
+                                                · {{ account.username }}
+                                            {% endif %}
+                                        </small>
+
+                                        <em>
+                                            {{ account.brand_name }}
+                                        </em>
+
+                                    </span>
+
+                                </label>
+
+                            {% endfor %}
+
+                        {% else %}
+
+                            <div class="publisher-no-accounts">
+
+                                <strong>
+                                    No connected social accounts
+                                </strong>
+
+                                <span>
+                                    Connect a social account before assigning
+                                    posts to a platform.
+                                </span>
+
+                            </div>
+
+                        {% endif %}
+
+                    </div>
 
                 </div>
 
@@ -848,170 +1156,8 @@ Publisher | RicozSocial
 
 
             <!-- =================================================
-                 CONTENT + AI
-                 ================================================= -->
-
-            <div class="publisher-form-field">
-
-                <div class="publisher-content-label-row">
-
-                    <label>
-                        Content
-                    </label>
-
-                    <button
-                        type="button"
-                        class="publisher-ai-btn"
-                        onclick="useAIContentInPublisher()"
-                    >
-
-                        <span>
-                            ✦
-                        </span>
-
-                        Use AI Content
-
-                    </button>
-
-                </div>
-
-
-                <textarea
-                    id="publisherContent"
-                    name="content"
-                    rows="7"
-                    required
-                    placeholder="Write your social media content..."
-                ></textarea>
-
-
-                <div
-                    id="publisherAIStatus"
-                    class="publisher-ai-status"
-                    style="display: none;"
-                >
-
-                    ✦ AI-generated content loaded successfully.
-
-                </div>
-
-            </div>
-
-
-            <div class="publisher-form-field">
-
-                <label>
-                    Media URL
-                </label>
-
-                <input
-                    type="url"
-                    name="media_url"
-                    placeholder="https://example.com/image.jpg"
-                >
-
-            </div>
-
-
-            <div class="publisher-form-grid">
-
-                <div class="publisher-form-field">
-
-                    <label>
-                        Status
-                    </label>
-
-                    <select
-                        name="status"
-                        id="createStatus"
-                    >
-
-                        <option value="draft">
-                            Draft
-                        </option>
-
-                        <option value="pending_approval">
-                            Pending Approval
-                        </option>
-
-                    </select>
-
-                </div>
-
-
-                <div class="publisher-form-field">
-
-                    <label>
-                        Schedule
-                    </label>
-
-                    <input
-                        type="datetime-local"
-                        name="scheduled_at"
-                    >
-
-                </div>
-
-            </div>
-
-
-            <div class="publisher-form-field">
-
-                <label>
-                    Social Accounts
-                </label>
-
-
-                <div class="publisher-account-grid">
-
-                    {% if connected_accounts %}
-
-                        {% for account in connected_accounts %}
-
-                            <label class="publisher-account-option">
-
-                                <input
-                                    type="checkbox"
-                                    name="social_account_ids"
-                                    value="{{ account.id }}"
-                                >
-
-                                <span>
-
-                                    <strong>
-                                        {{ account.platform }}
-                                    </strong>
-
-                                    <small>
-
-                                        {{ account.account_name }}
-
-                                        ·
-
-                                        {{ account.brand_name }}
-
-                                    </small>
-
-                                </span>
-
-                            </label>
-
-                        {% endfor %}
-
-                    {% else %}
-
-                        <div class="publisher-no-accounts">
-
-                            No connected social accounts available.
-
-                        </div>
-
-                    {% endif %}
-
-                </div>
-
-            </div>
-
+                 FOOTER
+            ================================================== -->
 
             <div class="publisher-modal-footer">
 
@@ -1026,9 +1172,13 @@ Publisher | RicozSocial
 
                 <button
                     type="submit"
-                    class="publisher-primary-btn"
+                    class="publisher-save-btn"
                 >
-                    Save Post
+                    {% if edit_mode %}
+                        Save Changes
+                    {% else %}
+                        Create Post
+                    {% endif %}
                 </button>
 
             </div>
@@ -1042,7 +1192,7 @@ Publisher | RicozSocial
 
 <!-- =========================================================
      DETAILS MODAL
-     ========================================================= -->
+========================================================= -->
 
 <div
     id="postDetailsModal"
@@ -1052,22 +1202,24 @@ Publisher | RicozSocial
     <div
         class="publisher-modal-overlay"
         onclick="closePostDetails()"
-    >
-    </div>
+    ></div>
 
 
-    <div class="publisher-modal-box publisher-details-box">
+    <div class="publisher-modal-card publisher-details-card">
 
         <div class="publisher-modal-header">
 
             <div>
 
-                <span>
+                <div class="publisher-modal-eyebrow">
                     CONTENT DETAILS
-                </span>
+                </div>
 
-                <h2 id="detailsTitle">
-                    Post
+                <h2
+                    id="detailsTitle"
+                    class="publisher-modal-title"
+                >
+                    Post Details
                 </h2>
 
             </div>
@@ -1075,6 +1227,7 @@ Publisher | RicozSocial
 
             <button
                 type="button"
+                id="closePostDetails"
                 class="publisher-modal-close"
                 onclick="closePostDetails()"
             >
@@ -1086,7 +1239,7 @@ Publisher | RicozSocial
 
         <div
             id="postDetailsContent"
-            class="publisher-details-content"
+            class="publisher-modal-body publisher-details-content"
         >
             Loading...
         </div>
@@ -1095,7 +1248,6 @@ Publisher | RicozSocial
 
 </div>
 
-
 {% endblock %}
 
 
@@ -1103,13 +1255,7 @@ Publisher | RicozSocial
 
 <script src="{{ url_for('static', filename='js/publisher.js') }}"></script>
 
-
 <script>
-
-/* =========================================================
-   RICOZ AI → PUBLISHER
-   ========================================================= */
-
 function useAIContentInPublisher() {
 
     const contentField =
@@ -1118,17 +1264,14 @@ function useAIContentInPublisher() {
     const status =
         document.getElementById("publisherAIStatus");
 
-
     if (!contentField) {
         return;
     }
-
 
     const aiContent =
         localStorage.getItem(
             "ricoz_ai_generated_content"
         );
-
 
     if (!aiContent) {
 
@@ -1139,28 +1282,27 @@ function useAIContentInPublisher() {
         return;
     }
 
-
     contentField.value = aiContent;
 
+    contentField.dispatchEvent(
+        new Event("input", { bubbles: true })
+    );
 
     contentField.focus();
-
 
     if (status) {
 
         status.style.display = "block";
 
-
         setTimeout(function () {
-
             status.style.display = "none";
-
         }, 4000);
-
     }
 
+    localStorage.removeItem(
+        "ricoz_ai_generated_content"
+    );
 }
-
 </script>
 
 {% endblock %}

@@ -1,66 +1,957 @@
+```html
 {% extends "base.html" %}
 
-{% block title %}Team Management | RicozSocial{% endblock %}
+{% block title %}
+Team & Responsibilities | RicozSocial
+{% endblock %}
+
+{% block extra_css %}
+
+<link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/dashboard.css') }}"
+>
+
+<style>
+    /* =====================================================
+       TEAM PAGE
+       ===================================================== */
+
+    .team-page {
+        padding: 28px;
+        max-width: 1500px;
+        margin: 0 auto;
+    }
+
+    .team-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 24px;
+        margin-bottom: 24px;
+    }
+
+    .team-header-left {
+        display: flex;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .team-back-button {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        background: #ffffff;
+        color: #374151;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        font-size: 20px;
+        transition: all .18s ease;
+    }
+
+    .team-back-button:hover {
+        border-color: #e31e24;
+        color: #e31e24;
+        transform: translateX(-2px);
+    }
+
+    .team-title {
+        margin: 0;
+        font-size: 28px;
+        font-weight: 800;
+        color: #171717;
+        letter-spacing: -.5px;
+    }
+
+    .team-subtitle {
+        margin: 6px 0 0;
+        color: #6b7280;
+        font-size: 14px;
+        line-height: 1.6;
+    }
+
+    .team-header-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .team-primary-button {
+        border: 0;
+        border-radius: 11px;
+        padding: 11px 16px;
+        background: #e31e24;
+        color: #ffffff;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 7px 18px rgba(227, 30, 36, .18);
+        transition: all .18s ease;
+    }
+
+    .team-primary-button:hover {
+        background: #c8171d;
+        transform: translateY(-1px);
+    }
+
+    .team-primary-button:disabled {
+        opacity: .6;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .team-secondary-button {
+        border: 1px solid #e5e7eb;
+        border-radius: 11px;
+        padding: 11px 16px;
+        background: #ffffff;
+        color: #374151;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all .18s ease;
+    }
+
+    .team-secondary-button:hover {
+        border-color: #d1d5db;
+        background: #f9fafb;
+    }
+
+    /* =====================================================
+       BRAND SELECTOR
+       ===================================================== */
+
+    .brand-selector-card {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        padding: 18px;
+        margin-bottom: 20px;
+        box-shadow: 0 6px 20px rgba(15, 23, 42, .04);
+    }
+
+    .brand-selector-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+    }
+
+    .brand-selector-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .brand-selector-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        background: #fff1f2;
+        color: #e31e24;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 19px;
+    }
+
+    .brand-selector-label {
+        display: block;
+        font-size: 12px;
+        color: #6b7280;
+        margin-bottom: 3px;
+    }
+
+    .brand-selector-name {
+        font-weight: 800;
+        color: #171717;
+        font-size: 15px;
+    }
+
+    .brand-select {
+        min-width: 260px;
+        border: 1px solid #dfe3e8;
+        border-radius: 10px;
+        padding: 11px 13px;
+        background: #ffffff;
+        color: #1f2937;
+        outline: none;
+        font-size: 14px;
+    }
+
+    .brand-select:focus {
+        border-color: #e31e24;
+        box-shadow: 0 0 0 3px rgba(227, 30, 36, .08);
+    }
+
+    /* =====================================================
+       STATS
+       ===================================================== */
+
+    .team-stats {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 16px;
+        margin-bottom: 22px;
+    }
+
+    .team-stat-card {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        padding: 18px;
+        box-shadow: 0 6px 20px rgba(15, 23, 42, .04);
+    }
+
+    .team-stat-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+    }
+
+    .team-stat-label {
+        color: #6b7280;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .team-stat-icon {
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        background: #fff1f2;
+        color: #e31e24;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .team-stat-value {
+        margin-top: 10px;
+        font-size: 25px;
+        font-weight: 800;
+        color: #171717;
+    }
+
+    /* =====================================================
+       ROLE RULES
+       ===================================================== */
+
+    .role-rules-card {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 22px;
+        box-shadow: 0 6px 20px rgba(15, 23, 42, .04);
+    }
+
+    .section-heading {
+        margin-bottom: 16px;
+    }
+
+    .section-heading h2 {
+        margin: 0;
+        color: #171717;
+        font-size: 18px;
+        font-weight: 800;
+    }
+
+    .section-heading p {
+        margin: 5px 0 0;
+        color: #6b7280;
+        font-size: 13px;
+    }
+
+    .role-rules-grid {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .role-rule {
+        border: 1px solid #eceef1;
+        border-radius: 13px;
+        padding: 15px;
+        background: #fafafa;
+    }
+
+    .role-rule-name {
+        font-size: 14px;
+        font-weight: 800;
+        color: #222;
+        margin-bottom: 7px;
+    }
+
+    .role-rule-description {
+        color: #6b7280;
+        font-size: 12px;
+        line-height: 1.55;
+    }
+
+    /* =====================================================
+       TEAM TABLE
+       ===================================================== */
+
+    .team-table-card {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 6px 20px rgba(15, 23, 42, .04);
+    }
+
+    .team-table-header {
+        padding: 20px;
+        border-bottom: 1px solid #edf0f2;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+    }
+
+    .team-table-header h2 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 800;
+        color: #171717;
+    }
+
+    .team-table-header p {
+        margin: 5px 0 0;
+        color: #6b7280;
+        font-size: 13px;
+    }
+
+    .team-table-wrapper {
+        overflow-x: auto;
+    }
+
+    .team-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 920px;
+    }
+
+    .team-table th {
+        text-align: left;
+        padding: 13px 18px;
+        background: #fafafa;
+        border-bottom: 1px solid #edf0f2;
+        color: #6b7280;
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+    }
+
+    .team-table td {
+        padding: 16px 18px;
+        border-bottom: 1px solid #f0f1f3;
+        vertical-align: middle;
+        color: #374151;
+        font-size: 13px;
+    }
+
+    .team-table tbody tr {
+        transition: background .18s ease;
+    }
+
+    .team-table tbody tr:hover {
+        background: #fffafa;
+    }
+
+    .member-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .member-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #e31e24;
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 14px;
+        flex-shrink: 0;
+    }
+
+    .member-name {
+        font-weight: 800;
+        color: #171717;
+        margin-bottom: 3px;
+    }
+
+    .member-email {
+        color: #8a919b;
+        font-size: 12px;
+    }
+
+    .role-badge {
+        display: inline-flex;
+        align-items: center;
+        border-radius: 999px;
+        padding: 6px 10px;
+        font-size: 11px;
+        font-weight: 800;
+        background: #fff1f2;
+        color: #c8171d;
+        text-transform: capitalize;
+    }
+
+    .role-badge.owner {
+        background: #171717;
+        color: #ffffff;
+    }
+
+    .role-badge.manager {
+        background: #fff1f2;
+        color: #c8171d;
+    }
+
+    .role-badge.publisher {
+        background: #fff7ed;
+        color: #c2410c;
+    }
+
+    .role-badge.analyst {
+        background: #eff6ff;
+        color: #1d4ed8;
+    }
+
+    .role-badge.member {
+        background: #f3f4f6;
+        color: #4b5563;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .status-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: #16a34a;
+    }
+
+    .status-badge.inactive .status-dot {
+        background: #9ca3af;
+    }
+
+    .responsibility-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        max-width: 360px;
+    }
+
+    .responsibility-tag {
+        display: inline-flex;
+        align-items: center;
+        border-radius: 7px;
+        padding: 5px 8px;
+        background: #f8f9fa;
+        border: 1px solid #e7e9ec;
+        color: #4b5563;
+        font-size: 10px;
+        font-weight: 700;
+    }
+
+    .no-responsibilities {
+        color: #9ca3af;
+        font-size: 12px;
+        font-style: italic;
+    }
+
+    .member-actions {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+    }
+
+    .icon-action {
+        width: 34px;
+        height: 34px;
+        border: 1px solid #e5e7eb;
+        border-radius: 9px;
+        background: #ffffff;
+        color: #4b5563;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all .18s ease;
+    }
+
+    .icon-action:hover {
+        border-color: #e31e24;
+        color: #e31e24;
+        background: #fffafa;
+    }
+
+    .icon-action.danger:hover {
+        border-color: #dc2626;
+        color: #dc2626;
+        background: #fef2f2;
+    }
+
+    .owner-lock {
+        color: #9ca3af;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .empty-team {
+        padding: 55px 25px;
+        text-align: center;
+    }
+
+    .empty-team-icon {
+        font-size: 40px;
+        margin-bottom: 12px;
+    }
+
+    .empty-team h3 {
+        margin: 0 0 7px;
+        font-size: 17px;
+        color: #171717;
+    }
+
+    .empty-team p {
+        margin: 0 auto 18px;
+        max-width: 470px;
+        color: #6b7280;
+        font-size: 13px;
+        line-height: 1.6;
+    }
+
+    /* =====================================================
+       MODALS
+       ===================================================== */
+
+    .team-modal {
+        position: fixed;
+        inset: 0;
+        background: rgba(17, 24, 39, .52);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        z-index: 9999;
+    }
+
+    .team-modal.active {
+        display: flex;
+    }
+
+    .team-modal-content {
+        width: min(620px, 100%);
+        max-height: 90vh;
+        overflow-y: auto;
+        background: #ffffff;
+        border-radius: 18px;
+        box-shadow: 0 25px 60px rgba(0, 0, 0, .18);
+    }
+
+    .team-modal-header {
+        padding: 20px 22px;
+        border-bottom: 1px solid #edf0f2;
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 15px;
+    }
+
+    .team-modal-header h3 {
+        margin: 0;
+        font-size: 19px;
+        font-weight: 800;
+        color: #171717;
+    }
+
+    .team-modal-header p {
+        margin: 5px 0 0;
+        color: #6b7280;
+        font-size: 12px;
+    }
+
+    .modal-close {
+        width: 34px;
+        height: 34px;
+        border: 1px solid #e5e7eb;
+        border-radius: 9px;
+        background: #ffffff;
+        color: #6b7280;
+        cursor: pointer;
+        font-size: 18px;
+    }
+
+    .modal-close:hover {
+        color: #e31e24;
+        border-color: #e31e24;
+    }
+
+    .team-modal-body {
+        padding: 22px;
+    }
+
+    .team-modal-footer {
+        padding: 16px 22px;
+        border-top: 1px solid #edf0f2;
+        display: flex;
+        justify-content: flex-end;
+        gap: 9px;
+    }
+
+    .form-group {
+        margin-bottom: 17px;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 7px;
+        font-size: 12px;
+        font-weight: 800;
+        color: #374151;
+    }
+
+    .form-control {
+        width: 100%;
+        box-sizing: border-box;
+        border: 1px solid #dfe3e8;
+        border-radius: 10px;
+        padding: 11px 12px;
+        background: #ffffff;
+        color: #1f2937;
+        font-size: 13px;
+        outline: none;
+    }
+
+    .form-control:focus {
+        border-color: #e31e24;
+        box-shadow: 0 0 0 3px rgba(227, 30, 36, .08);
+    }
+
+    .role-description-box {
+        margin-top: 8px;
+        border-radius: 10px;
+        padding: 10px 12px;
+        background: #fafafa;
+        border: 1px solid #edf0f2;
+        color: #6b7280;
+        font-size: 12px;
+        line-height: 1.5;
+    }
+
+    .responsibilities-heading {
+        margin: 20px 0 10px;
+        font-size: 13px;
+        font-weight: 800;
+        color: #171717;
+    }
+
+    .responsibilities-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 9px;
+    }
+
+    .responsibility-option {
+        display: flex;
+        align-items: flex-start;
+        gap: 9px;
+        border: 1px solid #e7e9ec;
+        border-radius: 10px;
+        padding: 11px;
+        cursor: pointer;
+        background: #ffffff;
+        transition: all .16s ease;
+    }
+
+    .responsibility-option:hover {
+        border-color: #e31e24;
+        background: #fffafa;
+    }
+
+    .responsibility-option input {
+        margin-top: 2px;
+        accent-color: #e31e24;
+    }
+
+    .responsibility-option-content strong {
+        display: block;
+        color: #374151;
+        font-size: 12px;
+        margin-bottom: 2px;
+    }
+
+    .responsibility-option-content span {
+        color: #8a919b;
+        font-size: 10px;
+        line-height: 1.4;
+    }
+
+    .delete-warning {
+        background: #fff7ed;
+        border: 1px solid #fed7aa;
+        border-radius: 12px;
+        padding: 14px;
+        color: #9a3412;
+        font-size: 13px;
+        line-height: 1.6;
+    }
+
+    /* =====================================================
+       TOAST
+       ===================================================== */
+
+    .team-toast {
+        position: fixed;
+        right: 24px;
+        bottom: 24px;
+        z-index: 10001;
+        min-width: 280px;
+        max-width: 420px;
+        background: #171717;
+        color: #ffffff;
+        border-radius: 12px;
+        padding: 13px 16px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, .2);
+        display: none;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .team-toast.show {
+        display: block;
+        animation: toastIn .2s ease;
+    }
+
+    @keyframes toastIn {
+        from {
+            opacity: 0;
+            transform: translateY(8px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* =====================================================
+       RESPONSIVE
+       ===================================================== */
+
+    @media (max-width: 1100px) {
+        .team-stats {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .role-rules-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 760px) {
+        .team-page {
+            padding: 18px;
+        }
+
+        .team-header,
+        .brand-selector-row {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .team-header-actions {
+            width: 100%;
+        }
+
+        .team-primary-button,
+        .team-secondary-button {
+            justify-content: center;
+        }
+
+        .brand-select {
+            width: 100%;
+            min-width: 0;
+        }
+
+        .team-stats {
+            grid-template-columns: 1fr;
+        }
+
+        .role-rules-grid,
+        .responsibilities-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .team-title {
+            font-size: 23px;
+        }
+
+        .team-modal {
+            padding: 10px;
+        }
+    }
+</style>
+
+{% endblock %}
+
 
 {% block content %}
 
 <div class="team-page">
 
+    <!-- =====================================================
+         HEADER
+         ===================================================== -->
+
     <div class="team-header">
 
-        <div>
-            <span class="team-eyebrow">WORKSPACE</span>
+        <div class="team-header-left">
 
-            <h1>Team Management</h1>
+            <a
+                href="{{ url_for('dashboard') }}"
+                class="team-back-button"
+                aria-label="Back to dashboard"
+                title="Back to Dashboard"
+            >
+                ←
+            </a>
 
-            <p>
-                Manage team members, roles and brand access
-                from one central workspace.
-            </p>
+            <div>
+                <h1 class="team-title">
+                    Team & Responsibilities
+                </h1>
+
+                <p class="team-subtitle">
+                    Manage team members, assign roles, and control
+                    responsibilities for each brand workspace.
+                </p>
+            </div>
+
         </div>
 
         <div class="team-header-actions">
-            <button
-                type="button"
-                class="team-primary-btn"
-                onclick="openTeamModal()"
-            >
-                + Add Team Member
-            </button>
+
+            {% if selected_brand %}
+                <button
+                    type="button"
+                    class="team-primary-button"
+                    id="openAddMemberBtn"
+                >
+                    <span>＋</span>
+                    Add Team Member
+                </button>
+            {% endif %}
+
         </div>
 
     </div>
 
 
     <!-- =====================================================
-         STATISTICS
-    ====================================================== -->
+         BRAND SELECTOR
+         ===================================================== -->
+
+    {% if brands %}
+
+    <div class="brand-selector-card">
+
+        <div class="brand-selector-row">
+
+            <div class="brand-selector-info">
+
+                <div class="brand-selector-icon">
+                    🏢
+                </div>
+
+                <div>
+
+                    <span class="brand-selector-label">
+                        Active Brand Workspace
+                    </span>
+
+                    <div class="brand-selector-name">
+                        {{ selected_brand.name if selected_brand else "Select a brand" }}
+                    </div>
+
+                </div>
+
+            </div>
+
+            {% if brands|length > 1 %}
+
+            <select
+                class="brand-select"
+                id="brandSelector"
+            >
+
+                {% for brand in brands %}
+
+                <option
+                    value="{{ brand.id }}"
+                    {% if selected_brand and brand.id == selected_brand.id %}
+                        selected
+                    {% endif %}
+                >
+                    {{ brand.name }}
+                </option>
+
+                {% endfor %}
+
+            </select>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+    {% endif %}
+
+
+    <!-- =====================================================
+         STATS
+         ===================================================== -->
 
     <div class="team-stats">
 
         <div class="team-stat-card">
 
-            <div class="team-stat-icon">
-                👥
+            <div class="team-stat-top">
+
+                <span class="team-stat-label">
+                    Total Members
+                </span>
+
+                <div class="team-stat-icon">
+                    👥
+                </div>
+
             </div>
 
-            <div>
-                <span>Total Members</span>
-                <strong>{{ total_members }}</strong>
-            </div>
-
-        </div>
-
-
-        <div class="team-stat-card">
-
-            <div class="team-stat-icon">
-                ✓
-            </div>
-
-            <div>
-                <span>Active Members</span>
-                <strong>{{ active_members }}</strong>
+            <div class="team-stat-value">
+                {{ total_members|default(0) }}
             </div>
 
         </div>
@@ -68,27 +959,20 @@
 
         <div class="team-stat-card">
 
-            <div class="team-stat-icon">
-                ◷
+            <div class="team-stat-top">
+
+                <span class="team-stat-label">
+                    Active Members
+                </span>
+
+                <div class="team-stat-icon">
+                    ✓
+                </div>
+
             </div>
 
-            <div>
-                <span>Inactive</span>
-                <strong>{{ inactive_members }}</strong>
-            </div>
-
-        </div>
-
-
-        <div class="team-stat-card">
-
-            <div class="team-stat-icon">
-                🛡
-            </div>
-
-            <div>
-                <span>Administrators</span>
-                <strong>{{ admin_members }}</strong>
+            <div class="team-stat-value">
+                {{ active_members|default(0) }}
             </div>
 
         </div>
@@ -96,13 +980,41 @@
 
         <div class="team-stat-card">
 
-            <div class="team-stat-icon">
-                ◆
+            <div class="team-stat-top">
+
+                <span class="team-stat-label">
+                    Publishers
+                </span>
+
+                <div class="team-stat-icon">
+                    ✎
+                </div>
+
             </div>
 
-            <div>
-                <span>Managers</span>
-                <strong>{{ manager_members }}</strong>
+            <div class="team-stat-value">
+                {{ publisher_count|default(0) }}
+            </div>
+
+        </div>
+
+
+        <div class="team-stat-card">
+
+            <div class="team-stat-top">
+
+                <span class="team-stat-label">
+                    Analysts
+                </span>
+
+                <div class="team-stat-icon">
+                    ↗
+                </div>
+
+            </div>
+
+            <div class="team-stat-value">
+                {{ analyst_count|default(0) }}
             </div>
 
         </div>
@@ -111,74 +1023,74 @@
 
 
     <!-- =====================================================
-         ROLE INFORMATION
-    ====================================================== -->
+         ROLE RULES
+         ===================================================== -->
 
-    <div class="team-role-panel">
+    <div class="role-rules-card">
 
-        <div class="team-role-panel-header">
+        <div class="section-heading">
 
-            <div>
-                <h2>Role-Based Access</h2>
+            <h2>
+                Role Rules
+            </h2>
 
-                <p>
-                    System roles determine what each team member
-                    can access across RicozSocial.
-                </p>
-            </div>
+            <p>
+                Roles define the default level of access available
+                to each team member.
+            </p>
 
         </div>
 
+        <div class="role-rules-grid">
 
-        <div class="role-grid">
-
-            <div class="role-card role-admin">
-                <div class="role-badge">ADMIN</div>
-                <h3>Administrator</h3>
-                <p>
-                    Full system access including team,
-                    brands, settings and permissions.
-                </p>
+            <div class="role-rule">
+                <div class="role-rule-name">
+                    Owner
+                </div>
+                <div class="role-rule-description">
+                    Full brand control, team management,
+                    permissions, content and settings.
+                </div>
             </div>
 
-
-            <div class="role-card">
-                <div class="role-badge">MANAGER</div>
-                <h3>Manager</h3>
-                <p>
-                    Manages brands, team members,
-                    content, approvals and analytics.
-                </p>
+            <div class="role-rule">
+                <div class="role-rule-name">
+                    Manager
+                </div>
+                <div class="role-rule-description">
+                    Manage team, content, approvals,
+                    campaigns and brand operations.
+                </div>
             </div>
 
-
-            <div class="role-card">
-                <div class="role-badge">PUBLISHER</div>
-                <h3>Publisher</h3>
-                <p>
-                    Creates, schedules and publishes
-                    social media content.
-                </p>
+            <div class="role-rule">
+                <div class="role-rule-name">
+                    Publisher
+                </div>
+                <div class="role-rule-description">
+                    Create, edit, schedule and publish
+                    social content.
+                </div>
             </div>
 
-
-            <div class="role-card">
-                <div class="role-badge">ANALYST</div>
-                <h3>Analyst</h3>
-                <p>
-                    Focused on analytics, reports
-                    and performance insights.
-                </p>
+            <div class="role-rule">
+                <div class="role-rule-name">
+                    Analyst
+                </div>
+                <div class="role-rule-description">
+                    Access analytics, reports and
+                    performance insights.
+                </div>
             </div>
 
-
-            <div class="role-card">
-                <div class="role-badge">MEMBER</div>
-                <h3>Member</h3>
-                <p>
-                    Works with assigned content,
-                    brands and collaboration tasks.
-                </p>
+            <div class="role-rule">
+                <div class="role-rule-name">
+                    Member
+                </div>
+                <div class="role-rule-description">
+                    Limited workspace access based on
+                    assigned responsibilities.
+                </div>
             </div>
 
         </div>
@@ -187,28 +1099,30 @@
 
 
     <!-- =====================================================
-         TEAM TABLE
-    ====================================================== -->
+         TEAM MEMBERS
+         ===================================================== -->
 
-    <div class="team-card">
+    <div class="team-table-card">
 
-        <div class="team-card-header">
+        <div class="team-table-header">
 
             <div>
-                <h2>Team Members</h2>
+
+                <h2>
+                    Team Members
+                </h2>
 
                 <p>
-                    Manage roles, account status and
-                    brand assignments.
+                    Assign roles and specific responsibilities
+                    to members of this brand.
                 </p>
-            </div>
 
-            <div class="team-member-count">
-                {{ total_members }} members
             </div>
 
         </div>
 
+
+        {% if selected_brand and team_members %}
 
         <div class="team-table-wrapper">
 
@@ -218,25 +1132,24 @@
 
                     <tr>
                         <th>Member</th>
-                        <th>System Role</th>
+                        <th>Role</th>
                         <th>Status</th>
-                        <th>Brand Access</th>
-                        <th>Joined</th>
+                        <th>Posts</th>
+                        <th>Responsibilities</th>
                         <th>Actions</th>
                     </tr>
 
                 </thead>
 
-
                 <tbody>
 
-                {% for member in members %}
+                    {% for member in team_members %}
 
                     <tr>
 
                         <td>
 
-                            <div class="member-cell">
+                            <div class="member-info">
 
                                 <div class="member-avatar">
                                     {{ member.name[:1]|upper }}
@@ -244,13 +1157,13 @@
 
                                 <div>
 
-                                    <strong>
+                                    <div class="member-name">
                                         {{ member.name }}
-                                    </strong>
+                                    </div>
 
-                                    <span>
+                                    <div class="member-email">
                                         {{ member.email }}
-                                    </span>
+                                    </div>
 
                                 </div>
 
@@ -261,81 +1174,10 @@
 
                         <td>
 
-                            {% if member.role == "admin" %}
-
-                                <span class="role-pill admin">
-                                    Administrator
-                                </span>
-
-                            {% elif member.role == "manager" %}
-
-                                <span class="role-pill manager">
-                                    Manager
-                                </span>
-
-                            {% elif member.role == "publisher" %}
-
-                                <span class="role-pill publisher">
-                                    Publisher
-                                </span>
-
-                            {% elif member.role == "analyst" %}
-
-                                <span class="role-pill analyst">
-                                    Analyst
-                                </span>
-
-                            {% else %}
-
-                                <span class="role-pill member">
-                                    Member
-                                </span>
-
-                            {% endif %}
-
-                        </td>
-
-
-                        <td>
-
-                            {% if member.is_active %}
-
-                                <span class="status-pill active">
-                                    <span></span>
-                                    Active
-                                </span>
-
-                            {% else %}
-
-                                <span class="status-pill inactive">
-                                    <span></span>
-                                    Inactive
-                                </span>
-
-                            {% endif %}
-
-                        </td>
-
-
-                        <td>
-
-                            <a
-                                href="{{ url_for(
-                                    'team_member_brands',
-                                    user_id=member.id
-                                ) }}"
-                                class="brand-access-link"
+                            <span
+                                class="role-badge {{ member.role|lower }}"
                             >
-                                Manage Access →
-                            </a>
-
-                        </td>
-
-
-                        <td>
-
-                            <span class="joined-date">
-                                {{ member.created_at.strftime('%b %d, %Y') if member.created_at else '—' }}
+                                {{ member.role|replace("_", " ")|title }}
                             </span>
 
                         </td>
@@ -343,93 +1185,101 @@
 
                         <td>
 
-                            <div class="team-actions">
+                            <span
+                                class="status-badge {% if not member.is_active %}inactive{% endif %}"
+                            >
 
-                                {% if current_user.id != member.id %}
+                                <span class="status-dot"></span>
 
-                                    {% if member.role != "admin" or current_user.role == "admin" %}
-
-                                        <button
-                                            type="button"
-                                            class="action-btn"
-                                            onclick="openRoleModal(
-                                                {{ member.id }},
-                                                {{ member.name|tojson }},
-                                                {{ member.role|tojson }}
-                                            )"
-                                        >
-                                            Role
-                                        </button>
-
-                                    {% endif %}
-
-
-                                    <form
-                                        method="POST"
-                                        action="{{ url_for(
-                                            'toggle_team_member',
-                                            user_id=member.id
-                                        ) }}"
-                                    >
-
-                                        {% if member.is_active %}
-
-                                            <button
-                                                type="submit"
-                                                class="action-btn danger"
-                                                onclick="return confirm(
-                                                    'Deactivate {{ member.name }}?'
-                                                )"
-                                            >
-                                                Deactivate
-                                            </button>
-
-                                        {% else %}
-
-                                            <button
-                                                type="submit"
-                                                class="action-btn success"
-                                            >
-                                                Activate
-                                            </button>
-
-                                        {% endif %}
-
-                                    </form>
-
+                                {% if member.is_active %}
+                                    Active
                                 {% else %}
-
-                                    <span class="self-label">
-                                        Your Account
-                                    </span>
-
+                                    Inactive
                                 {% endif %}
 
-                            </div>
+                            </span>
 
                         </td>
 
-                    </tr>
 
-                {% else %}
+                        <td>
+                            {{ member.post_count|default(0) }}
+                        </td>
 
-                    <tr>
 
-                        <td
-                            colspan="6"
-                            class="empty-team"
-                        >
-                            <div>
-                                <strong>No team members found.</strong>
-                                <span>
-                                    Add your first team member to get started.
+                        <td>
+
+                            {% if member.responsibilities %}
+
+                                <div class="responsibility-list">
+
+                                    {% for responsibility in member.responsibilities %}
+
+                                    <span class="responsibility-tag">
+                                        {{ responsibility
+                                            |replace("_", " ")
+                                            |title
+                                        }}
+                                    </span>
+
+                                    {% endfor %}
+
+                                </div>
+
+                            {% else %}
+
+                                <span class="no-responsibilities">
+                                    No responsibilities assigned
                                 </span>
-                            </div>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <td>
+
+                            {% if member.is_owner %}
+
+                                <span class="owner-lock">
+                                    🔒 Owner
+                                </span>
+
+                            {% else %}
+
+                                <div class="member-actions">
+
+                                    <button
+                                        type="button"
+                                        class="icon-action edit-member-btn"
+                                        title="Edit member"
+                                        data-member-id="{{ member.membership_id }}"
+                                        data-member-name="{{ member.name }}"
+                                        data-member-role="{{ member.role }}"
+                                    >
+                                        ✎
+                                    </button>
+
+
+                                    <button
+                                        type="button"
+                                        class="icon-action danger remove-member-btn"
+                                        title="Remove member"
+                                        data-member-id="{{ member.membership_id }}"
+                                        data-member-name="{{ member.name }}"
+                                    >
+                                        ×
+                                    </button>
+
+                                </div>
+
+                            {% endif %}
+
                         </td>
 
                     </tr>
 
-                {% endfor %}
+                    {% endfor %}
 
                 </tbody>
 
@@ -437,46 +1287,89 @@
 
         </div>
 
+        {% elif selected_brand %}
+
+        <div class="empty-team">
+
+            <div class="empty-team-icon">
+                👥
+            </div>
+
+            <h3>
+                No team members yet
+            </h3>
+
+            <p>
+                Start building your brand team by adding members
+                and assigning them the right role and responsibilities.
+            </p>
+
+            <button
+                type="button"
+                class="team-primary-button"
+                id="openEmptyAddMemberBtn"
+            >
+                ＋ Add Team Member
+            </button>
+
+        </div>
+
+        {% else %}
+
+        <div class="empty-team">
+
+            <div class="empty-team-icon">
+                🏢
+            </div>
+
+            <h3>
+                No brand workspace available
+            </h3>
+
+            <p>
+                Create or activate a brand workspace before
+                managing team members.
+            </p>
+
+        </div>
+
+        {% endif %}
+
     </div>
 
 </div>
 
 
 <!-- =========================================================
-     ADD MEMBER MODAL
-========================================================= -->
+     ADD TEAM MEMBER MODAL
+     ========================================================= -->
 
 <div
-    id="teamMemberModal"
     class="team-modal"
+    id="addMemberModal"
+    aria-hidden="true"
 >
 
-    <div
-        class="team-modal-backdrop"
-        onclick="closeTeamModal()"
-    ></div>
-
-
-    <div class="team-modal-box">
+    <div class="team-modal-content">
 
         <div class="team-modal-header">
 
             <div>
-                <span class="team-eyebrow">
-                    TEAM MANAGEMENT
-                </span>
 
-                <h2>Add Team Member</h2>
+                <h3>
+                    Add Team Member
+                </h3>
 
                 <p>
-                    Create a new RicozSocial account.
+                    Add a user to this brand and assign access.
                 </p>
+
             </div>
 
             <button
                 type="button"
                 class="modal-close"
-                onclick="closeTeamModal()"
+                data-close-modal="addMemberModal"
             >
                 ×
             </button>
@@ -486,83 +1379,44 @@
 
         <form
             method="POST"
-            action="{{ url_for('create_team_member') }}"
-            class="team-form"
+            action="{{ url_for('add_team_member') }}"
+            id="addMemberForm"
         >
 
-            <div class="form-grid">
+            <div class="team-modal-body">
+
+                <input
+                    type="hidden"
+                    name="brand_id"
+                    value="{{ selected_brand.id if selected_brand else '' }}"
+                >
+
 
                 <div class="form-group">
 
-                    <label>
-                        Full Name
-                    </label>
-
-                    <input
-                        type="text"
-                        name="name"
-                        placeholder="Enter full name"
-                        required
+                    <label
+                        class="form-label"
+                        for="addUser"
                     >
-
-                </div>
-
-
-                <div class="form-group">
-
-                    <label>
-                        Email Address
-                    </label>
-
-                    <input
-                        type="email"
-                        name="email"
-                        placeholder="member@company.com"
-                        required
-                    >
-
-                </div>
-
-
-                <div class="form-group">
-
-                    <label>
-                        Temporary Password
-                    </label>
-
-                    <input
-                        type="password"
-                        name="password"
-                        minlength="8"
-                        placeholder="Minimum 8 characters"
-                        required
-                    >
-
-                </div>
-
-
-                <div class="form-group">
-
-                    <label>
-                        System Role
+                        Team Member
                     </label>
 
                     <select
-                        name="role"
+                        class="form-control"
+                        name="user_id"
+                        id="addUser"
                         required
                     >
 
-                        {% for role, label in system_roles.items() %}
+                        <option value="">
+                            Select a user
+                        </option>
 
-                            {% if current_user.role == "admin" or role in ["publisher", "analyst", "member"] %}
+                        {% for user in available_users|default([]) %}
 
-                                <option
-                                    value="{{ role }}"
-                                >
-                                    {{ label }}
-                                </option>
-
-                            {% endif %}
+                        <option value="{{ user.id }}">
+                            {{ user.name }} — {{ user.email }}
+                        </option>
 
                         {% endfor %}
 
@@ -570,15 +1424,98 @@
 
                 </div>
 
-            </div>
+
+                <div class="form-group">
+
+                    <label
+                        class="form-label"
+                        for="addRole"
+                    >
+                        Role
+                    </label>
+
+                    <select
+                        class="form-control"
+                        name="role"
+                        id="addRole"
+                        required
+                    >
+
+                        <option value="member">
+                            Member
+                        </option>
+
+                        <option value="publisher">
+                            Publisher
+                        </option>
+
+                        <option value="analyst">
+                            Analyst
+                        </option>
+
+                        <option value="manager">
+                            Manager
+                        </option>
+
+                    </select>
 
 
-            <div class="form-note">
+                    <div
+                        class="role-description-box"
+                        id="addRoleDescription"
+                    >
+                        Limited workspace access based on assigned responsibilities.
+                    </div>
 
-                <strong>Security:</strong>
+                </div>
 
-                Passwords are securely hashed and never stored
-                as plain text.
+
+                <div class="responsibilities-heading">
+                    Responsibilities
+                </div>
+
+
+                <div class="responsibilities-grid">
+
+                    {% set responsibility_items = [
+                        ("content_creation", "Content Creation", "Create and prepare social content."),
+                        ("content_scheduling", "Content Scheduling", "Schedule posts and manage publishing times."),
+                        ("content_approval", "Content Approval", "Review and approve submitted content."),
+                        ("analytics", "Analytics", "Review performance and social insights."),
+                        ("reporting", "Reporting", "Create and manage performance reports."),
+                        ("community_management", "Community Management", "Manage comments and community interactions."),
+                        ("social_accounts", "Social Accounts", "Manage connected social account activities."),
+                        ("team_management", "Team Management", "Help manage members and responsibilities."),
+                        ("campaign_management", "Campaign Management", "Manage campaigns and campaign content.")
+                    ] %}
+
+                    {% for key, label, description in responsibility_items %}
+
+                    <label class="responsibility-option">
+
+                        <input
+                            type="checkbox"
+                            name="responsibilities"
+                            value="{{ key }}"
+                        >
+
+                        <span class="responsibility-option-content">
+
+                            <strong>
+                                {{ label }}
+                            </strong>
+
+                            <span>
+                                {{ description }}
+                            </span>
+
+                        </span>
+
+                    </label>
+
+                    {% endfor %}
+
+                </div>
 
             </div>
 
@@ -587,17 +1524,17 @@
 
                 <button
                     type="button"
-                    class="team-secondary-btn"
-                    onclick="closeTeamModal()"
+                    class="team-secondary-button"
+                    data-close-modal="addMemberModal"
                 >
                     Cancel
                 </button>
 
                 <button
                     type="submit"
-                    class="team-primary-btn"
+                    class="team-primary-button"
                 >
-                    Create Member
+                    Add Member
                 </button>
 
             </div>
@@ -610,34 +1547,27 @@
 
 
 <!-- =========================================================
-     ROLE MODAL
-========================================================= -->
+     EDIT TEAM MEMBER MODAL
+     ========================================================= -->
 
 <div
-    id="roleModal"
     class="team-modal"
+    id="editMemberModal"
+    aria-hidden="true"
 >
 
-    <div
-        class="team-modal-backdrop"
-        onclick="closeRoleModal()"
-    ></div>
-
-
-    <div class="team-modal-box small">
+    <div class="team-modal-content">
 
         <div class="team-modal-header">
 
             <div>
 
-                <span class="team-eyebrow">
-                    ACCESS CONTROL
-                </span>
+                <h3>
+                    Edit Team Member
+                </h3>
 
-                <h2>Change System Role</h2>
-
-                <p id="roleMemberName">
-                    Update team member permissions.
+                <p id="editMemberSubtitle">
+                    Update role and responsibilities.
                 </p>
 
             </div>
@@ -645,7 +1575,7 @@
             <button
                 type="button"
                 class="modal-close"
-                onclick="closeRoleModal()"
+                data-close-modal="editMemberModal"
             >
                 ×
             </button>
@@ -654,36 +1584,100 @@
 
 
         <form
-            id="roleForm"
             method="POST"
-            class="team-form"
+            id="editMemberForm"
         >
 
-            <div class="form-group">
+            <div class="team-modal-body">
 
-                <label>
-                    System Role
-                </label>
-
-                <select
-                    id="roleSelect"
-                    name="role"
-                    required
+                <input
+                    type="hidden"
+                    name="brand_id"
+                    value="{{ selected_brand.id if selected_brand else '' }}"
                 >
 
-                    {% for role, label in system_roles.items() %}
+                <div class="form-group">
 
-                        {% if current_user.role == "admin" or role in ["publisher", "analyst", "member"] %}
+                    <label
+                        class="form-label"
+                        for="editRole"
+                    >
+                        Role
+                    </label>
 
-                            <option value="{{ role }}">
+                    <select
+                        class="form-control"
+                        name="role"
+                        id="editRole"
+                        required
+                    >
+
+                        <option value="member">
+                            Member
+                        </option>
+
+                        <option value="publisher">
+                            Publisher
+                        </option>
+
+                        <option value="analyst">
+                            Analyst
+                        </option>
+
+                        <option value="manager">
+                            Manager
+                        </option>
+
+                    </select>
+
+
+                    <div
+                        class="role-description-box"
+                        id="editRoleDescription"
+                    >
+                        Limited workspace access based on assigned responsibilities.
+                    </div>
+
+                </div>
+
+
+                <div class="responsibilities-heading">
+                    Responsibilities
+                </div>
+
+
+                <div
+                    class="responsibilities-grid"
+                    id="editResponsibilities"
+                >
+
+                    {% for key, label, description in responsibility_items %}
+
+                    <label class="responsibility-option">
+
+                        <input
+                            type="checkbox"
+                            name="responsibilities"
+                            value="{{ key }}"
+                        >
+
+                        <span class="responsibility-option-content">
+
+                            <strong>
                                 {{ label }}
-                            </option>
+                            </strong>
 
-                        {% endif %}
+                            <span>
+                                {{ description }}
+                            </span>
+
+                        </span>
+
+                    </label>
 
                     {% endfor %}
 
-                </select>
+                </div>
 
             </div>
 
@@ -692,17 +1686,18 @@
 
                 <button
                     type="button"
-                    class="team-secondary-btn"
-                    onclick="closeRoleModal()"
+                    class="team-secondary-button"
+                    data-close-modal="editMemberModal"
                 >
                     Cancel
                 </button>
 
                 <button
                     type="submit"
-                    class="team-primary-btn"
+                    class="team-primary-button"
+                    id="saveMemberBtn"
                 >
-                    Save Role
+                    Save Changes
                 </button>
 
             </div>
@@ -714,109 +1709,670 @@
 </div>
 
 
+<!-- =========================================================
+     REMOVE MEMBER MODAL
+     ========================================================= -->
+
+<div
+    class="team-modal"
+    id="removeMemberModal"
+    aria-hidden="true"
+>
+
+    <div class="team-modal-content">
+
+        <div class="team-modal-header">
+
+            <div>
+
+                <h3>
+                    Remove Team Member
+                </h3>
+
+                <p>
+                    Confirm team membership removal.
+                </p>
+
+            </div>
+
+            <button
+                type="button"
+                class="modal-close"
+                data-close-modal="removeMemberModal"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <form
+            method="POST"
+            id="removeMemberForm"
+        >
+
+            <div class="team-modal-body">
+
+                <div class="delete-warning">
+
+                    <strong>
+                        Remove <span id="removeMemberName">this member</span>?
+                    </strong>
+
+                    <br>
+
+                    This will remove the member from the selected
+                    brand team and their assigned responsibilities
+                    for this workspace.
+
+                </div>
+
+            </div>
+
+
+            <div class="team-modal-footer">
+
+                <button
+                    type="button"
+                    class="team-secondary-button"
+                    data-close-modal="removeMemberModal"
+                >
+                    Cancel
+                </button>
+
+                <button
+                    type="submit"
+                    class="team-primary-button"
+                    style="background:#dc2626;"
+                >
+                    Remove Member
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     TOAST
+     ========================================================= -->
+
+<div
+    class="team-toast"
+    id="teamToast"
+></div>
+
+
 <script>
+document.addEventListener("DOMContentLoaded", function () {
 
-function openTeamModal() {
-    const modal = document.getElementById(
-        "teamMemberModal"
-    );
+    /* =====================================================
+       MODALS
+       ===================================================== */
 
-    if (modal) {
-        modal.classList.add("open");
-        document.body.classList.add("modal-open");
-    }
-}
+    const addMemberModal =
+        document.getElementById("addMemberModal");
 
+    const editMemberModal =
+        document.getElementById("editMemberModal");
 
-function closeTeamModal() {
-    const modal = document.getElementById(
-        "teamMemberModal"
-    );
-
-    if (modal) {
-        modal.classList.remove("open");
-        document.body.classList.remove("modal-open");
-    }
-}
+    const removeMemberModal =
+        document.getElementById("removeMemberModal");
 
 
-function openRoleModal(userId, userName, currentRole) {
+    function openModal(modal) {
 
-    const modal = document.getElementById(
-        "roleModal"
-    );
-
-    const form = document.getElementById(
-        "roleForm"
-    );
-
-    const select = document.getElementById(
-        "roleSelect"
-    );
-
-    const nameElement = document.getElementById(
-        "roleMemberName"
-    );
-
-    if (!modal || !form || !select) {
-        return;
-    }
-
-    form.action =
-        "/team/members/" +
-        userId +
-        "/role";
-
-    select.value = currentRole;
-
-    if (nameElement) {
-        nameElement.textContent =
-            "Update the role for " +
-            userName +
-            ".";
-    }
-
-    modal.classList.add("open");
-
-    document.body.classList.add(
-        "modal-open"
-    );
-}
-
-
-function closeRoleModal() {
-
-    const modal = document.getElementById(
-        "roleModal"
-    );
-
-    if (modal) {
-
-        modal.classList.remove(
-            "open"
-        );
-
-        document.body.classList.remove(
-            "modal-open"
-        );
-    }
-}
-
-
-document.addEventListener(
-    "keydown",
-    function(event) {
-
-        if (event.key === "Escape") {
-
-            closeTeamModal();
-            closeRoleModal();
-
+        if (!modal) {
+            return;
         }
 
-    }
-);
+        modal.classList.add("active");
+        modal.setAttribute("aria-hidden", "false");
 
+        document.body.style.overflow = "hidden";
+    }
+
+
+    function closeModal(modal) {
+
+        if (!modal) {
+            return;
+        }
+
+        modal.classList.remove("active");
+        modal.setAttribute("aria-hidden", "true");
+
+        const anyOpenModal =
+            document.querySelector(".team-modal.active");
+
+        if (!anyOpenModal) {
+            document.body.style.overflow = "";
+        }
+    }
+
+
+    /* =====================================================
+       OPEN ADD MEMBER
+       ===================================================== */
+
+    const openAddMemberBtn =
+        document.getElementById("openAddMemberBtn");
+
+    const openEmptyAddMemberBtn =
+        document.getElementById("openEmptyAddMemberBtn");
+
+
+    if (openAddMemberBtn) {
+
+        openAddMemberBtn.addEventListener(
+            "click",
+            function () {
+                openModal(addMemberModal);
+            }
+        );
+
+    }
+
+
+    if (openEmptyAddMemberBtn) {
+
+        openEmptyAddMemberBtn.addEventListener(
+            "click",
+            function () {
+                openModal(addMemberModal);
+            }
+        );
+
+    }
+
+
+    /* =====================================================
+       CLOSE MODALS
+       ===================================================== */
+
+    document
+        .querySelectorAll("[data-close-modal]")
+        .forEach(function (button) {
+
+            button.addEventListener(
+                "click",
+                function () {
+
+                    const modalId =
+                        button.getAttribute(
+                            "data-close-modal"
+                        );
+
+                    closeModal(
+                        document.getElementById(modalId)
+                    );
+
+                }
+            );
+
+        });
+
+
+    document
+        .querySelectorAll(".team-modal")
+        .forEach(function (modal) {
+
+            modal.addEventListener(
+                "click",
+                function (event) {
+
+                    if (event.target === modal) {
+                        closeModal(modal);
+                    }
+
+                }
+            );
+
+        });
+
+
+    document.addEventListener(
+        "keydown",
+        function (event) {
+
+            if (event.key !== "Escape") {
+                return;
+            }
+
+            document
+                .querySelectorAll(".team-modal.active")
+                .forEach(function (modal) {
+                    closeModal(modal);
+                });
+
+        }
+    );
+
+
+    /* =====================================================
+       BRAND SWITCHER
+       ===================================================== */
+
+    const brandSelector =
+        document.getElementById("brandSelector");
+
+    if (brandSelector) {
+
+        brandSelector.addEventListener(
+            "change",
+            function () {
+
+                const brandId =
+                    brandSelector.value;
+
+                if (!brandId) {
+                    return;
+                }
+
+                window.location.href =
+                    "{{ url_for('team') }}"
+                    + "?brand_id="
+                    + encodeURIComponent(brandId);
+
+            }
+        );
+
+    }
+
+
+    /* =====================================================
+       ROLE DESCRIPTIONS
+       ===================================================== */
+
+    const roleDescriptions = {
+
+        member:
+            "Limited workspace access based on assigned responsibilities.",
+
+        publisher:
+            "Create, edit, schedule and publish social content.",
+
+        analyst:
+            "Access analytics, reports and performance insights.",
+
+        manager:
+            "Manage team, content, approvals, campaigns and brand operations."
+
+    };
+
+
+    function updateRoleDescription(
+        selectElement,
+        descriptionElement
+    ) {
+
+        if (!selectElement || !descriptionElement) {
+            return;
+        }
+
+        const role =
+            selectElement.value;
+
+        descriptionElement.textContent =
+            roleDescriptions[role]
+            || roleDescriptions.member;
+
+    }
+
+
+    const addRole =
+        document.getElementById("addRole");
+
+    const addRoleDescription =
+        document.getElementById("addRoleDescription");
+
+
+    if (addRole) {
+
+        addRole.addEventListener(
+            "change",
+            function () {
+
+                updateRoleDescription(
+                    addRole,
+                    addRoleDescription
+                );
+
+            }
+        );
+
+        updateRoleDescription(
+            addRole,
+            addRoleDescription
+        );
+
+    }
+
+
+    const editRole =
+        document.getElementById("editRole");
+
+    const editRoleDescription =
+        document.getElementById("editRoleDescription");
+
+
+    if (editRole) {
+
+        editRole.addEventListener(
+            "change",
+            function () {
+
+                updateRoleDescription(
+                    editRole,
+                    editRoleDescription
+                );
+
+            }
+        );
+
+        updateRoleDescription(
+            editRole,
+            editRoleDescription
+        );
+
+    }
+
+
+    /* =====================================================
+       EDIT MEMBER
+       ===================================================== */
+
+    const editMemberForm =
+        document.getElementById("editMemberForm");
+
+    const editMemberSubtitle =
+        document.getElementById("editMemberSubtitle");
+
+
+    document
+        .querySelectorAll(".edit-member-btn")
+        .forEach(function (button) {
+
+            button.addEventListener(
+                "click",
+                async function () {
+
+                    const memberId =
+                        button.dataset.memberId;
+
+                    const memberName =
+                        button.dataset.memberName;
+
+                    const memberRole =
+                        button.dataset.memberRole;
+
+
+                    if (!memberId) {
+                        return;
+                    }
+
+
+                    if (editMemberSubtitle) {
+
+                        editMemberSubtitle.textContent =
+                            "Update "
+                            + memberName
+                            + "'s role and responsibilities.";
+
+                    }
+
+
+                    if (editRole) {
+
+                        editRole.value =
+                            memberRole || "member";
+
+                        updateRoleDescription(
+                            editRole,
+                            editRoleDescription
+                        );
+
+                    }
+
+
+                    document
+                        .querySelectorAll(
+                            "#editResponsibilities input[type='checkbox']"
+                        )
+                        .forEach(function (checkbox) {
+
+                            checkbox.checked = false;
+
+                        });
+
+
+                    if (editMemberForm) {
+
+                        editMemberForm.action =
+                            "{{ url_for('update_team_member', member_id=0) }}"
+                            .replace(
+                                "/0/",
+                                "/" + memberId + "/"
+                            );
+
+                    }
+
+
+                    openModal(editMemberModal);
+
+
+                    try {
+
+                        const url =
+                            "{{ url_for('team_member_responsibilities', member_id=0) }}"
+                            .replace(
+                                "/0/",
+                                "/" + memberId + "/"
+                            );
+
+
+                        const response =
+                            await fetch(url, {
+                                method: "GET",
+                                headers: {
+                                    "Accept": "application/json"
+                                }
+                            });
+
+
+                        if (!response.ok) {
+                            throw new Error(
+                                "Unable to load responsibilities."
+                            );
+                        }
+
+
+                        const data =
+                            await response.json();
+
+
+                        const responsibilities =
+                            Array.isArray(data.responsibilities)
+                                ? data.responsibilities
+                                : [];
+
+
+                        document
+                            .querySelectorAll(
+                                "#editResponsibilities input[type='checkbox']"
+                            )
+                            .forEach(function (checkbox) {
+
+                                checkbox.checked =
+                                    responsibilities.includes(
+                                        checkbox.value
+                                    );
+
+                            });
+
+                    } catch (error) {
+
+                        console.error(error);
+
+                        showToast(
+                            "Unable to load existing responsibilities."
+                        );
+
+                    }
+
+                }
+            );
+
+        });
+
+
+    /* =====================================================
+       REMOVE MEMBER
+       ===================================================== */
+
+    const removeMemberForm =
+        document.getElementById("removeMemberForm");
+
+    const removeMemberName =
+        document.getElementById("removeMemberName");
+
+
+    document
+        .querySelectorAll(".remove-member-btn")
+        .forEach(function (button) {
+
+            button.addEventListener(
+                "click",
+                function () {
+
+                    const memberId =
+                        button.dataset.memberId;
+
+                    const memberName =
+                        button.dataset.memberName
+                        || "this member";
+
+
+                    if (removeMemberName) {
+
+                        removeMemberName.textContent =
+                            memberName;
+
+                    }
+
+
+                    if (removeMemberForm) {
+
+                        removeMemberForm.action =
+                            "{{ url_for('remove_team_member', member_id=0) }}"
+                            .replace(
+                                "/0/",
+                                "/" + memberId + "/"
+                            );
+
+                    }
+
+
+                    openModal(removeMemberModal);
+
+                }
+            );
+
+        });
+
+
+    /* =====================================================
+       FORM SUBMIT FEEDBACK
+       ===================================================== */
+
+    const addMemberForm =
+        document.getElementById("addMemberForm");
+
+    if (addMemberForm) {
+
+        addMemberForm.addEventListener(
+            "submit",
+            function () {
+
+                const submitButton =
+                    addMemberForm.querySelector(
+                        "button[type='submit']"
+                    );
+
+                if (submitButton) {
+
+                    submitButton.disabled = true;
+
+                    submitButton.textContent =
+                        "Adding...";
+
+                }
+
+            }
+        );
+
+    }
+
+
+    if (editMemberForm) {
+
+        editMemberForm.addEventListener(
+            "submit",
+            function () {
+
+                const submitButton =
+                    document.getElementById(
+                        "saveMemberBtn"
+                    );
+
+                if (submitButton) {
+
+                    submitButton.disabled = true;
+
+                    submitButton.textContent =
+                        "Saving...";
+
+                }
+
+            }
+        );
+
+    }
+
+
+    /* =====================================================
+       TOAST
+       ===================================================== */
+
+    function showToast(message) {
+
+        const toast =
+            document.getElementById("teamToast");
+
+        if (!toast) {
+            return;
+        }
+
+        toast.textContent =
+            message;
+
+        toast.classList.add("show");
+
+        window.setTimeout(
+            function () {
+                toast.classList.remove("show");
+            },
+            3200
+        );
+
+    }
+
+});
 </script>
 
 {% endblock %}
+```

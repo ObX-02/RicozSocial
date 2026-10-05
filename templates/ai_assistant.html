@@ -1,6 +1,10 @@
+```html
 {% extends "base.html" %}
 
-{% block title %}AI Content Assistant — RicozSocial{% endblock %}
+{% block title %}
+AI Content Assistant — RicozSocial
+{% endblock %}
+
 
 {% block extra_css %}
 
@@ -41,6 +45,121 @@
     font-weight: 600;
 }
 
+
+/* =========================================================
+   AI REQUEST STATUS
+   ========================================================= */
+
+.ai-request-status {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid #dbeafe;
+    background: #eff6ff;
+    color: #1d4ed8;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.ai-request-status.active {
+    display: flex;
+}
+
+.ai-request-spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(29, 78, 216, .25);
+    border-top-color: #1d4ed8;
+    border-radius: 50%;
+    animation: aiSpin .7s linear infinite;
+    flex-shrink: 0;
+}
+
+@keyframes aiSpin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+
+/* =========================================================
+   FRONTEND ERROR
+   ========================================================= */
+
+.ai-client-error {
+    display: none;
+    margin-bottom: 16px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #b91c1c;
+    font-size: 13px;
+    line-height: 1.55;
+}
+
+.ai-client-error.show {
+    display: block;
+}
+
+
+/* =========================================================
+   DISABLED GENERATE BUTTON
+   ========================================================= */
+
+.ai-generate-button.is-loading {
+    opacity: .75;
+    cursor: wait;
+    pointer-events: none;
+}
+
+.ai-generate-button .ai-button-spinner {
+    display: none;
+    width: 15px;
+    height: 15px;
+    border: 2px solid rgba(255, 255, 255, .35);
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    animation: aiSpin .7s linear infinite;
+}
+
+.ai-generate-button.is-loading .ai-button-spinner {
+    display: inline-block;
+}
+
+
+/* =========================================================
+   RETRY BUTTON
+   ========================================================= */
+
+.ai-retry-button {
+    display: none;
+    margin-top: 10px;
+    border: 0;
+    background: transparent;
+    color: #e31e24;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    padding: 0;
+}
+
+.ai-retry-button.show {
+    display: inline-block;
+}
+
+.ai-retry-button:hover {
+    text-decoration: underline;
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
 @media (max-width: 600px) {
 
     .ai-result-actions {
@@ -63,6 +182,7 @@
 {% block content %}
 
 <div class="ai-page">
+
 
     <!-- =====================================================
          HEADER
@@ -139,24 +259,61 @@
             </div>
 
 
+            <!-- SERVER ERROR -->
+
             {% if error_message %}
 
                 <div class="ai-alert">
                     {{ error_message }}
+
+                    <button
+                        type="button"
+                        class="ai-retry-button show"
+                        onclick="retryAIRequest()"
+                    >
+                        Try Again
+                    </button>
                 </div>
 
             {% endif %}
 
 
+            <!-- FRONTEND ERROR -->
+
+            <div
+                id="aiClientError"
+                class="ai-client-error"
+            ></div>
+
+
+            <!-- REQUEST STATUS -->
+
+            <div
+                id="aiRequestStatus"
+                class="ai-request-status"
+            >
+
+                <span class="ai-request-spinner"></span>
+
+                <span id="aiRequestStatusText">
+                    Generating your content...
+                </span>
+
+            </div>
+
+
+            <!-- =================================================
+                 FORM
+                 ================================================= -->
+
             <form
                 method="POST"
                 action="{{ url_for('ai_assistant') }}"
                 class="ai-form"
+                id="aiContentForm"
             >
 
-                <!-- =================================================
-                     TOPIC
-                     ================================================= -->
+                <!-- TOPIC -->
 
                 <div class="ai-form-group">
 
@@ -169,7 +326,7 @@
                         id="topic"
                         name="topic"
                         rows="6"
-                        placeholder="Example: Launching our new cybersecurity service for small businesses..."
+                        placeholder="Example: Launching our new brand service for businesses..."
                         required
                     ></textarea>
 
@@ -181,9 +338,7 @@
                 </div>
 
 
-                <!-- =================================================
-                     OPTIONS
-                     ================================================= -->
+                <!-- OPTIONS -->
 
                 <div class="ai-options-grid">
 
@@ -289,20 +444,30 @@
                 </div>
 
 
-                <!-- =================================================
-                     GENERATE BUTTON
-                     ================================================= -->
+                <!-- GENERATE -->
 
                 <button
                     type="submit"
                     class="ai-generate-button"
+                    id="aiGenerateButton"
                 >
 
-                    <span>
+                    <span
+                        class="ai-button-spinner"
+                        aria-hidden="true"
+                    ></span>
+
+                    <span
+                        class="ai-button-icon"
+                    >
                         ✦
                     </span>
 
-                    Generate Content
+                    <span
+                        id="aiGenerateButtonText"
+                    >
+                        Generate Content
+                    </span>
 
                 </button>
 
@@ -345,9 +510,7 @@
                 <div class="ai-result">
 
 
-                    <!-- =================================================
-                         RESULT TOOLBAR
-                         ================================================= -->
+                    <!-- RESULT TOOLBAR -->
 
                     <div class="ai-result-toolbar">
 
@@ -367,9 +530,7 @@
                     </div>
 
 
-                    <!-- =================================================
-                         GENERATED CONTENT
-                         ================================================= -->
+                    <!-- GENERATED CONTENT -->
 
                     <div
                         class="ai-generated-content"
@@ -377,23 +538,17 @@
                     >{{ generated_content }}</div>
 
 
-                    <!-- =================================================
-                         AI SAVED STATUS
-                         ================================================= -->
+                    <!-- SAVED STATUS -->
 
                     <div
                         id="aiSavedIndicator"
                         class="ai-saved-indicator"
                     >
-
                         ✓ AI content is ready to use in Publisher.
-
                     </div>
 
 
-                    <!-- =================================================
-                         RESULT ACTIONS
-                         ================================================= -->
+                    <!-- ACTIONS -->
 
                     <div class="ai-result-actions">
 
@@ -403,9 +558,7 @@
                             class="ai-secondary-button"
                             onclick="copyAIContent()"
                         >
-
                             Copy Content
-
                         </button>
 
 
@@ -436,9 +589,7 @@
             {% else %}
 
 
-                <!-- =================================================
-                     EMPTY RESULT
-                     ================================================= -->
+                <!-- EMPTY RESULT -->
 
                 <div class="ai-empty-result">
 
@@ -545,181 +696,540 @@
 
 <script>
 
-/* =========================================================
-   SAVE GENERATED AI CONTENT
-   ========================================================= */
+(function () {
 
-function saveAIContentToStorage() {
-
-    const contentElement =
-        document.getElementById(
-            "aiGeneratedContent"
-        );
+    "use strict";
 
 
-    if (!contentElement) {
-        return false;
+    /* =====================================================
+       ELEMENTS
+       ===================================================== */
+
+    const form =
+        document.getElementById("aiContentForm");
+
+    const generateButton =
+        document.getElementById("aiGenerateButton");
+
+    const generateButtonText =
+        document.getElementById("aiGenerateButtonText");
+
+    const requestStatus =
+        document.getElementById("aiRequestStatus");
+
+    const requestStatusText =
+        document.getElementById("aiRequestStatusText");
+
+    const clientError =
+        document.getElementById("aiClientError");
+
+    const topicInput =
+        document.getElementById("topic");
+
+
+    /* =====================================================
+       CONSTANTS
+       ===================================================== */
+
+    const REQUEST_TIMEOUT =
+        90000;
+
+    let requestTimer = null;
+
+    let requestStarted = false;
+
+
+    /* =====================================================
+       CLEAR FRONTEND ERROR
+       ===================================================== */
+
+    function clearClientError() {
+
+        if (!clientError) {
+            return;
+        }
+
+        clientError.textContent = "";
+
+        clientError.classList.remove("show");
+
     }
 
 
-    const content =
-        contentElement.innerText.trim();
+    /* =====================================================
+       SHOW FRONTEND ERROR
+       ===================================================== */
 
+    function showClientError(message) {
 
-    if (!content) {
-        return false;
+        if (!clientError) {
+            return;
+        }
+
+        clientError.textContent =
+            message;
+
+        clientError.classList.add("show");
+
     }
 
 
-    localStorage.setItem(
-        "ricoz_ai_generated_content",
-        content
-    );
+    /* =====================================================
+       REQUEST STATUS
+       ===================================================== */
 
+    function showLoading() {
 
-    return true;
-}
+        if (requestStatus) {
 
-
-/* =========================================================
-   USE IN POST
-   ========================================================= */
-
-function saveAIContentBeforePublisher(event) {
-
-    const saved =
-        saveAIContentToStorage();
-
-
-    if (!saved) {
-
-        event.preventDefault();
-
-        alert(
-            "Unable to prepare the AI-generated content. Please generate the content again."
-        );
-
-        return false;
-    }
-
-
-    const indicator =
-        document.getElementById(
-            "aiSavedIndicator"
-        );
-
-
-    if (indicator) {
-        indicator.style.display = "block";
-    }
-
-
-    return true;
-}
-
-
-/* =========================================================
-   COPY AI CONTENT
-   ========================================================= */
-
-function copyAIContent() {
-
-    const content =
-        document.getElementById(
-            "aiGeneratedContent"
-        );
-
-
-    if (!content) {
-        return;
-    }
-
-
-    const text =
-        content.innerText.trim();
-
-
-    if (!text) {
-        return;
-    }
-
-
-    navigator.clipboard.writeText(
-        text
-    ).then(function () {
-
-
-        const buttons =
-            document.querySelectorAll(
-                ".ai-copy-button, .ai-secondary-button"
+            requestStatus.classList.add(
+                "active"
             );
 
+        }
 
-        buttons.forEach(function(button) {
+        if (requestStatusText) {
 
-            const originalText =
-                button.innerText;
+            requestStatusText.textContent =
+                "Generating your content...";
 
+        }
 
-            button.innerText =
-                "Copied ✓";
+        if (generateButton) {
 
-
-            setTimeout(function() {
-
-                button.innerText =
-                    originalText;
-
-            }, 1500);
-
-        });
-
-
-    }).catch(function() {
-
-        alert(
-            "Unable to copy the content. Please select and copy it manually."
-        );
-
-    });
-
-}
-
-
-/* =========================================================
-   AUTOMATICALLY SAVE GENERATED CONTENT
-   ========================================================= */
-
-document.addEventListener(
-    "DOMContentLoaded",
-    function() {
-
-        const contentElement =
-            document.getElementById(
-                "aiGeneratedContent"
+            generateButton.classList.add(
+                "is-loading"
             );
 
+            generateButton.disabled =
+                true;
 
-        if (contentElement) {
+        }
+
+        if (generateButtonText) {
+
+            generateButtonText.textContent =
+                "Generating...";
+
+        }
+
+    }
+
+
+    function updateLoadingMessage(message) {
+
+        if (requestStatusText) {
+
+            requestStatusText.textContent =
+                message;
+
+        }
+
+    }
+
+
+    function resetLoading() {
+
+        if (requestStatus) {
+
+            requestStatus.classList.remove(
+                "active"
+            );
+
+        }
+
+        if (generateButton) {
+
+            generateButton.classList.remove(
+                "is-loading"
+            );
+
+            generateButton.disabled =
+                false;
+
+        }
+
+        if (generateButtonText) {
+
+            generateButtonText.textContent =
+                "Generate Content";
+
+        }
+
+        requestStarted =
+            false;
+
+
+        if (requestTimer) {
+
+            clearTimeout(
+                requestTimer
+            );
+
+            requestTimer =
+                null;
+
+        }
+
+    }
+
+
+    /* =====================================================
+       TIMEOUT
+       ===================================================== */
+
+    function startRequestTimeout() {
+
+        if (requestTimer) {
+
+            clearTimeout(
+                requestTimer
+            );
+
+        }
+
+        requestTimer =
+            setTimeout(
+                function () {
+
+                    if (!requestStarted) {
+                        return;
+                    }
+
+                    requestStarted =
+                        false;
+
+                    resetLoading();
+
+                    showClientError(
+                        "The AI service is taking too long to respond. Please try again. If this keeps happening, check the Gemini API configuration or server logs."
+                    );
+
+                },
+                REQUEST_TIMEOUT
+            );
+
+    }
+
+
+    /* =====================================================
+       FORM SUBMIT
+       ===================================================== */
+
+    if (form) {
+
+        form.addEventListener(
+            "submit",
+            function (event) {
+
+                clearClientError();
+
+
+                /* -----------------------------------------
+                   PREVENT DOUBLE SUBMISSION
+                   ----------------------------------------- */
+
+                if (requestStarted) {
+
+                    event.preventDefault();
+
+                    return;
+
+                }
+
+
+                /* -----------------------------------------
+                   VALIDATE TOPIC
+                   ----------------------------------------- */
+
+                const topic =
+                    topicInput
+                        ? topicInput.value.trim()
+                        : "";
+
+
+                if (!topic) {
+
+                    event.preventDefault();
+
+                    showClientError(
+                        "Please enter a topic or idea before generating content."
+                    );
+
+                    if (topicInput) {
+                        topicInput.focus();
+                    }
+
+                    return;
+
+                }
+
+
+                /* -----------------------------------------
+                   START LOADING
+                   ----------------------------------------- */
+
+                requestStarted =
+                    true;
+
+                showLoading();
+
+                startRequestTimeout();
+
+
+                /*
+                 * IMPORTANT:
+                 *
+                 * This is still a normal POST request.
+                 * We intentionally allow the browser to
+                 * navigate to Flask's response.
+                 *
+                 * The timeout above prevents the UI from
+                 * remaining in a loading state forever.
+                 */
+
+            }
+        );
+
+    }
+
+
+    /* =====================================================
+       RETRY
+       ===================================================== */
+
+    window.retryAIRequest =
+        function () {
+
+            clearClientError();
+
+
+            if (!form) {
+                return;
+            }
+
+
+            const topic =
+                topicInput
+                    ? topicInput.value.trim()
+                    : "";
+
+
+            if (!topic) {
+
+                showClientError(
+                    "Please enter a topic before trying again."
+                );
+
+                if (topicInput) {
+                    topicInput.focus();
+                }
+
+                return;
+
+            }
+
+
+            form.requestSubmit();
+
+        };
+
+
+    /* =====================================================
+       SAVE GENERATED AI CONTENT
+       ===================================================== */
+
+    window.saveAIContentToStorage =
+        function () {
+
+            const contentElement =
+                document.getElementById(
+                    "aiGeneratedContent"
+                );
+
+
+            if (!contentElement) {
+                return false;
+            }
+
 
             const content =
                 contentElement.innerText.trim();
 
 
-            if (content) {
+            if (!content) {
+                return false;
+            }
 
-                localStorage.setItem(
-                    "ricoz_ai_generated_content",
-                    content
+
+            localStorage.setItem(
+                "ricoz_ai_generated_content",
+                content
+            );
+
+
+            return true;
+
+        };
+
+
+    /* =====================================================
+       USE IN POST
+       ===================================================== */
+
+    window.saveAIContentBeforePublisher =
+        function (event) {
+
+            const saved =
+                window.saveAIContentToStorage();
+
+
+            if (!saved) {
+
+                event.preventDefault();
+
+                alert(
+                    "Unable to prepare the AI-generated content. Please generate the content again."
+                );
+
+                return false;
+
+            }
+
+
+            const indicator =
+                document.getElementById(
+                    "aiSavedIndicator"
+                );
+
+
+            if (indicator) {
+
+                indicator.style.display =
+                    "block";
+
+            }
+
+
+            return true;
+
+        };
+
+
+    /* =====================================================
+       COPY AI CONTENT
+       ===================================================== */
+
+    window.copyAIContent =
+        async function () {
+
+            const contentElement =
+                document.getElementById(
+                    "aiGeneratedContent"
+                );
+
+
+            if (!contentElement) {
+                return;
+            }
+
+
+            const text =
+                contentElement.innerText.trim();
+
+
+            if (!text) {
+                return;
+            }
+
+
+            try {
+
+                await navigator.clipboard.writeText(
+                    text
+                );
+
+
+                const buttons =
+                    document.querySelectorAll(
+                        ".ai-copy-button, .ai-secondary-button"
+                    );
+
+
+                buttons.forEach(
+                    function (button) {
+
+                        const originalText =
+                            button.innerText;
+
+
+                        button.innerText =
+                            "Copied ✓";
+
+
+                        setTimeout(
+                            function () {
+
+                                button.innerText =
+                                    originalText;
+
+                            },
+                            1500
+                        );
+
+                    }
+                );
+
+
+            } catch (error) {
+
+                alert(
+                    "Unable to copy the content. Please select and copy it manually."
                 );
 
             }
 
-        }
+        };
 
-    }
-);
+
+    /* =====================================================
+       AUTO-SAVE GENERATED CONTENT
+       ===================================================== */
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        function () {
+
+            const contentElement =
+                document.getElementById(
+                    "aiGeneratedContent"
+                );
+
+
+            if (contentElement) {
+
+                const content =
+                    contentElement.innerText.trim();
+
+
+                if (content) {
+
+                    localStorage.setItem(
+                        "ricoz_ai_generated_content",
+                        content
+                    );
+
+                }
+
+            }
+
+        }
+    );
+
+
+})();
 
 </script>
 
 {% endblock %}
+```

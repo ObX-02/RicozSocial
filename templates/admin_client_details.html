@@ -5,10 +5,23 @@ Client Details — RicozSocial
 {% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/admin_client_details.css') }}">
+
+<link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/admin.css') }}"
+>
+
+<link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/admin_client_details.css') }}"
+>
 
 <style>
+
+    /* =========================================================
+       CLIENT ACTION BAR
+    ========================================================= */
+
     .client-action-bar {
         display: flex;
         align-items: center;
@@ -29,8 +42,35 @@ Client Details — RicozSocial
         cursor: pointer;
         font-size: 13px;
         font-weight: 700;
-        transition: 0.2s ease;
+        transition:
+            background 0.2s ease,
+            color 0.2s ease,
+            transform 0.2s ease,
+            box-shadow 0.2s ease;
     }
+
+
+    /* =========================================================
+       BACK TO ADMIN
+    ========================================================= */
+
+    .client-action-admin {
+        background: #e31e24;
+        color: #ffffff;
+        box-shadow: 0 4px 12px rgba(227, 30, 36, 0.18);
+    }
+
+    .client-action-admin:hover {
+        background: #c8171d;
+        color: #ffffff;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 16px rgba(227, 30, 36, 0.24);
+    }
+
+
+    /* =========================================================
+       STANDARD ACTION
+    ========================================================= */
 
     .client-action-edit {
         background: #f3f4f6;
@@ -39,7 +79,14 @@ Client Details — RicozSocial
 
     .client-action-edit:hover {
         background: #e5e7eb;
+        color: #111827;
+        transform: translateY(-1px);
     }
+
+
+    /* =========================================================
+       DANGER ACTION
+    ========================================================= */
 
     .client-action-danger {
         background: #fff1f2;
@@ -48,7 +95,14 @@ Client Details — RicozSocial
 
     .client-action-danger:hover {
         background: #ffe4e6;
+        color: #9f1239;
+        transform: translateY(-1px);
     }
+
+
+    /* =========================================================
+       SUCCESS ACTION
+    ========================================================= */
 
     .client-action-success {
         background: #ecfdf5;
@@ -57,7 +111,14 @@ Client Details — RicozSocial
 
     .client-action-success:hover {
         background: #d1fae5;
+        color: #065f46;
+        transform: translateY(-1px);
     }
+
+
+    /* =========================================================
+       SECURITY PANEL
+    ========================================================= */
 
     .security-panel {
         margin-top: 24px;
@@ -82,6 +143,11 @@ Client Details — RicozSocial
         color: #6b7280;
         font-size: 14px;
     }
+
+
+    /* =========================================================
+       PASSWORD RESET
+    ========================================================= */
 
     .password-reset-form {
         display: grid;
@@ -111,11 +177,20 @@ Client Details — RicozSocial
         padding: 0 12px;
         outline: none;
         font-size: 14px;
+        background: #ffffff;
+        color: #111827;
+        transition:
+            border-color 0.2s ease,
+            box-shadow 0.2s ease;
     }
 
     .password-field input:focus {
         border-color: #e31e24;
         box-shadow: 0 0 0 3px rgba(227, 30, 36, 0.08);
+    }
+
+    .password-field input::placeholder {
+        color: #9ca3af;
     }
 
     .reset-password-button {
@@ -127,11 +202,20 @@ Client Details — RicozSocial
         color: #ffffff;
         cursor: pointer;
         font-weight: 700;
+        transition:
+            background 0.2s ease,
+            transform 0.2s ease;
     }
 
     .reset-password-button:hover {
         background: #c8171d;
+        transform: translateY(-1px);
     }
+
+
+    /* =========================================================
+       STATUS PILLS
+    ========================================================= */
 
     .status-pill-active {
         display: inline-flex;
@@ -157,6 +241,11 @@ Client Details — RicozSocial
         font-weight: 700;
     }
 
+
+    /* =========================================================
+       CLIENT HEADER
+    ========================================================= */
+
     .client-header-grid {
         display: flex;
         align-items: flex-start;
@@ -165,7 +254,13 @@ Client Details — RicozSocial
         flex-wrap: wrap;
     }
 
+
+    /* =========================================================
+       RESPONSIVE
+    ========================================================= */
+
     @media (max-width: 850px) {
+
         .password-reset-form {
             grid-template-columns: 1fr;
         }
@@ -173,20 +268,204 @@ Client Details — RicozSocial
         .reset-password-button {
             width: 100%;
         }
+
     }
 
+
     @media (max-width: 650px) {
+
         .client-action-bar {
             width: 100%;
             justify-content: flex-start;
         }
 
-        .client-action-form,
-        .client-action-button {
+        .client-action-form {
             width: 100%;
         }
+
+        .client-action-button {
+            width: 100%;
+            justify-content: center;
+        }
+
     }
+
+    /* =========================================================
+   ADMIN DASHBOARD NAVIGATION
+========================================================= */
+
+.client-header-info {
+    min-width: 0;
+}
+
+.client-action-bar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.client-action-button {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+
+    min-height: 40px;
+    padding: 0 15px;
+
+    border: 0;
+    border-radius: 9px;
+
+    cursor: pointer;
+
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+
+    text-decoration: none !important;
+
+    white-space: nowrap;
+
+    transition:
+        background 0.2s ease,
+        color 0.2s ease,
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+
+/* =========================================================
+   BACK TO ADMIN
+========================================================= */
+
+.client-action-admin {
+    background: #e31e24 !important;
+    color: #ffffff !important;
+
+    box-shadow:
+        0 4px 12px rgba(227, 30, 36, 0.20);
+}
+
+.client-action-admin:hover {
+    background: #c8171d !important;
+    color: #ffffff !important;
+
+    transform: translateY(-1px);
+
+    box-shadow:
+        0 7px 18px rgba(227, 30, 36, 0.28);
+}
+
+
+/* =========================================================
+   NORMAL ACTION
+========================================================= */
+
+.client-action-edit {
+    background: #f3f4f6 !important;
+    color: #374151 !important;
+}
+
+.client-action-edit:hover {
+    background: #e5e7eb !important;
+    color: #111827 !important;
+
+    transform: translateY(-1px);
+}
+
+
+/* =========================================================
+   DANGER
+========================================================= */
+
+.client-action-danger {
+    background: #fff1f2 !important;
+    color: #be123c !important;
+}
+
+.client-action-danger:hover {
+    background: #ffe4e6 !important;
+    color: #9f1239 !important;
+
+    transform: translateY(-1px);
+}
+
+
+/* =========================================================
+   SUCCESS
+========================================================= */
+
+.client-action-success {
+    background: #ecfdf5 !important;
+    color: #047857 !important;
+}
+
+.client-action-success:hover {
+    background: #d1fae5 !important;
+    color: #065f46 !important;
+
+    transform: translateY(-1px);
+}
+
+
+/* =========================================================
+   ICON
+========================================================= */
+
+.client-action-icon {
+    font-size: 15px;
+    line-height: 1;
+}
+
+
+/* =========================================================
+   FORM
+========================================================= */
+
+.client-action-form {
+    margin: 0;
+    padding: 0;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 850px) {
+
+    .client-header-grid {
+        flex-direction: column;
+    }
+
+    .client-action-bar {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+}
+
+
+@media (max-width: 600px) {
+
+    .client-action-bar {
+        display: grid;
+        grid-template-columns: 1fr;
+        width: 100%;
+    }
+
+    .client-action-button,
+    .client-action-form,
+    .client-action-form .client-action-button {
+        width: 100%;
+    }
+
+}
+
 </style>
+
 {% endblock %}
 
 
@@ -194,100 +473,130 @@ Client Details — RicozSocial
 
 <div class="admin-page">
 
+
     <!-- =====================================================
-         HEADER
-    ====================================================== -->
+     HEADER
+====================================================== -->
 
-    <div class="admin-page-header">
+<div class="admin-page-header">
 
-        <div class="client-header-grid">
+    <div class="client-header-grid">
 
-            <div>
+        <!-- =================================================
+             LEFT SIDE
+        ================================================== -->
 
-                <div class="admin-breadcrumb">
-                    <a href="{{ url_for('admin_dashboard') }}">
-                        Administration
-                    </a>
+        <div class="client-header-info">
 
-                    <span>/</span>
+            <div class="admin-breadcrumb">
 
-                    <a href="{{ url_for('admin_clients') }}">
-                        Clients
-                    </a>
+                <a href="{{ url_for('admin_dashboard') }}">
+                    Administration
+                </a>
 
-                    <span>/</span>
+                <span>/</span>
 
-                    <span>Client Details</span>
-                </div>
+                <a href="{{ url_for('admin_clients') }}">
+                    Clients
+                </a>
 
-                <h1>
-                    {{ client.name }}
-                </h1>
+                <span>/</span>
 
-                <p>
-                    {{ client.email }}
-                </p>
+                <span>
+                    Client Details
+                </span>
 
             </div>
 
 
-            <div class="client-action-bar">
-
-                <a
-                    href="{{ url_for('admin_clients') }}"
-                    class="client-action-button client-action-edit"
-                    style="display:inline-flex;align-items:center;text-decoration:none;"
-                >
-                    ← Clients
-                </a>
-
-                <a
-                    href="{{ url_for('admin_edit_client', user_id=client.id) }}"
-                    class="client-action-button client-action-edit"
-                    style="display:inline-flex;align-items:center;text-decoration:none;"
-                >
-                    Edit Client
-                </a>
+            <h1>
+                {{ client.name }}
+            </h1>
 
 
-                <form
-                    method="POST"
-                    action="{{ url_for('admin_toggle_client_status', user_id=client.id) }}"
-                    class="client-action-form"
-                    onsubmit="return confirm(
-                        '{% if client.is_active %}Deactivate this client account?{% else %}Activate this client account?{% endif %}'
-                    );"
-                >
+            <p>
+                {{ client.email }}
+            </p>
 
-                    {% if client.is_active %}
+        </div>
 
-                        <button
-                            type="submit"
-                            class="client-action-button client-action-danger"
-                        >
-                            Deactivate
-                        </button>
 
-                    {% else %}
+        <!-- =================================================
+             RIGHT SIDE ACTIONS
+        ================================================== -->
 
-                        <button
-                            type="submit"
-                            class="client-action-button client-action-success"
-                        >
-                            Activate
-                        </button>
+        <div class="client-action-bar">
 
-                    {% endif %}
+            <!-- BACK TO ADMIN DASHBOARD -->
 
-                </form>
+            <a
+                href="{{ url_for('admin_dashboard') }}"
+                class="client-action-button client-action-admin"
+            >
+                <span class="client-action-icon">←</span>
+                <span>Back to Admin</span>
+            </a>
 
-            </div>
+
+            <!-- BACK TO CLIENTS -->
+
+            <a
+                href="{{ url_for('admin_clients') }}"
+                class="client-action-button client-action-edit"
+            >
+                <span class="client-action-icon">←</span>
+                <span>Clients</span>
+            </a>
+
+
+            <!-- EDIT CLIENT -->
+
+            <a
+                href="{{ url_for('admin_edit_client', user_id=client.id) }}"
+                class="client-action-button client-action-edit"
+            >
+                <span>Edit Client</span>
+            </a>
+
+
+            <!-- ACTIVATE / DEACTIVATE -->
+
+            <form
+                method="POST"
+                action="{{ url_for('admin_toggle_client_status', user_id=client.id) }}"
+                class="client-action-form"
+                onsubmit="return confirm(
+                    '{% if client.is_active %}Deactivate this client account?{% else %}Activate this client account?{% endif %}'
+                );"
+            >
+
+                {% if client.is_active %}
+
+                    <button
+                        type="submit"
+                        class="client-action-button client-action-danger"
+                    >
+                        Deactivate
+                    </button>
+
+                {% else %}
+
+                    <button
+                        type="submit"
+                        class="client-action-button client-action-success"
+                    >
+                        Activate
+                    </button>
+
+                {% endif %}
+
+            </form>
 
         </div>
 
     </div>
 
-
+</div>
     <!-- =====================================================
          PROFILE CARD
     ====================================================== -->
@@ -300,6 +609,7 @@ Client Details — RicozSocial
                 {{ client.name[0]|upper }}
             </div>
 
+
             <div class="client-profile-info">
 
                 <h2>
@@ -309,6 +619,7 @@ Client Details — RicozSocial
                 <p>
                     {{ client.email }}
                 </p>
+
 
                 <div class="client-profile-meta">
 
@@ -326,9 +637,11 @@ Client Details — RicozSocial
 
                     {% endif %}
 
+
                     <span>
                         {{ client.role|capitalize }}
                     </span>
+
 
                     <span>
                         Joined
@@ -350,6 +663,9 @@ Client Details — RicozSocial
 
     <div class="admin-stats-grid">
 
+
+        <!-- Brands -->
+
         <div class="admin-stat-card">
 
             <div class="admin-stat-label">
@@ -366,6 +682,8 @@ Client Details — RicozSocial
 
         </div>
 
+
+        <!-- Social Accounts -->
 
         <div class="admin-stat-card">
 
@@ -384,6 +702,8 @@ Client Details — RicozSocial
         </div>
 
 
+        <!-- Connected -->
+
         <div class="admin-stat-card">
 
             <div class="admin-stat-label">
@@ -400,6 +720,8 @@ Client Details — RicozSocial
 
         </div>
 
+
+        <!-- Total Posts -->
 
         <div class="admin-stat-card">
 
@@ -418,6 +740,8 @@ Client Details — RicozSocial
         </div>
 
 
+        <!-- Published -->
+
         <div class="admin-stat-card">
 
             <div class="admin-stat-label">
@@ -434,6 +758,8 @@ Client Details — RicozSocial
 
         </div>
 
+
+        <!-- Scheduled -->
 
         <div class="admin-stat-card">
 
@@ -452,6 +778,8 @@ Client Details — RicozSocial
         </div>
 
 
+        <!-- Drafts -->
+
         <div class="admin-stat-card">
 
             <div class="admin-stat-label">
@@ -468,6 +796,8 @@ Client Details — RicozSocial
 
         </div>
 
+
+        <!-- Pending Approvals -->
 
         <div class="admin-stat-card">
 
@@ -512,6 +842,7 @@ Client Details — RicozSocial
 
 
         <div class="admin-info-grid">
+
 
             <div class="admin-info-item">
 
@@ -746,6 +1077,7 @@ Client Details — RicozSocial
 
                     </thead>
 
+
                     <tbody>
 
                         {% for brand in client_brands %}
@@ -768,6 +1100,7 @@ Client Details — RicozSocial
 
                                 </td>
 
+
                                 <td>
 
                                     {% if brand.is_active %}
@@ -786,13 +1119,16 @@ Client Details — RicozSocial
 
                                 </td>
 
+
                                 <td>
                                     {{ brand.social_accounts_count }}
                                 </td>
 
+
                                 <td>
                                     {{ brand.posts_count }}
                                 </td>
+
 
                                 <td>
                                     {{ brand.created_at.strftime("%b %d, %Y") if brand.created_at else "—" }}
@@ -811,10 +1147,15 @@ Client Details — RicozSocial
         {% else %}
 
             <div class="admin-empty-state">
-                <strong>No brands yet</strong>
+
+                <strong>
+                    No brands yet
+                </strong>
+
                 <p>
                     This client has not created a brand workspace.
                 </p>
+
             </div>
 
         {% endif %}
@@ -866,6 +1207,7 @@ Client Details — RicozSocial
                         </tr>
 
                     </thead>
+
 
                     <tbody>
 
@@ -922,10 +1264,15 @@ Client Details — RicozSocial
         {% else %}
 
             <div class="admin-empty-state">
-                <strong>No social accounts</strong>
+
+                <strong>
+                    No social accounts
+                </strong>
+
                 <p>
                     This client has not connected any social accounts.
                 </p>
+
             </div>
 
         {% endif %}
@@ -974,6 +1321,7 @@ Client Details — RicozSocial
 
                     </thead>
 
+
                     <tbody>
 
                         {% for post in client_posts %}
@@ -990,26 +1338,38 @@ Client Details — RicozSocial
 
                                         <div class="admin-table-subtext">
                                             {{ post.content[:90] }}
-                                            {% if post.content|length > 90 %}...{% endif %}
+
+                                            {% if post.content|length > 90 %}
+                                                ...
+                                            {% endif %}
+
                                         </div>
 
                                     {% endif %}
 
                                 </td>
 
+
                                 <td>
                                     {{ post.brand_name or "—" }}
                                 </td>
 
+
                                 <td>
-                                    <span class="admin-status-badge status-{{ post.status|lower|replace(' ', '-') }}">
+
+                                    <span
+                                        class="admin-status-badge status-{{ post.status|lower|replace(' ', '-') }}"
+                                    >
                                         {{ post.status|capitalize }}
                                     </span>
+
                                 </td>
+
 
                                 <td>
                                     {{ post.scheduled_at.strftime("%b %d, %Y %H:%M") if post.scheduled_at else "—" }}
                                 </td>
+
 
                                 <td>
                                     {{ post.created_at.strftime("%b %d, %Y") if post.created_at else "—" }}
@@ -1028,10 +1388,15 @@ Client Details — RicozSocial
         {% else %}
 
             <div class="admin-empty-state">
-                <strong>No posts yet</strong>
+
+                <strong>
+                    No posts yet
+                </strong>
+
                 <p>
                     This client has not created any content.
                 </p>
+
             </div>
 
         {% endif %}
@@ -1080,6 +1445,7 @@ Client Details — RicozSocial
 
                     </thead>
 
+
                     <tbody>
 
                         {% for approval in client_approvals %}
@@ -1090,19 +1456,27 @@ Client Details — RicozSocial
                                     {{ approval.post_title or "Untitled Post" }}
                                 </td>
 
+
                                 <td>
-                                    <span class="admin-status-badge status-{{ approval.status|lower }}">
+
+                                    <span
+                                        class="admin-status-badge status-{{ approval.status|lower }}"
+                                    >
                                         {{ approval.status|capitalize }}
                                     </span>
+
                                 </td>
+
 
                                 <td>
                                     {{ approval.comments or "—" }}
                                 </td>
 
+
                                 <td>
                                     {{ approval.created_at.strftime("%b %d, %Y") if approval.created_at else "—" }}
                                 </td>
+
 
                                 <td>
                                     {{ approval.reviewed_at.strftime("%b %d, %Y") if approval.reviewed_at else "Pending" }}
@@ -1121,10 +1495,15 @@ Client Details — RicozSocial
         {% else %}
 
             <div class="admin-empty-state">
-                <strong>No approval activity</strong>
+
+                <strong>
+                    No approval activity
+                </strong>
+
                 <p>
                     No approval records are available for this client.
                 </p>
+
             </div>
 
         {% endif %}
@@ -1175,6 +1554,7 @@ Client Details — RicozSocial
 
                         </div>
 
+
                         <div class="notification-time">
 
                             {{ notification.created_at.strftime("%b %d, %Y %H:%M") if notification.created_at else "—" }}
@@ -1194,10 +1574,15 @@ Client Details — RicozSocial
         {% else %}
 
             <div class="admin-empty-state">
-                <strong>No notifications</strong>
+
+                <strong>
+                    No notifications
+                </strong>
+
                 <p>
                     This client has not received any notifications yet.
                 </p>
+
             </div>
 
         {% endif %}
@@ -1238,6 +1623,7 @@ Client Details — RicozSocial
 
                         <div class="admin-activity-dot"></div>
 
+
                         <div class="admin-activity-content">
 
                             <strong>
@@ -1269,10 +1655,15 @@ Client Details — RicozSocial
         {% else %}
 
             <div class="admin-empty-state">
-                <strong>No activity yet</strong>
+
+                <strong>
+                    No activity yet
+                </strong>
+
                 <p>
                     No activity has been recorded for this client.
                 </p>
+
             </div>
 
         {% endif %}

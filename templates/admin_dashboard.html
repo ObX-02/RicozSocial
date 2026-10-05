@@ -42,8 +42,10 @@
 
             <!-- TOP NAVIGATION -->
 
-            <nav class="admin-header-actions"
-                 aria-label="Admin navigation">
+            <nav
+                class="admin-header-actions"
+                aria-label="Admin navigation"
+            >
 
                 <a
                     href="{{ url_for('dashboard') }}"
@@ -96,6 +98,17 @@
                 >
                     <span class="admin-nav-icon">◇</span>
                     <span>Campaigns</span>
+                </a>
+
+
+                <!-- CLIENT REPORTS -->
+
+                <a
+                    href="{{ url_for('admin_client_reports') }}"
+                    class="admin-nav-button admin-nav-primary"
+                >
+                    <span class="admin-nav-icon">▤</span>
+                    <span>Client Reports</span>
                 </a>
 
             </nav>
@@ -1256,6 +1269,36 @@
 
                     <span>
                         Review generated reports.
+                    </span>
+
+                </div>
+
+                <b class="admin-action-arrow">
+                    →
+                </b>
+
+            </a>
+
+
+            <!-- CLIENT REPORTS -->
+
+            <a
+                href="{{ url_for('admin_client_reports') }}"
+                class="admin-action-card"
+            >
+
+                <div class="admin-action-icon green">
+                    ▥
+                </div>
+
+                <div class="admin-action-content">
+
+                    <strong>
+                        Client Reports
+                    </strong>
+
+                    <span>
+                        Manage performance reports for all client brands.
                     </span>
 
                 </div>
