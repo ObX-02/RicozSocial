@@ -5,6 +5,7 @@
 # =========================================================
 
 import os
+import time
 import re
 
 from functools import wraps
@@ -78,18 +79,17 @@ app.config["SECRET_KEY"] = os.getenv(
 # GEMINI AI CONFIGURATION
 # =========================================================
 
-GEMINI_API_KEY = os.getenv(
-    "GEMINI_API_KEY"
-)
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
+if GEMINI_API_KEY:
+    GEMINI_API_KEY = GEMINI_API_KEY.strip()
 
 gemini_client = (
-    genai.Client(
-        api_key=GEMINI_API_KEY
-    )
+    genai.Client()
     if GEMINI_API_KEY
     else None
 )
+
 
 
 # =========================================================
@@ -2965,9 +2965,13 @@ def admin_client_reports():
         conn.close()
 # =========================================================
 # AI CONTENT ASSISTANT
+# DIRECT GEMINI GENERATION WITH RETRY + FALLBACK
 # =========================================================
 
-@app.route("/ai-assistant", methods=["GET", "POST"])
+@app.route(
+    "/ai-assistant",
+    methods=["GET", "POST"]
+)
 @login_required
 def ai_assistant():
 
@@ -2976,68 +2980,79 @@ def ai_assistant():
     if not current_user:
         return redirect(url_for("login"))
 
-    generated_content = None
-    error_message = None
-
     # =====================================================
-    # POST REQUEST
+    # GET
     # =====================================================
 
-    if request.method == "POST":
+    if request.method == "GET":
 
-        topic = request.form.get(
-            "topic",
-            ""
-        ).strip()
+        return render_template(
+            "ai_assistant.html",
+            current_user=current_user,
+            generated_content=None,
+            error_message=None
+        )
 
-        platform = request.form.get(
-            "platform",
-            "Instagram"
-        ).strip()
+    # =====================================================
+    # POST
+    # =====================================================
 
-        tone = request.form.get(
-            "tone",
-            "Professional"
-        ).strip()
+    topic = request.form.get(
+        "topic",
+        ""
+    ).strip()
 
-        length = request.form.get(
-            "length",
-            "Medium"
-        ).strip()
+    platform = request.form.get(
+        "platform",
+        "Instagram"
+    ).strip()
 
-        # =================================================
-        # VALIDATION
-        # =================================================
+    tone = request.form.get(
+        "tone",
+        "Professional"
+    ).strip()
 
-        if not topic:
+    length = request.form.get(
+        "length",
+        "Medium"
+    ).strip()
 
-            error_message = (
-                "Please enter a topic or idea."
+    # =====================================================
+    # VALIDATION
+    # =====================================================
+
+    if not topic:
+
+        return jsonify({
+            "success": False,
+            "error": "Please enter a topic or idea."
+        }), 400
+
+    if len(topic) > 5000:
+
+        return jsonify({
+            "success": False,
+            "error": (
+                "Please keep the topic under "
+                "5000 characters."
             )
+        }), 400
 
-        elif len(topic) > 5000:
+    if not gemini_client:
 
-            error_message = (
-                "Please keep the topic under 5000 characters."
-            )
-
-        elif not gemini_client:
-
-            error_message = (
+        return jsonify({
+            "success": False,
+            "error": (
                 "AI service is not configured. "
-                "Please check your GEMINI_API_KEY "
-                "configuration."
+                "Please check your GEMINI_API_KEY."
             )
+        }), 500
 
-        else:
+    # =====================================================
+    # AI PROMPT
+    # =====================================================
 
-            try:
-
-                # =============================================
-                # AI PROMPT
-                # =============================================
-
-                prompt = f"""
+    prompt = f"""
 You are an expert social media content strategist
 working inside RicozSocial.
 
@@ -3077,217 +3092,341 @@ HASHTAGS:
 #hashtag1 #hashtag2 #hashtag3 #hashtag4 #hashtag5
 """
 
-                # =============================================
-                # GEMINI INTERACTION
-                # =============================================
-                #
-                # Low thinking level is intentional here.
-                # This is a social-media content generation
-                # task, so we do not need heavy reasoning.
-                #
-                # timeout is configured on the Gemini client
-                # itself rather than passed as an unsupported
-                # argument to interactions.create().
-                #
-                # =============================================
+    # =====================================================
+    # GEMINI MODEL CONFIGURATION
+    # =====================================================
 
-                ai_client = gemini_client
+    models_to_try = [
+        "gemini-3.7-flash",
+        "gemini-3.8-flash",
+    ]
 
-                try:
+    last_error = None
+    response = None
 
-                    interaction = (
-                        ai_client.interactions.create(
-                            model="gemini-3.8-flash",
-                            input=prompt,
-                            generation_config={
-                                "thinking_level": "low"
-                            }
-                        )
-                    )
+    # =====================================================
+    # GEMINI GENERATION WITH RETRY + FALLBACK
+    # =====================================================
 
-                except TypeError:
+    for model_index, model_name in enumerate(models_to_try):
 
-                    # =========================================
-                    # FALLBACK FOR OLDER SDK VERSIONS
-                    # =========================================
+        max_attempts = 3
 
-                    app.logger.warning(
-                        "Gemini SDK does not support "
-                        "generation_config on this client. "
-                        "Retrying without it."
-                    )
+        for attempt in range(1, max_attempts + 1):
 
-                    interaction = (
-                        ai_client.interactions.create(
-                            model="gemini-3.8-flash",
-                            input=prompt
-                        )
-                    )
+            try:
 
-                # =============================================
-                # GET RESPONSE TEXT
-                # =============================================
-
-                generated_content = getattr(
-                    interaction,
-                    "output_text",
-                    None
+                app.logger.info(
+                    "Gemini generation attempt %s/%s using %s",
+                    attempt,
+                    max_attempts,
+                    model_name
                 )
 
-                if generated_content is None:
-
-                    generated_content = ""
-
-                generated_content = (
-                    str(generated_content)
-                    .strip()
+                response = gemini_client.models.generate_content(
+                    model=model_name,
+                    contents=prompt
                 )
 
-                # =============================================
-                # EMPTY RESPONSE CHECK
-                # =============================================
-
-                if not generated_content:
-
-                    raise RuntimeError(
-                        "Gemini connected successfully but "
-                        "returned an empty response."
-                    )
-
-            # =================================================
-            # TIMEOUT
-            # =================================================
-
-            except TimeoutError:
-
-                app.logger.exception(
-                    "Gemini AI request timed out."
+                app.logger.info(
+                    "Gemini response received successfully "
+                    "using model %s.",
+                    model_name
                 )
 
-                error_message = (
-                    "The AI request took too long to respond. "
-                    "Please try again."
-                )
+                last_error = None
 
-            # =================================================
-            # GENERAL AI ERROR
-            # =================================================
+                break
 
             except Exception as e:
 
-                app.logger.exception(
-                    "Gemini AI content generation failed."
-                )
+                last_error = e
 
                 error_text = str(e).strip()
-
                 error_lower = error_text.lower()
 
-                # ---------------------------------------------
-                # TIMEOUT / CONNECTION
-                # ---------------------------------------------
+                app.logger.exception(
+                    "Gemini generation failed | "
+                    "model=%s | attempt=%s/%s",
+                    model_name,
+                    attempt,
+                    max_attempts
+                )
 
-                if (
-                    "timeout" in error_lower
-                    or "timed out" in error_lower
-                    or "deadline" in error_lower
-                ):
+                # =================================================
+                # RETRY ONLY TEMPORARY / OVERLOAD ERRORS
+                # =================================================
 
-                    error_message = (
-                        "The AI service took too long to respond. "
-                        "Please try again."
-                    )
-
-                # ---------------------------------------------
-                # API KEY
-                # ---------------------------------------------
-
-                elif (
-                    "api key" in error_lower
-                    or "authentication" in error_lower
-                    or "unauthorized" in error_lower
-                    or "401" in error_lower
-                ):
-
-                    error_message = (
-                        "The Gemini API key is missing or invalid. "
-                        "Please check your GEMINI_API_KEY."
-                    )
-
-                # ---------------------------------------------
-                # MODEL
-                # ---------------------------------------------
-
-                elif (
-                    "not found" in error_lower
-                    or "404" in error_lower
-                    or "model" in error_lower
-                ):
-
-                    error_message = (
-                        "The selected Gemini model is currently "
-                        "unavailable. Please check the Gemini "
-                        "API configuration."
-                    )
-
-                # ---------------------------------------------
-                # RATE LIMIT
-                # ---------------------------------------------
-
-                elif (
-                    "429" in error_lower
-                    or "rate limit" in error_lower
-                    or "quota" in error_lower
+                is_temporary_error = (
+                    "503" in error_text
+                    or "unavailable" in error_lower
+                    or "high demand" in error_lower
+                    or "temporarily" in error_lower
+                    or "overloaded" in error_lower
                     or "resource exhausted" in error_lower
+                    or "429" in error_text
+                    or "rate limit" in error_lower
+                )
+
+                if not is_temporary_error:
+
+                    break
+
+                # -------------------------------------------------
+                # WAIT BEFORE RETRY
+                # -------------------------------------------------
+
+                if attempt < max_attempts:
+
+                    retry_delay = 2 ** attempt
+
+                    app.logger.warning(
+                        "Temporary Gemini error. "
+                        "Retrying in %s seconds...",
+                        retry_delay
+                    )
+
+                    time.sleep(retry_delay)
+
+        # =====================================================
+        # SUCCESSFUL MODEL RESPONSE
+        # =====================================================
+
+        if response is not None:
+
+            break
+
+        # =====================================================
+        # MOVE TO FALLBACK MODEL
+        # =====================================================
+
+        if model_index < len(models_to_try) - 1:
+
+            app.logger.warning(
+                "Model %s failed. Trying fallback model %s.",
+                model_name,
+                models_to_try[model_index + 1]
+            )
+
+    # =====================================================
+    # ALL MODELS FAILED
+    # =====================================================
+
+    if response is None:
+
+        error_text = (
+            str(last_error).strip()
+            if last_error
+            else ""
+        )
+
+        if not error_text:
+
+            error_text = (
+                "The Gemini service could not generate "
+                "content at this time."
+            )
+
+        return jsonify({
+            "success": False,
+            "error": (
+                "Gemini API error: "
+                + error_text
+            )
+        }), 503
+
+    # =====================================================
+    # EXTRACT GENERATED TEXT
+    # =====================================================
+
+    generated_content = ""
+
+    # -----------------------------------------------------
+    # METHOD 1: STANDARD SDK TEXT
+    # -----------------------------------------------------
+
+    try:
+
+        response_text = getattr(
+            response,
+            "text",
+            None
+        )
+
+        if response_text:
+
+            generated_content = str(
+                response_text
+            ).strip()
+
+    except Exception:
+
+        app.logger.exception(
+            "Failed to read response.text."
+        )
+
+    # -----------------------------------------------------
+    # METHOD 2: CANDIDATES -> CONTENT -> PARTS
+    # -----------------------------------------------------
+
+    if not generated_content:
+
+        try:
+
+            candidates = getattr(
+                response,
+                "candidates",
+                None
+            )
+
+            if candidates:
+
+                for candidate in candidates:
+
+                    content = getattr(
+                        candidate,
+                        "content",
+                        None
+                    )
+
+                    if not content:
+                        continue
+
+                    parts = getattr(
+                        content,
+                        "parts",
+                        None
+                    )
+
+                    if not parts:
+                        continue
+
+                    for part in parts:
+
+                        part_text = getattr(
+                            part,
+                            "text",
+                            None
+                        )
+
+                        if part_text:
+
+                            generated_content += (
+                                str(part_text)
+                                + "\n"
+                            )
+
+                    if generated_content.strip():
+
+                        break
+
+            generated_content = (
+                generated_content
+                .strip()
+            )
+
+        except Exception:
+
+            app.logger.exception(
+                "Failed to extract Gemini candidate text."
+            )
+
+    # =====================================================
+    # RESPONSE DIAGNOSTICS
+    # =====================================================
+
+    if not generated_content:
+
+        try:
+
+            candidates = getattr(
+                response,
+                "candidates",
+                None
+            )
+
+            if candidates:
+
+                for index, candidate in enumerate(
+                    candidates
                 ):
 
-                    error_message = (
-                        "The Gemini API rate limit or quota "
-                        "has been reached. Please try again "
-                        "after a short while."
+                    finish_reason = getattr(
+                        candidate,
+                        "finish_reason",
+                        None
                     )
 
-                # ---------------------------------------------
-                # CONNECTION
-                # ---------------------------------------------
-
-                elif (
-                    "connection" in error_lower
-                    or "connect" in error_lower
-                    or "network" in error_lower
-                    or "disconnected" in error_lower
-                ):
-
-                    error_message = (
-                        "The AI service could not be reached. "
-                        "Please check your internet connection "
-                        "and try again."
+                    safety_ratings = getattr(
+                        candidate,
+                        "safety_ratings",
+                        None
                     )
 
-                # ---------------------------------------------
-                # FALLBACK
-                # ---------------------------------------------
-
-                else:
-
-                    error_message = (
-                        f"AI Error: {error_text}"
-                        if error_text
-                        else
-                        "The AI service could not generate "
-                        "a response. Please try again."
+                    app.logger.warning(
+                        "Gemini candidate %s | "
+                        "finish_reason=%s | "
+                        "safety_ratings=%s",
+                        index,
+                        finish_reason,
+                        safety_ratings
                     )
 
-    # =========================================================
-    # RENDER PAGE
-    # =========================================================
+            else:
 
-    return render_template(
-        "ai_assistant.html",
-        current_user=current_user,
-        generated_content=generated_content,
-        error_message=error_message
-    )
+                app.logger.warning(
+                    "Gemini returned no candidates."
+                )
+
+        except Exception:
+
+            app.logger.exception(
+                "Failed to inspect Gemini response."
+            )
+
+    # =====================================================
+    # EMPTY RESPONSE
+    # =====================================================
+
+    if not generated_content:
+
+        return jsonify({
+            "success": False,
+            "error": (
+                "Gemini completed the request but "
+                "returned no text. Please try again."
+            )
+        }), 500
+
+    # =====================================================
+    # ACTIVITY LOG
+    # =====================================================
+
+    try:
+
+        log_activity(
+            action="ai_content_generated",
+            entity_type="ai_assistant",
+            description=(
+                f"Generated AI content for "
+                f"{platform}."
+            )
+        )
+
+    except Exception:
+
+        app.logger.exception(
+            "Failed to log AI content generation."
+        )
+
+    # =====================================================
+    # SUCCESS
+    # =====================================================
+
+    return jsonify({
+        "success": True,
+        "generated_content": generated_content
+    })
 # =========================================================
 # ADMIN CLIENT MANAGEMENT
 # =========================================================

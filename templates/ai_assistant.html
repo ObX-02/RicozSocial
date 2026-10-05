@@ -1,178 +1,506 @@
-```html
+
 {% extends "base.html" %}
 
 {% block title %}
-AI Content Assistant — RicozSocial
+AI Content Assistant | RicozSocial
 {% endblock %}
 
 
 {% block extra_css %}
 
-<link
-    rel="stylesheet"
-    href="{{ url_for('static', filename='css/ai_assistant.css') }}"
->
-
 <style>
 
-/* =========================================================
-   AI → PUBLISHER ACTIONS
-   ========================================================= */
+    /* =====================================================
+       AI PAGE
+    ===================================================== */
 
-.ai-result-actions {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
-}
-
-.ai-use-post-button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-}
-
-.ai-saved-indicator {
-    display: none;
-    margin-top: 12px;
-    padding: 10px 13px;
-    border-radius: 9px;
-    background: #ecfdf3;
-    border: 1px solid #b7ebc6;
-    color: #16803a;
-    font-size: 13px;
-    font-weight: 600;
-}
-
-
-/* =========================================================
-   AI REQUEST STATUS
-   ========================================================= */
-
-.ai-request-status {
-    display: none;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 16px;
-    padding: 12px 14px;
-    border-radius: 10px;
-    border: 1px solid #dbeafe;
-    background: #eff6ff;
-    color: #1d4ed8;
-    font-size: 13px;
-    font-weight: 600;
-}
-
-.ai-request-status.active {
-    display: flex;
-}
-
-.ai-request-spinner {
-    width: 16px;
-    height: 16px;
-    border: 2px solid rgba(29, 78, 216, .25);
-    border-top-color: #1d4ed8;
-    border-radius: 50%;
-    animation: aiSpin .7s linear infinite;
-    flex-shrink: 0;
-}
-
-@keyframes aiSpin {
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-
-/* =========================================================
-   FRONTEND ERROR
-   ========================================================= */
-
-.ai-client-error {
-    display: none;
-    margin-bottom: 16px;
-    padding: 12px 14px;
-    border-radius: 10px;
-    background: #fef2f2;
-    border: 1px solid #fecaca;
-    color: #b91c1c;
-    font-size: 13px;
-    line-height: 1.55;
-}
-
-.ai-client-error.show {
-    display: block;
-}
-
-
-/* =========================================================
-   DISABLED GENERATE BUTTON
-   ========================================================= */
-
-.ai-generate-button.is-loading {
-    opacity: .75;
-    cursor: wait;
-    pointer-events: none;
-}
-
-.ai-generate-button .ai-button-spinner {
-    display: none;
-    width: 15px;
-    height: 15px;
-    border: 2px solid rgba(255, 255, 255, .35);
-    border-top-color: #ffffff;
-    border-radius: 50%;
-    animation: aiSpin .7s linear infinite;
-}
-
-.ai-generate-button.is-loading .ai-button-spinner {
-    display: inline-block;
-}
-
-
-/* =========================================================
-   RETRY BUTTON
-   ========================================================= */
-
-.ai-retry-button {
-    display: none;
-    margin-top: 10px;
-    border: 0;
-    background: transparent;
-    color: #e31e24;
-    font-size: 12px;
-    font-weight: 700;
-    cursor: pointer;
-    padding: 0;
-}
-
-.ai-retry-button.show {
-    display: inline-block;
-}
-
-.ai-retry-button:hover {
-    text-decoration: underline;
-}
-
-
-/* =========================================================
-   MOBILE
-   ========================================================= */
-
-@media (max-width: 600px) {
-
-    .ai-result-actions {
-        flex-direction: column;
-        align-items: stretch;
+    .ai-page {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 32px 20px 60px;
     }
 
-    .ai-result-actions a,
-    .ai-result-actions button {
+
+    /* =====================================================
+       HERO
+    ===================================================== */
+
+    .ai-hero {
+        background: linear-gradient(
+            135deg,
+            #ffffff 0%,
+            #fff7f7 100%
+        );
+
+        border: 1px solid #f0dede;
+        border-radius: 24px;
+        padding: 32px;
+        margin-bottom: 24px;
+
+        box-shadow:
+            0 12px 35px rgba(0, 0, 0, 0.06);
+    }
+
+
+    .ai-hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+
+        background: #fff0f0;
+        color: #c8171d;
+
+        border: 1px solid #f5cccc;
+        border-radius: 999px;
+
+        padding: 7px 13px;
+
+        font-size: 13px;
+        font-weight: 700;
+
+        margin-bottom: 14px;
+    }
+
+
+    .ai-hero h1 {
+        margin: 0 0 10px;
+
+        font-size: 32px;
+
+        color: #171717;
+    }
+
+
+    .ai-hero p {
+        margin: 0;
+
+        color: #6d6d6d;
+
+        line-height: 1.7;
+
+        max-width: 760px;
+    }
+
+
+    /* =====================================================
+       GRID
+    ===================================================== */
+
+    .ai-grid {
+        display: grid;
+
+        grid-template-columns:
+            minmax(0, 0.9fr)
+            minmax(0, 1.1fr);
+
+        gap: 24px;
+
+        align-items: start;
+    }
+
+
+    /* =====================================================
+       CARDS
+    ===================================================== */
+
+    .ai-card {
+        background: #ffffff;
+
+        border: 1px solid #e9e9e9;
+
+        border-radius: 22px;
+
+        padding: 26px;
+
+        box-shadow:
+            0 10px 30px rgba(0, 0, 0, 0.05);
+    }
+
+
+    .ai-card-header {
+        margin-bottom: 22px;
+    }
+
+
+    .ai-card-header h2 {
+        margin: 0 0 6px;
+
+        font-size: 20px;
+
+        color: #171717;
+    }
+
+
+    .ai-card-header p {
+        margin: 0;
+
+        color: #777777;
+
+        font-size: 14px;
+    }
+
+
+    /* =====================================================
+       FORM
+    ===================================================== */
+
+    .ai-field {
+        margin-bottom: 18px;
+    }
+
+
+    .ai-field label {
+        display: block;
+
+        margin-bottom: 8px;
+
+        font-size: 13px;
+
+        font-weight: 700;
+
+        color: #333333;
+    }
+
+
+    .ai-field textarea,
+    .ai-field select {
         width: 100%;
+
+        box-sizing: border-box;
+
+        border: 1px solid #dddddd;
+
+        border-radius: 12px;
+
+        padding: 12px 14px;
+
+        font: inherit;
+
+        background: #ffffff;
+
+        color: #222222;
+
+        outline: none;
+
+        transition: 0.2s ease;
     }
 
-}
+
+    .ai-field textarea {
+        min-height: 150px;
+
+        resize: vertical;
+
+        line-height: 1.6;
+    }
+
+
+    .ai-field textarea:focus,
+    .ai-field select:focus {
+        border-color: #e31e24;
+
+        box-shadow:
+            0 0 0 3px rgba(227, 30, 36, 0.08);
+    }
+
+
+    .ai-form-row {
+        display: grid;
+
+        grid-template-columns: 1fr 1fr;
+
+        gap: 14px;
+    }
+
+
+    /* =====================================================
+       GENERATE BUTTON
+    ===================================================== */
+
+    .ai-generate-btn {
+        width: 100%;
+
+        border: 0;
+
+        border-radius: 12px;
+
+        padding: 14px 18px;
+
+        background: #e31e24;
+
+        color: #ffffff;
+
+        font-weight: 700;
+
+        font-size: 15px;
+
+        cursor: pointer;
+
+        transition: 0.2s ease;
+    }
+
+
+    .ai-generate-btn:hover {
+        background: #c8171d;
+
+        transform: translateY(-1px);
+    }
+
+
+    .ai-generate-btn:disabled {
+        opacity: 0.65;
+
+        cursor: not-allowed;
+
+        transform: none;
+    }
+
+
+    /* =====================================================
+       STATUS
+    ===================================================== */
+
+    .ai-status {
+        display: none;
+
+        margin-top: 16px;
+
+        padding: 12px 14px;
+
+        border-radius: 12px;
+
+        background: #fff7f7;
+
+        border: 1px solid #f2d1d1;
+
+        color: #9c1b20;
+
+        font-size: 14px;
+    }
+
+
+    .ai-status.active {
+        display: block;
+    }
+
+
+    /* =====================================================
+       ERROR
+    ===================================================== */
+
+    .ai-error {
+        display: none;
+
+        margin-top: 16px;
+
+        padding: 13px 14px;
+
+        border-radius: 12px;
+
+        background: #fff1f1;
+
+        border: 1px solid #f0c4c4;
+
+        color: #a0181d;
+
+        font-size: 14px;
+
+        line-height: 1.5;
+    }
+
+
+    .ai-error.active {
+        display: block;
+    }
+
+
+    /* =====================================================
+       OUTPUT
+    ===================================================== */
+
+    .ai-output {
+        min-height: 420px;
+    }
+
+
+    .ai-output-placeholder {
+        min-height: 360px;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        text-align: center;
+
+        color: #888888;
+
+        border: 1px dashed #dddddd;
+
+        border-radius: 16px;
+
+        padding: 25px;
+    }
+
+
+    .ai-output-content {
+        display: none;
+    }
+
+
+    .ai-result {
+        background: #fafafa;
+
+        border: 1px solid #e5e5e5;
+
+        border-radius: 16px;
+
+        padding: 20px;
+
+        white-space: pre-wrap;
+
+        word-break: break-word;
+
+        line-height: 1.75;
+
+        color: #252525;
+
+        min-height: 300px;
+    }
+
+
+    /* =====================================================
+       ACTIONS
+    ===================================================== */
+
+    .ai-actions {
+        display: flex;
+
+        flex-wrap: wrap;
+
+        gap: 10px;
+
+        margin-top: 14px;
+    }
+
+
+    .ai-action-btn {
+        border: 1px solid #dddddd;
+
+        background: #ffffff;
+
+        color: #333333;
+
+        border-radius: 10px;
+
+        padding: 10px 14px;
+
+        cursor: pointer;
+
+        font-size: 13px;
+
+        font-weight: 700;
+
+        text-decoration: none;
+    }
+
+
+    .ai-action-btn:hover {
+        border-color: #e31e24;
+
+        color: #e31e24;
+    }
+
+
+    .ai-action-primary {
+        background: #e31e24;
+
+        border-color: #e31e24;
+
+        color: #ffffff;
+    }
+
+
+    .ai-action-primary:hover {
+        background: #c8171d;
+
+        color: #ffffff;
+    }
+
+
+    /* =====================================================
+       SPINNER
+    ===================================================== */
+
+    .ai-spinner {
+        display: inline-block;
+
+        width: 14px;
+
+        height: 14px;
+
+        border: 2px solid rgba(255,255,255,0.45);
+
+        border-top-color: #ffffff;
+
+        border-radius: 50%;
+
+        animation: aiSpin 0.8s linear infinite;
+
+        vertical-align: -2px;
+
+        margin-right: 7px;
+    }
+
+
+    @keyframes aiSpin {
+
+        to {
+            transform: rotate(360deg);
+        }
+
+    }
+
+
+    /* =====================================================
+       RESPONSIVE
+    ===================================================== */
+
+    @media (max-width: 850px) {
+
+        .ai-grid {
+            grid-template-columns: 1fr;
+        }
+
+    }
+
+
+    @media (max-width: 600px) {
+
+        .ai-page {
+            padding: 20px 14px 40px;
+        }
+
+
+        .ai-hero,
+        .ai-card {
+            padding: 20px;
+
+            border-radius: 18px;
+        }
+
+
+        .ai-hero h1 {
+            font-size: 26px;
+        }
+
+
+        .ai-form-row {
+            grid-template-columns: 1fr;
+        }
+
+    }
 
 </style>
 
@@ -184,166 +512,90 @@ AI Content Assistant — RicozSocial
 <div class="ai-page">
 
 
-    <!-- =====================================================
-         HEADER
-         ===================================================== -->
+    <!-- =================================================
+         HERO
+    ================================================== -->
 
-    <section class="ai-header">
+    <section class="ai-hero">
 
-        <div class="ai-header-content">
+        <div class="ai-hero-badge">
+            ✦ RicozSocial AI
+        </div>
 
-            <div>
 
-                <span class="ai-eyebrow">
-                    RICOZ AI
-                </span>
+        <h1>
+            AI Content Assistant
+        </h1>
 
-                <h1>
-                    AI Content Assistant
-                </h1>
+
+        <p>
+            Generate professional, platform-ready social media
+            content from a simple idea. Choose your platform,
+            tone, and content length, then let RicozSocial create
+            a ready-to-publish post.
+        </p>
+
+    </section>
+
+
+
+    <div class="ai-grid">
+
+
+        <!-- =================================================
+             INPUT CARD
+        ================================================== -->
+
+        <section class="ai-card">
+
+            <div class="ai-card-header">
+
+                <h2>
+                    Create Content
+                </h2>
+
 
                 <p>
-                    Create professional social media content
-                    in seconds with AI-powered assistance.
+                    Describe what you want to publish.
                 </p>
 
             </div>
 
 
-            <div class="ai-header-badge">
-
-                <span>
-                    ✦
-                </span>
-
-                AI Powered
-
-            </div>
-
-        </div>
-
-    </section>
-
-
-    <!-- =====================================================
-         MAIN CONTENT
-         ===================================================== -->
-
-    <div class="ai-layout">
-
-
-        <!-- =================================================
-             GENERATOR
-             ================================================= -->
-
-        <section class="ai-card ai-generator-card">
-
-            <div class="ai-card-heading">
-
-                <div class="ai-card-icon">
-                    ✦
-                </div>
-
-                <div>
-
-                    <h2>
-                        Create Content
-                    </h2>
-
-                    <p>
-                        Tell Ricoz AI what you want to post.
-                    </p>
-
-                </div>
-
-            </div>
-
-
-            <!-- SERVER ERROR -->
-
-            {% if error_message %}
-
-                <div class="ai-alert">
-                    {{ error_message }}
-
-                    <button
-                        type="button"
-                        class="ai-retry-button show"
-                        onclick="retryAIRequest()"
-                    >
-                        Try Again
-                    </button>
-                </div>
-
-            {% endif %}
-
-
-            <!-- FRONTEND ERROR -->
-
-            <div
-                id="aiClientError"
-                class="ai-client-error"
-            ></div>
-
-
-            <!-- REQUEST STATUS -->
-
-            <div
-                id="aiRequestStatus"
-                class="ai-request-status"
-            >
-
-                <span class="ai-request-spinner"></span>
-
-                <span id="aiRequestStatusText">
-                    Generating your content...
-                </span>
-
-            </div>
-
-
-            <!-- =================================================
-                 FORM
-                 ================================================= -->
 
             <form
+                id="aiAssistantForm"
                 method="POST"
-                action="{{ url_for('ai_assistant') }}"
-                class="ai-form"
-                id="aiContentForm"
             >
+
 
                 <!-- TOPIC -->
 
-                <div class="ai-form-group">
+                <div class="ai-field">
 
                     <label for="topic">
-                        What do you want to post about?
+                        Topic or Idea
                     </label>
 
 
                     <textarea
                         id="topic"
                         name="topic"
-                        rows="6"
-                        placeholder="Example: Launching our new brand service for businesses..."
+                        placeholder="Example: Create a LinkedIn post about the importance of cybersecurity for small businesses..."
+                        maxlength="5000"
                         required
                     ></textarea>
-
-
-                    <small>
-                        Describe your idea, product, campaign or announcement.
-                    </small>
 
                 </div>
 
 
-                <!-- OPTIONS -->
 
-                <div class="ai-options-grid">
+                <!-- PLATFORM + TONE -->
+
+                <div class="ai-form-row">
 
 
-                    <div class="ai-form-group">
+                    <div class="ai-field">
 
                         <label for="platform">
                             Platform
@@ -368,7 +620,11 @@ AI Content Assistant — RicozSocial
                             </option>
 
                             <option value="X">
-                                X / Twitter
+                                X
+                            </option>
+
+                            <option value="TikTok">
+                                TikTok
                             </option>
 
                         </select>
@@ -376,7 +632,8 @@ AI Content Assistant — RicozSocial
                     </div>
 
 
-                    <div class="ai-form-group">
+
+                    <div class="ai-field">
 
                         <label for="tone">
                             Tone
@@ -396,45 +653,20 @@ AI Content Assistant — RicozSocial
                                 Friendly
                             </option>
 
-                            <option value="Promotional">
-                                Promotional
-                            </option>
-
                             <option value="Educational">
                                 Educational
+                            </option>
+
+                            <option value="Persuasive">
+                                Persuasive
                             </option>
 
                             <option value="Inspirational">
                                 Inspirational
                             </option>
 
-                        </select>
-
-                    </div>
-
-
-                    <div class="ai-form-group">
-
-                        <label for="length">
-                            Length
-                        </label>
-
-
-                        <select
-                            id="length"
-                            name="length"
-                        >
-
-                            <option value="Short">
-                                Short
-                            </option>
-
-                            <option value="Medium" selected>
-                                Medium
-                            </option>
-
-                            <option value="Long">
-                                Long
+                            <option value="Casual">
+                                Casual
                             </option>
 
                         </select>
@@ -442,784 +674,508 @@ AI Content Assistant — RicozSocial
                     </div>
 
                 </div>
+
+
+
+                <!-- LENGTH -->
+
+                <div class="ai-field">
+
+                    <label for="length">
+                        Content Length
+                    </label>
+
+
+                    <select
+                        id="length"
+                        name="length"
+                    >
+
+                        <option value="Short">
+                            Short
+                        </option>
+
+                        <option
+                            value="Medium"
+                            selected
+                        >
+                            Medium
+                        </option>
+
+                        <option value="Long">
+                            Long
+                        </option>
+
+                    </select>
+
+                </div>
+
 
 
                 <!-- GENERATE -->
 
                 <button
                     type="submit"
-                    class="ai-generate-button"
-                    id="aiGenerateButton"
+                    id="generateButton"
+                    class="ai-generate-btn"
                 >
-
-                    <span
-                        class="ai-button-spinner"
-                        aria-hidden="true"
-                    ></span>
-
-                    <span
-                        class="ai-button-icon"
-                    >
-                        ✦
-                    </span>
-
-                    <span
-                        id="aiGenerateButtonText"
-                    >
-                        Generate Content
-                    </span>
-
+                    ✦ Generate Content
                 </button>
 
             </form>
 
+
+
+            <!-- STATUS -->
+
+            <div
+                id="aiStatus"
+                class="ai-status"
+            >
+
+                <span class="ai-spinner"></span>
+
+                Generating your content...
+
+            </div>
+
+
+
+            <!-- ERROR -->
+
+            <div
+                id="aiError"
+                class="ai-error"
+            ></div>
+
         </section>
 
 
+
         <!-- =================================================
-             GENERATED RESULT
-             ================================================= -->
+             OUTPUT CARD
+        ================================================== -->
 
-        <section class="ai-card ai-result-card">
+        <section class="ai-card ai-output">
 
 
-            <div class="ai-card-heading">
+            <div class="ai-card-header">
 
-                <div class="ai-card-icon result-icon">
-                    ✓
-                </div>
+                <h2>
+                    Generated Content
+                </h2>
 
+
+                <p>
+                    Your AI-generated content will appear here.
+                </p>
+
+            </div>
+
+
+
+            <!-- PLACEHOLDER -->
+
+            <div
+                id="outputPlaceholder"
+                class="ai-output-placeholder"
+            >
 
                 <div>
 
-                    <h2>
-                        Generated Content
-                    </h2>
+                    <strong>
+                        Your generated post will appear here
+                    </strong>
 
-                    <p>
-                        Your AI-generated post will appear here.
-                    </p>
+                    <br>
+
+                    <span>
+                        Enter a topic and click Generate Content.
+                    </span>
 
                 </div>
 
             </div>
 
 
-            {% if generated_content %}
 
-                <div class="ai-result">
+            <!-- GENERATED CONTENT -->
 
+            <div
+                id="outputContent"
+                class="ai-output-content"
+            >
 
-                    <!-- RESULT TOOLBAR -->
-
-                    <div class="ai-result-toolbar">
-
-                        <span>
-                            READY TO PUBLISH
-                        </span>
-
-
-                        <button
-                            type="button"
-                            class="ai-copy-button"
-                            onclick="copyAIContent()"
-                        >
-                            Copy
-                        </button>
-
-                    </div>
+                <div
+                    id="generatedContent"
+                    class="ai-result"
+                ></div>
 
 
-                    <!-- GENERATED CONTENT -->
 
-                    <div
-                        class="ai-generated-content"
-                        id="aiGeneratedContent"
-                    >{{ generated_content }}</div>
+                <div class="ai-actions">
 
-
-                    <!-- SAVED STATUS -->
-
-                    <div
-                        id="aiSavedIndicator"
-                        class="ai-saved-indicator"
+                    <button
+                        type="button"
+                        id="copyButton"
+                        class="ai-action-btn"
                     >
-                        ✓ AI content is ready to use in Publisher.
-                    </div>
+                        Copy Content
+                    </button>
 
 
-                    <!-- ACTIONS -->
-
-                    <div class="ai-result-actions">
-
-
-                        <button
-                            type="button"
-                            class="ai-secondary-button"
-                            onclick="copyAIContent()"
-                        >
-                            Copy Content
-                        </button>
-
-
-                        <a
-                            href="{{ url_for('publisher') }}"
-                            class="ai-primary-button ai-use-post-button"
-                            onclick="saveAIContentBeforePublisher(event)"
-                        >
-
-                            <span>
-                                ✦
-                            </span>
-
-                            Use in Post
-
-                            <span>
-                                →
-                            </span>
-
-                        </a>
-
-                    </div>
-
+                    <a
+                        href="{{ url_for('publisher') }}"
+                        class="ai-action-btn ai-action-primary"
+                    >
+                        Use in Post
+                    </a>
 
                 </div>
 
-
-            {% else %}
-
-
-                <!-- EMPTY RESULT -->
-
-                <div class="ai-empty-result">
-
-                    <div class="ai-empty-icon">
-                        ✦
-                    </div>
-
-
-                    <h3>
-                        Your content will appear here
-                    </h3>
-
-
-                    <p>
-                        Enter a topic and choose your preferences,
-                        then click Generate Content.
-                    </p>
-
-                </div>
-
-
-            {% endif %}
+            </div>
 
         </section>
 
     </div>
 
-
-    <!-- =====================================================
-         AI FEATURES
-         ===================================================== -->
-
-    <section class="ai-features">
-
-
-        <div class="ai-feature-card">
-
-            <div class="ai-feature-icon">
-                ✦
-            </div>
-
-
-            <h3>
-                Smart Content
-            </h3>
-
-
-            <p>
-                Generate natural and engaging social media
-                copy based on your topic.
-            </p>
-
-        </div>
-
-
-        <div class="ai-feature-card">
-
-            <div class="ai-feature-icon">
-                #
-            </div>
-
-
-            <h3>
-                Hashtag Suggestions
-            </h3>
-
-
-            <p>
-                Get relevant hashtags automatically with
-                every generated post.
-            </p>
-
-        </div>
-
-
-        <div class="ai-feature-card">
-
-            <div class="ai-feature-icon">
-                ↗
-            </div>
-
-
-            <h3>
-                Platform Optimized
-            </h3>
-
-
-            <p>
-                Generate content tailored to the platform
-                you want to publish on.
-            </p>
-
-        </div>
-
-
-    </section>
-
 </div>
 
+{% endblock %}
 
-<!-- =========================================================
-     AI JAVASCRIPT
-     ========================================================= -->
+
+
+{% block extra_js %}
 
 <script>
 
 (function () {
 
-    "use strict";
 
-
-    /* =====================================================
-       ELEMENTS
-       ===================================================== */
+    // =====================================================
+    // ELEMENTS
+    // =====================================================
 
     const form =
-        document.getElementById("aiContentForm");
+        document.getElementById("aiAssistantForm");
 
-    const generateButton =
-        document.getElementById("aiGenerateButton");
 
-    const generateButtonText =
-        document.getElementById("aiGenerateButtonText");
+    const button =
+        document.getElementById("generateButton");
 
-    const requestStatus =
-        document.getElementById("aiRequestStatus");
 
-    const requestStatusText =
-        document.getElementById("aiRequestStatusText");
+    const status =
+        document.getElementById("aiStatus");
 
-    const clientError =
-        document.getElementById("aiClientError");
 
-    const topicInput =
-        document.getElementById("topic");
+    const errorBox =
+        document.getElementById("aiError");
 
 
-    /* =====================================================
-       CONSTANTS
-       ===================================================== */
+    const placeholder =
+        document.getElementById("outputPlaceholder");
 
-    const REQUEST_TIMEOUT =
-        90000;
 
-    let requestTimer = null;
+    const outputContent =
+        document.getElementById("outputContent");
 
-    let requestStarted = false;
 
+    const generatedContent =
+        document.getElementById("generatedContent");
 
-    /* =====================================================
-       CLEAR FRONTEND ERROR
-       ===================================================== */
 
-    function clearClientError() {
+    const copyButton =
+        document.getElementById("copyButton");
 
-        if (!clientError) {
-            return;
-        }
 
-        clientError.textContent = "";
 
-        clientError.classList.remove("show");
+    // =====================================================
+    // SAFETY CHECK
+    // =====================================================
 
-    }
+    if (!form) {
 
-
-    /* =====================================================
-       SHOW FRONTEND ERROR
-       ===================================================== */
-
-    function showClientError(message) {
-
-        if (!clientError) {
-            return;
-        }
-
-        clientError.textContent =
-            message;
-
-        clientError.classList.add("show");
-
-    }
-
-
-    /* =====================================================
-       REQUEST STATUS
-       ===================================================== */
-
-    function showLoading() {
-
-        if (requestStatus) {
-
-            requestStatus.classList.add(
-                "active"
-            );
-
-        }
-
-        if (requestStatusText) {
-
-            requestStatusText.textContent =
-                "Generating your content...";
-
-        }
-
-        if (generateButton) {
-
-            generateButton.classList.add(
-                "is-loading"
-            );
-
-            generateButton.disabled =
-                true;
-
-        }
-
-        if (generateButtonText) {
-
-            generateButtonText.textContent =
-                "Generating...";
-
-        }
-
-    }
-
-
-    function updateLoadingMessage(message) {
-
-        if (requestStatusText) {
-
-            requestStatusText.textContent =
-                message;
-
-        }
-
-    }
-
-
-    function resetLoading() {
-
-        if (requestStatus) {
-
-            requestStatus.classList.remove(
-                "active"
-            );
-
-        }
-
-        if (generateButton) {
-
-            generateButton.classList.remove(
-                "is-loading"
-            );
-
-            generateButton.disabled =
-                false;
-
-        }
-
-        if (generateButtonText) {
-
-            generateButtonText.textContent =
-                "Generate Content";
-
-        }
-
-        requestStarted =
-            false;
-
-
-        if (requestTimer) {
-
-            clearTimeout(
-                requestTimer
-            );
-
-            requestTimer =
-                null;
-
-        }
-
-    }
-
-
-    /* =====================================================
-       TIMEOUT
-       ===================================================== */
-
-    function startRequestTimeout() {
-
-        if (requestTimer) {
-
-            clearTimeout(
-                requestTimer
-            );
-
-        }
-
-        requestTimer =
-            setTimeout(
-                function () {
-
-                    if (!requestStarted) {
-                        return;
-                    }
-
-                    requestStarted =
-                        false;
-
-                    resetLoading();
-
-                    showClientError(
-                        "The AI service is taking too long to respond. Please try again. If this keeps happening, check the Gemini API configuration or server logs."
-                    );
-
-                },
-                REQUEST_TIMEOUT
-            );
-
-    }
-
-
-    /* =====================================================
-       FORM SUBMIT
-       ===================================================== */
-
-    if (form) {
-
-        form.addEventListener(
-            "submit",
-            function (event) {
-
-                clearClientError();
-
-
-                /* -----------------------------------------
-                   PREVENT DOUBLE SUBMISSION
-                   ----------------------------------------- */
-
-                if (requestStarted) {
-
-                    event.preventDefault();
-
-                    return;
-
-                }
-
-
-                /* -----------------------------------------
-                   VALIDATE TOPIC
-                   ----------------------------------------- */
-
-                const topic =
-                    topicInput
-                        ? topicInput.value.trim()
-                        : "";
-
-
-                if (!topic) {
-
-                    event.preventDefault();
-
-                    showClientError(
-                        "Please enter a topic or idea before generating content."
-                    );
-
-                    if (topicInput) {
-                        topicInput.focus();
-                    }
-
-                    return;
-
-                }
-
-
-                /* -----------------------------------------
-                   START LOADING
-                   ----------------------------------------- */
-
-                requestStarted =
-                    true;
-
-                showLoading();
-
-                startRequestTimeout();
-
-
-                /*
-                 * IMPORTANT:
-                 *
-                 * This is still a normal POST request.
-                 * We intentionally allow the browser to
-                 * navigate to Flask's response.
-                 *
-                 * The timeout above prevents the UI from
-                 * remaining in a loading state forever.
-                 */
-
-            }
+        console.error(
+            "RicozSocial AI Assistant form was not found."
         );
 
+        return;
+
     }
 
 
-    /* =====================================================
-       RETRY
-       ===================================================== */
 
-    window.retryAIRequest =
-        function () {
+    // =====================================================
+    // HELPER: SHOW ERROR
+    // =====================================================
 
-            clearClientError();
+    function showError(message) {
 
+        errorBox.textContent =
+            message ||
+            "Something went wrong.";
 
-            if (!form) {
-                return;
-            }
+        errorBox.classList.add("active");
 
-
-            const topic =
-                topicInput
-                    ? topicInput.value.trim()
-                    : "";
+    }
 
 
-            if (!topic) {
 
-                showClientError(
-                    "Please enter a topic before trying again."
-                );
+    // =====================================================
+    // HELPER: CLEAR ERROR
+    // =====================================================
 
-                if (topicInput) {
-                    topicInput.focus();
-                }
+    function clearError() {
 
-                return;
+        errorBox.textContent = "";
 
-            }
+        errorBox.classList.remove("active");
 
-
-            form.requestSubmit();
-
-        };
+    }
 
 
-    /* =====================================================
-       SAVE GENERATED AI CONTENT
-       ===================================================== */
 
-    window.saveAIContentToStorage =
-        function () {
+    // =====================================================
+    // GENERATE CONTENT
+    // =====================================================
 
-            const contentElement =
-                document.getElementById(
-                    "aiGeneratedContent"
-                );
+    form.addEventListener(
+        "submit",
+        async function (event) {
 
-
-            if (!contentElement) {
-                return false;
-            }
+            event.preventDefault();
 
 
-            const content =
-                contentElement.innerText.trim();
+            clearError();
 
 
-            if (!content) {
-                return false;
-            }
+            // -------------------------------------------------
+            // UI: START LOADING
+            // -------------------------------------------------
 
+            status.classList.add("active");
 
-            localStorage.setItem(
-                "ricoz_ai_generated_content",
-                content
-            );
+            button.disabled = true;
 
+            button.innerHTML =
+                '<span class="ai-spinner"></span>' +
+                'Generating...';
 
-            return true;
-
-        };
-
-
-    /* =====================================================
-       USE IN POST
-       ===================================================== */
-
-    window.saveAIContentBeforePublisher =
-        function (event) {
-
-            const saved =
-                window.saveAIContentToStorage();
-
-
-            if (!saved) {
-
-                event.preventDefault();
-
-                alert(
-                    "Unable to prepare the AI-generated content. Please generate the content again."
-                );
-
-                return false;
-
-            }
-
-
-            const indicator =
-                document.getElementById(
-                    "aiSavedIndicator"
-                );
-
-
-            if (indicator) {
-
-                indicator.style.display =
-                    "block";
-
-            }
-
-
-            return true;
-
-        };
-
-
-    /* =====================================================
-       COPY AI CONTENT
-       ===================================================== */
-
-    window.copyAIContent =
-        async function () {
-
-            const contentElement =
-                document.getElementById(
-                    "aiGeneratedContent"
-                );
-
-
-            if (!contentElement) {
-                return;
-            }
-
-
-            const text =
-                contentElement.innerText.trim();
-
-
-            if (!text) {
-                return;
-            }
 
 
             try {
 
-                await navigator.clipboard.writeText(
-                    text
-                );
+
+                // -------------------------------------------------
+                // COLLECT FORM DATA
+                // -------------------------------------------------
+
+                const formData =
+                    new FormData(form);
 
 
-                const buttons =
-                    document.querySelectorAll(
-                        ".ai-copy-button, .ai-secondary-button"
+
+                // -------------------------------------------------
+                // SEND REQUEST
+                // -------------------------------------------------
+
+                const response =
+                    await fetch(
+                        "{{ url_for('ai_assistant') }}",
+                        {
+                            method: "POST",
+
+                            body: formData,
+
+                            headers: {
+                                "X-Requested-With":
+                                    "XMLHttpRequest",
+
+                                "Accept":
+                                    "application/json"
+                            }
+                        }
                     );
 
 
-                buttons.forEach(
-                    function (button) {
 
-                        const originalText =
-                            button.innerText;
+                // -------------------------------------------------
+                // READ RESPONSE AS TEXT FIRST
+                // -------------------------------------------------
 
-
-                        button.innerText =
-                            "Copied ✓";
+                const responseText =
+                    await response.text();
 
 
-                        setTimeout(
-                            function () {
 
-                                button.innerText =
-                                    originalText;
+                console.log(
+                    "AI Assistant HTTP status:",
+                    response.status
+                );
 
-                            },
-                            1500
-                        );
 
-                    }
+                console.log(
+                    "AI Assistant raw response:",
+                    responseText
+                );
+
+
+
+                // -------------------------------------------------
+                // PARSE JSON
+                // -------------------------------------------------
+
+                let data;
+
+
+                try {
+
+                    data =
+                        JSON.parse(responseText);
+
+                } catch (jsonError) {
+
+                    console.error(
+                        "AI Assistant JSON parse error:",
+                        jsonError
+                    );
+
+
+                    throw new Error(
+                        "The AI service returned an invalid response. Please try again."
+                    );
+
+                }
+
+
+
+                console.log(
+                    "AI Assistant parsed response:",
+                    data
+                );
+
+
+
+                // -------------------------------------------------
+                // BACKEND ERROR
+                // -------------------------------------------------
+
+                if (
+                    !response.ok ||
+                    !data.success
+                ) {
+
+                    throw new Error(
+                        data.error ||
+                        "Unable to generate content."
+                    );
+
+                }
+
+
+
+                // -------------------------------------------------
+                // GET CONTENT
+                // -------------------------------------------------
+
+                const content =
+                    String(
+                        data.generated_content || ""
+                    ).trim();
+
+
+
+                console.log(
+                    "Generated content:",
+                    content
+                );
+
+
+                console.log(
+                    "Generated content length:",
+                    content.length
+                );
+
+
+
+                // -------------------------------------------------
+                // EMPTY CONTENT CHECK
+                // -------------------------------------------------
+
+                if (!content) {
+
+                    throw new Error(
+                        "The AI service completed the request but returned no content. Please try again."
+                    );
+
+                }
+
+
+
+                // -------------------------------------------------
+                // PUT CONTENT INTO OUTPUT BOX
+                // -------------------------------------------------
+
+                generatedContent.textContent =
+                    content;
+
+
+
+                // -------------------------------------------------
+                // SHOW OUTPUT
+                // -------------------------------------------------
+
+                placeholder.style.display =
+                    "none";
+
+
+                outputContent.style.display =
+                    "block";
+
+
+
+                // -------------------------------------------------
+                // SAVE CONTENT
+                // -------------------------------------------------
+
+                localStorage.setItem(
+                    "ricozsocial_ai_content",
+                    content
                 );
 
 
             } catch (error) {
 
-                alert(
-                    "Unable to copy the content. Please select and copy it manually."
-                );
 
-            }
-
-        };
-
-
-    /* =====================================================
-       AUTO-SAVE GENERATED CONTENT
-       ===================================================== */
-
-    document.addEventListener(
-        "DOMContentLoaded",
-        function () {
-
-            const contentElement =
-                document.getElementById(
-                    "aiGeneratedContent"
+                console.error(
+                    "RicozSocial AI Assistant Error:",
+                    error
                 );
 
 
-            if (contentElement) {
+                showError(
+                    error.message ||
+                    "Something went wrong while generating content."
+                );
 
-                const content =
-                    contentElement.innerText.trim();
+
+            } finally {
 
 
-                if (content) {
+                // -------------------------------------------------
+                // RESET UI
+                // -------------------------------------------------
 
-                    localStorage.setItem(
-                        "ricoz_ai_generated_content",
-                        content
-                    );
+                status.classList.remove(
+                    "active"
+                );
 
-                }
+
+                button.disabled = false;
+
+
+                button.innerHTML =
+                    "✦ Generate Content";
 
             }
 
@@ -1227,9 +1183,119 @@ AI Content Assistant — RicozSocial
     );
 
 
+
+    // =====================================================
+    // COPY GENERATED CONTENT
+    // =====================================================
+
+    if (copyButton) {
+
+        copyButton.addEventListener(
+            "click",
+            async function () {
+
+
+                const content =
+                    generatedContent.textContent.trim();
+
+
+
+                if (!content) {
+
+                    showError(
+                        "There is no generated content to copy."
+                    );
+
+                    return;
+
+                }
+
+
+
+                try {
+
+
+                    await navigator.clipboard.writeText(
+                        content
+                    );
+
+
+
+                    const originalText =
+                        copyButton.textContent;
+
+
+                    copyButton.textContent =
+                        "Copied ✓";
+
+
+
+                    setTimeout(
+                        function () {
+
+                            copyButton.textContent =
+                                originalText;
+
+                        },
+                        1800
+                    );
+
+
+                } catch (error) {
+
+
+                    console.error(
+                        "Copy error:",
+                        error
+                    );
+
+
+                    showError(
+                        "Unable to copy the generated content."
+                    );
+
+                }
+
+            }
+        );
+
+    }
+
+
+
+    // =====================================================
+    // RESTORE LAST GENERATED CONTENT
+    // =====================================================
+
+    const savedContent =
+        localStorage.getItem(
+            "ricozsocial_ai_content"
+        );
+
+
+
+    if (
+        savedContent &&
+        savedContent.trim()
+    ) {
+
+
+        generatedContent.textContent =
+            savedContent;
+
+
+        placeholder.style.display =
+            "none";
+
+
+        outputContent.style.display =
+            "block";
+
+    }
+
+
 })();
 
 </script>
 
 {% endblock %}
-```
